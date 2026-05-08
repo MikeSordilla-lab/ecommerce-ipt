@@ -397,6 +397,26 @@ a:hover {
     font-size: 0.75rem;
 }
 
+.profile-card {
+    background: linear-gradient(135deg, rgba(83, 58, 253, 0.05), rgba(185, 185, 249, 0.1));
+    border: 1px solid rgba(83, 58, 253, 0.15);
+}
+
+.profile-avatar-sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary-soft), var(--color-primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-avatar-sm i {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
 @media (max-width: 768px) {
     h1, .h1 {
         font-size: 2rem;
@@ -417,4 +437,58 @@ a:hover {
     .table-responsive {
         font-size: 0.875rem;
     }
+}
+
+.user-avatar-small,
+.user-avatar-tiny,
+.user-avatar-large {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #533afd;
+    color: white;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.user-avatar-tiny {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+}
+
+.user-avatar-large {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+}
+
+.user-avatar-small .profile-image,
+.user-avatar-tiny .profile-image,
+.user-avatar-large .profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-image-img,
+.user-avatar-small .profile-image-img,
+.user-avatar-tiny .profile-image-img,
+.user-avatar-large .profile-image-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.initials {
+    text-transform: uppercase;
 }

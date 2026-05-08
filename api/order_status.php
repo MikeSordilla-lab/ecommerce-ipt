@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'seller'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Authentication required']);
     exit;
@@ -49,6 +49,22 @@ try {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Order not found']);
         exit;
+    }
+
+    if ($_SESSION['role'] === 'seller') {
+        $stmt = $pdo->prepare('
+            SELECT COUNT(*) FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ? AND p.seller_id = ?
+        ');
+        $stmt->execute([$order_id, $_SESSION['user_id']]);
+        $hasProducts = (int)$stmt->fetchColumn();
+
+        if ($hasProducts === 0) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'You do not have permission to update this order']);
+            exit;
+        }
     }
 
     $current_status = $order['status'];

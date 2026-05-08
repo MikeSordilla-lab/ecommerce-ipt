@@ -3,28 +3,22 @@ $page_title = 'Checkout';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/modules/CartModule.php';
+require_once __DIR__ . '/../../includes/modules/OrderPlacementModule.php';
+require_once __DIR__ . '/../../includes/modules/AddressModule.php';
 
 require_role('customer');
 
 $user_id = $_SESSION['user_id'];
 
 try {
-    $stmt = $pdo->prepare('
-        SELECT ci.*, p.name, p.price, p.stock, p.image_path
-        FROM cart_items ci
-        JOIN products p ON ci.product_id = p.id
-        WHERE ci.user_id = ?
-    ');
+    $cart = new CartModule();
+    $cart_items = $cart->getCart($pdo, $user_id);
+    $subtotal = $cart->getCartSubtotal($cart_items);
+
+    $stmt = $pdo->prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
     $stmt->execute([$user_id]);
-    $cart_items = $stmt->fetchAll();
-
-    $subtotal = array_reduce($cart_items, function($sum, $item) {
-        return $sum + ($item['price'] * $item['quantity']);
-    }, 0);
-
-    $addresses = $pdo->prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
-    $addresses->execute([$user_id]);
-    $addresses = $addresses->fetchAll();
+    $addresses = $stmt->fetchAll();
 } catch (PDOException $e) {
     $cart_items = [];
     $addresses = [];
@@ -48,22 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $save_address = isset($_POST['save_address']);
     $notes = trim($_POST['notes'] ?? '');
 
-    $errors = [];
-    if (empty($full_name) || strlen($full_name) < 2 || strlen($full_name) > 100) {
-        $errors[] = 'Full name must be 2-100 characters.';
-    }
-    if (empty($phone) || !preg_match('/^[\d\s\+\-\(\)]{5,20}$/', $phone)) {
-        $errors[] = 'Valid phone number is required (5-20 characters).';
-    }
-    if (empty($address) || strlen($address) < 10 || strlen($address) > 500) {
-        $errors[] = 'Address must be 10-500 characters.';
-    }
+    $address_errors = validateAddressInput([
+        'full_name' => $full_name,
+        'phone' => $phone,
+        'address' => $address
+    ]);
 
-    foreach ($cart_items as $item) {
-        if ($item['quantity'] > $item['stock']) {
-            $errors[] = "Not enough stock for {$item['name']}. Only {$item['stock']} available.";
-        }
-    }
+    $orderPlacement = new OrderPlacementModule();
+    $stock_validation = $orderPlacement->validateStockAvailability($pdo, $cart_items);
+
+    $errors = array_merge($address_errors, $stock_validation['errors']);
 
     if (!empty($errors)) {
         foreach ($errors as $error) {
@@ -72,51 +60,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(SITE_URL . '/pages/customer/checkout.php');
     }
 
-    $shipping_address = json_encode([
+    $shipping_address = [
         'full_name' => $full_name,
         'phone' => $phone,
         'address' => $address
-    ]);
+    ];
 
-    $pdo->beginTransaction();
-    try {
-        $stmt = $pdo->prepare('
-            INSERT INTO orders (user_id, total, status, payment_method, shipping_address, notes)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ');
-        $stmt->execute([$user_id, $subtotal, 'pending', 'COD', $shipping_address, $notes]);
-        $order_id = $pdo->lastInsertId();
+    $orderCartItems = array_map(fn($item) => [
+        'product_id' => $item['product_id'],
+        'name' => $item['name'],
+        'price' => $item['price'],
+        'quantity' => $item['quantity']
+    ], $cart_items);
 
-        $stmt = $pdo->prepare('
-            INSERT INTO order_items (order_id, product_id, product_name, quantity, price_at_purchase)
-            VALUES (?, ?, ?, ?, ?)
-        ');
-        foreach ($cart_items as $item) {
-            $stmt->execute([$order_id, $item['product_id'], $item['name'], $item['quantity'], $item['price']]);
+    $result = $orderPlacement->placeOrder($pdo, $user_id, $orderCartItems, $shipping_address, $notes);
 
-            $update_stock = $pdo->prepare('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?');
-            $update_stock->execute([$item['quantity'], $item['product_id'], $item['quantity']]);
-        }
-
-        $clear_cart = $pdo->prepare('DELETE FROM cart_items WHERE user_id = ?');
-        $clear_cart->execute([$user_id]);
+    if ($result['success']) {
+        $order_id = $result['order_id'];
 
         if ($save_address) {
-            $default_address = $pdo->prepare('SELECT id FROM addresses WHERE user_id = ? AND is_default = 1');
-            $default_address->execute([$user_id]);
-            $has_default = $default_address->fetch();
+            try {
+                $stmt = $pdo->prepare('SELECT id FROM addresses WHERE user_id = ? AND is_default = 1');
+                $stmt->execute([$user_id]);
+                $has_default = $stmt->fetch();
 
-            $stmt = $pdo->prepare('INSERT INTO addresses (user_id, full_name, phone, address, is_default) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$user_id, $full_name, $phone, $address, $has_default ? 0 : 1]);
+                $stmt = $pdo->prepare('INSERT INTO addresses (user_id, full_name, phone, address, is_default) VALUES (?, ?, ?, ?, ?)');
+                $stmt->execute([$user_id, $full_name, $phone, $address, $has_default ? 0 : 1]);
+            } catch (PDOException $e) {
+            }
         }
-
-        $pdo->commit();
 
         set_flash('success', 'Order Placed!', "Your order #$order_id has been placed successfully.");
         redirect(SITE_URL . '/pages/customer/order_detail.php?id=' . $order_id);
-
-    } catch (PDOException $e) {
-        $pdo->rollBack();
+    } else {
         set_flash('error', 'Error', 'Could not place order. Please try again.');
         redirect(SITE_URL . '/pages/customer/checkout.php');
     }
@@ -241,10 +217,27 @@ generate_csrf();
 document.querySelectorAll('input[name="saved_address"]').forEach(function(radio) {
     radio.addEventListener('change', function() {
         var fields = document.getElementById('new_address_fields');
+        var fullName = document.getElementById('full_name');
+        var phone = document.getElementById('phone');
+        var address = document.getElementById('address');
+
         if (this.value === 'new') {
             fields.style.display = 'block';
+            fullName.value = '';
+            phone.value = '';
+            address.value = '';
+            fullName.required = true;
+            phone.required = true;
+            address.required = true;
         } else {
-            fields.style.display = 'none';
+            fields.style.display = 'block';
+            var addrData = JSON.parse(this.dataset.address || '{}');
+            fullName.value = addrData.full_name || '';
+            phone.value = addrData.phone || '';
+            address.value = addrData.address || '';
+            fullName.required = false;
+            phone.required = false;
+            address.required = false;
         }
     });
 });

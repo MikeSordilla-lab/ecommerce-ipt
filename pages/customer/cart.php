@@ -3,24 +3,16 @@ $page_title = 'Shopping Cart';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/modules/CartModule.php';
 
 require_role('customer');
 
 $user_id = $_SESSION['user_id'];
+$cart = new CartModule();
 
 try {
-    $stmt = $pdo->prepare('
-        SELECT ci.*, p.name, p.price, p.stock, p.image_path
-        FROM cart_items ci
-        JOIN products p ON ci.product_id = p.id
-        WHERE ci.user_id = ?
-    ');
-    $stmt->execute([$user_id]);
-    $cart_items = $stmt->fetchAll();
-
-    $subtotal = array_reduce($cart_items, function($sum, $item) {
-        return $sum + ($item['price'] * $item['quantity']);
-    }, 0);
+    $cart_items = $cart->getCart($pdo, $user_id);
+    $subtotal = $cart->getCartSubtotal($cart_items);
 } catch (PDOException $e) {
     $cart_items = [];
     $subtotal = 0;
@@ -48,12 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (isset($_POST['remove'])) {
         $cart_item_id = (int)$_POST['cart_item_id'];
 
-        try {
-            $stmt = $pdo->prepare('DELETE FROM cart_items WHERE id = ? AND user_id = ?');
-            $stmt->execute([$cart_item_id, $user_id]);
+        $result = $cart->removeItem($pdo, $user_id, $cart_item_id);
+        if ($result['success']) {
             set_flash('success', 'Removed', 'Item has been removed from cart.');
-        } catch (PDOException $e) {
-            set_flash('error', 'Error', 'Could not remove item.');
+        } else {
+            set_flash('error', 'Error', $result['message']);
         }
         redirect(SITE_URL . '/pages/customer/cart.php');
     }
@@ -96,6 +87,8 @@ generate_csrf();
                                                 <div class="d-flex align-items-center">
                                                     <?php if ($item['image_path']): ?>
                                                         <img src="<?= sanitize($item['image_path']) ?>" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" class="me-3">
+                                                    <?php else: ?>
+                                                        <i class="bi bi-image text-muted me-3" style="font-size: 2rem;"></i>
                                                     <?php endif; ?>
                                                     <div>
                                                         <a href="<?= SITE_URL ?>/pages/customer/product_detail.php?id=<?= $item['product_id'] ?>" class="text-heading text-decoration-none">
@@ -111,17 +104,17 @@ generate_csrf();
                                             <td>
                                                 <form method="POST" class="d-flex align-items-center gap-2">
                                                     <?= csrf_field() ?>
-                                                    <input type="hidden" name="cart_item_id" value="<?= $item['id'] ?>">
+                                                    <input type="hidden" name="cart_item_id" value="<?= $item['cart_item_id'] ?>">
                                                     <input type="number" name="quantity" value="<?= $item['quantity'] ?>"
                                                            min="1" max="<?= $item['stock'] ?>" class="form-control" style="width: 70px;">
                                                     <button type="submit" name="update" class="btn btn-sm btn-outline-primary">Update</button>
                                                 </form>
                                             </td>
-                                            <td>$<?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                                            <td>$<?= number_format($item['subtotal'], 2) ?></td>
                                             <td>
                                                 <form method="POST">
                                                     <?= csrf_field() ?>
-                                                    <input type="hidden" name="cart_item_id" value="<?= $item['id'] ?>">
+                                                    <input type="hidden" name="cart_item_id" value="<?= $item['cart_item_id'] ?>">
                                                     <button type="submit" name="remove" class="btn btn-sm btn-outline-danger">
                                                         <i class="bi bi-trash"></i>
                                                     </button>

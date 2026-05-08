@@ -3,8 +3,19 @@ $page_title = 'Shop';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/modules/ProductBrowsingModule.php';
 
 require_role('customer');
+
+$user_id = $_SESSION['user_id'];
+
+try {
+    $stmt = $pdo->prepare('SELECT username, email, role, created_at FROM users WHERE id = ?');
+    $stmt->execute([$user_id]);
+    $current_user = $stmt->fetch();
+} catch (PDOException $e) {
+    $current_user = null;
+}
 
 try {
     $category_id = isset($_GET['category']) ? (int)$_GET['category'] : null;
@@ -15,43 +26,20 @@ try {
     $categories_stmt = $pdo->query('SELECT id, name FROM categories ORDER BY name');
     $categories = $categories_stmt->fetchAll();
 
-    $where_conditions = ['p.is_active = 1'];
-    $params = [];
-
+    $filters = [];
     if ($category_id) {
-        $where_conditions[] = 'p.category_id = ?';
-        $params[] = $category_id;
+        $filters['category_id'] = $category_id;
     }
-
     if ($search) {
-        $where_conditions[] = '(p.name LIKE ? OR p.description LIKE ?)';
-        $params[] = "%$search%";
-        $params[] = "%$search%";
+        $filters['search'] = $search;
     }
+    $filters['price_range'] = $_GET['price_range'] ?? '';
 
-    $where_sql = implode(' AND ', $where_conditions);
-
-    $count_sql = "SELECT COUNT(*) FROM products p WHERE $where_sql";
-    $stmt = $pdo->prepare($count_sql);
-    $stmt->execute($params);
-    $total_products = $stmt->fetchColumn();
-
-    $total_pages = ceil($total_products / $per_page);
-    $offset = ($page - 1) * $per_page;
-
-    $products_sql = "SELECT p.*, c.name as category_name, u.username as seller_name
-                     FROM products p
-                     JOIN categories c ON p.category_id = c.id
-                     LEFT JOIN users u ON p.seller_id = u.id
-                     WHERE $where_sql
-                     ORDER BY p.created_at DESC
-                     LIMIT ? OFFSET ?";
-    $params[] = $per_page;
-    $params[] = $offset;
-
-    $stmt = $pdo->prepare($products_sql);
-    $stmt->execute($params);
-    $products = $stmt->fetchAll();
+    $productModule = new ProductBrowsingModule();
+    $result = $productModule->getProducts($pdo, $filters, $page, $per_page);
+    $products = $result['products'];
+    $total_products = $result['total'];
+    $total_pages = $result['total_pages'];
 
     $cart_count = 0;
     $cart_stmt = $pdo->prepare('SELECT COUNT(*) FROM cart_items WHERE user_id = ?');
@@ -67,6 +55,32 @@ try {
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
+
+<?php if ($current_user): ?>
+<div class="container">
+    <div class="card shadow-primary mb-4 profile-card">
+        <div class="card-body py-3">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="profile-avatar-sm">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="fw-medium text-heading"><?= sanitize($current_user['username']) ?></div>
+                    <div class="small text-body"><?= sanitize($current_user['email']) ?></div>
+                </div>
+                <div class="col-auto">
+                    <span class="badge badge-success">Customer</span>
+                </div>
+                <div class="col-auto">
+                    <small class="text-body">Member since <?= date('M Y', strtotime($current_user['created_at'])) ?></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="container">
     <div class="row mb-4">
@@ -109,6 +123,17 @@ require_once __DIR__ . '/../../includes/header.php';
                     <a href="<?= SITE_URL ?>/pages/customer/shop.php" class="btn btn-outline-secondary">Clear</a>
                 <?php endif; ?>
             </form>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group" role="group" aria-label="Price filter">
+                <?php $current_price_range = $_GET['price_range'] ?? ''; ?>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'under25' ? 'active' : '' ?>" onclick="window.location='?price_range=under25<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Under $25</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '25to50' ? 'active' : '' ?>" onclick="window.location='?price_range=25to50<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">$25–50</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '50to100' ? 'active' : '' ?>" onclick="window.location='?price_range=50to100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">$50–100</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'over100' ? 'active' : '' ?>" onclick="window.location='?price_range=over100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Over $100</button>
+            </div>
         </div>
     </div>
 
@@ -156,13 +181,13 @@ require_once __DIR__ . '/../../includes/header.php';
                 <ul class="pagination justify-content-center">
                     <?php if ($page > 1): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>">Previous</a>
+                            <a class="page-link" href="?page=<?= $page - 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">Previous</a>
                         </li>
                     <?php endif; ?>
 
                     <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                         <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                            <a class="page-link" href="?page=<?= $i ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>">
+                            <a class="page-link" href="?page=<?= $i ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">
                                 <?= $i ?>
                             </a>
                         </li>
@@ -170,7 +195,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <?php if ($page < $total_pages): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>">Next</a>
+                            <a class="page-link" href="?page=<?= $page + 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">Next</a>
                         </li>
                     <?php endif; ?>
                 </ul>

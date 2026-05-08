@@ -10,9 +10,13 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/modules/AddressModule.php';
 
-require_auth();
-require_role('customer');
+if (!check_role('customer')) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Access denied. Customers only.']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -27,37 +31,36 @@ if (!validate_csrf($csrf_token)) {
     exit;
 }
 
-$address_id = isset($_POST['address_id']) ? (int)$_POST['address_id'] : 0;
+$addressId = isset($_POST['address_id']) ? (int)$_POST['address_id'] : 0;
 
-if ($address_id <= 0) {
+if ($addressId <= 0) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid address ID']);
     exit;
 }
 
-$user_id = get_logged_in_user_id();
+$userId = get_logged_in_user_id();
+
+$stmt = $pdo->prepare("SELECT id FROM addresses WHERE id = ? AND user_id = ?");
+$stmt->execute([$addressId, $userId]);
+if (!$stmt->fetch()) {
+    http_response_code(404);
+    echo json_encode(['success' => false, 'message' => 'Address not found']);
+    exit;
+}
+
+$stmt = $pdo->prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending' LIMIT 1");
+$stmt->execute([$userId]);
+$pendingOrder = $stmt->fetch();
+
+if ($pendingOrder) {
+    http_response_code(409);
+    echo json_encode(['success' => false, 'message' => 'Cannot delete address that is used in pending orders']);
+    exit;
+}
 
 try {
-    $stmt = $pdo->prepare("SELECT id FROM addresses WHERE id = ? AND user_id = ?");
-    $stmt->execute([$address_id, $user_id]);
-    if (!$stmt->fetch()) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Address not found']);
-        exit;
-    }
-
-    $stmt = $pdo->prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending' LIMIT 1");
-    $stmt->execute([$user_id]);
-    $pending_order = $stmt->fetch();
-
-    if ($pending_order) {
-        http_response_code(409);
-        echo json_encode(['success' => false, 'message' => 'Cannot delete address that is used in pending orders']);
-        exit;
-    }
-
-    $stmt = $pdo->prepare("DELETE FROM addresses WHERE id = ? AND user_id = ?");
-    $stmt->execute([$address_id, $user_id]);
+    deleteAddress($pdo, $userId, $addressId);
 
     echo json_encode([
         'success' => true,

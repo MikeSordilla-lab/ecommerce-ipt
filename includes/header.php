@@ -87,11 +87,15 @@ $username = get_logged_in_username();
                                 </a>
                             </li>
                         <?php endif; ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> <?= sanitize($username) ?>
+<li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <span class="user-avatar-small" data-username="<?= sanitize($username) ?>" data-profile-image=""></span>
+                                <span><?= sanitize($username) ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="<?= SITE_URL ?>/pages/profile.php">
+                                    <i class="bi bi-person"></i> My Profile
+                                </a></li>
                                 <li><a class="dropdown-item" href="<?= SITE_URL ?>/pages/auth/logout.php">
                                     <i class="bi bi-box-arrow-right"></i> Logout
                                 </a></li>
@@ -128,3 +132,30 @@ $username = get_logged_in_username();
     <?php unset($_SESSION['flash']); endif; ?>
 
     <main class="py-4">
+
+<script>
+(function() {
+    function getInitials(username) {
+        if (!username) return '?';
+        var parts = username.trim().split(/\s+/);
+        if (parts.length >= 2) {
+            return parts[0][0] + parts[parts.length - 1][0];
+        }
+        return username.substring(0, 2);
+    }
+
+    function renderAvatar(el) {
+        var username = el.dataset.username || '';
+        var profileImage = el.dataset.profileImage || '';
+        var initials = getInitials(username);
+
+        if (profileImage && profileImage.trim() !== '') {
+            el.innerHTML = '<img src="' + profileImage + '" alt="Avatar" class="profile-image-img">';
+        } else {
+            el.innerHTML = '<span class="initials">' + initials.toUpperCase() + '</span>';
+        }
+    }
+
+    document.querySelectorAll('.user-avatar-small, .user-avatar-tiny, .user-avatar-large').forEach(renderAvatar);
+})();
+</script>

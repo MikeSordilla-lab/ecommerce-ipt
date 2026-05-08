@@ -2,24 +2,26 @@
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/modules/CartModule.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+$user_id = get_logged_in_user_id();
+if (!$user_id) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Authentication required']);
     exit;
 }
 
-if ($_SESSION['role'] !== 'customer') {
+if (!check_role('customer')) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Access denied']);
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit;
 }
 
@@ -37,23 +39,7 @@ if ($cart_item_id <= 0) {
     exit;
 }
 
-try {
-    $user_id = $_SESSION['user_id'];
+$cart = new CartModule();
+$result = $cart->removeItem($pdo, $user_id, $cart_item_id);
 
-    $stmt = $pdo->prepare('DELETE FROM cart_items WHERE id = ? AND user_id = ?');
-    $stmt->execute([$cart_item_id, $user_id]);
-
-    if ($stmt->rowCount() === 0) {
-        echo json_encode(['success' => false, 'message' => 'Cart item not found']);
-        exit;
-    }
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Item removed from cart'
-    ]);
-
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error']);
-}
+echo json_encode($result);

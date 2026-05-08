@@ -3,6 +3,7 @@ $page_title = 'My Addresses';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/modules/AddressModule.php';
 
 require_role('customer');
 
@@ -15,21 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['add_address'])) {
-        $full_name = trim($_POST['full_name'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $address = trim($_POST['address'] ?? '');
+        $data = [
+            'full_name' => trim($_POST['full_name'] ?? ''),
+            'phone' => trim($_POST['phone'] ?? ''),
+            'address' => trim($_POST['address'] ?? ''),
+        ];
         $set_default = isset($_POST['set_default']);
 
-        $errors = [];
-        if (empty($full_name) || strlen($full_name) < 2 || strlen($full_name) > 100) {
-            $errors[] = 'Full name must be 2-100 characters.';
-        }
-        if (empty($phone) || !preg_match('/^[\d\s\+\-\(\)]{5,20}$/', $phone)) {
-            $errors[] = 'Valid phone number is required.';
-        }
-        if (empty($address) || strlen($address) < 10 || strlen($address) > 500) {
-            $errors[] = 'Address must be 10-500 characters.';
-        }
+        $errors = validateAddressInput($data);
 
         if (!empty($errors)) {
             foreach ($errors as $error) {
@@ -39,13 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         try {
-            if ($set_default) {
-                $pdo->prepare('UPDATE addresses SET is_default = 0 WHERE user_id = ?')->execute([$user_id]);
-            }
-
-            $stmt = $pdo->prepare('INSERT INTO addresses (user_id, full_name, phone, address, is_default) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$user_id, $full_name, $phone, $address, $set_default ? 1 : 0]);
-
+            createAddress($pdo, $user_id, $data, $set_default);
             set_flash('success', 'Added', 'Address has been added.');
         } catch (PDOException $e) {
             set_flash('error', 'Error', 'Could not add address.');
@@ -56,8 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address_id = (int)$_POST['address_id'];
 
         try {
-            $stmt = $pdo->prepare('DELETE FROM addresses WHERE id = ? AND user_id = ?');
-            $stmt->execute([$address_id, $user_id]);
+            deleteAddress($pdo, $user_id, $address_id);
             set_flash('success', 'Deleted', 'Address has been deleted.');
         } catch (PDOException $e) {
             set_flash('error', 'Error', 'Could not delete address.');
@@ -68,8 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address_id = (int)$_POST['address_id'];
 
         try {
-            $pdo->prepare('UPDATE addresses SET is_default = 0 WHERE user_id = ?')->execute([$user_id]);
-            $pdo->prepare('UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?')->execute([$address_id, $user_id]);
+            setDefaultAddress($pdo, $user_id, $address_id);
             set_flash('success', 'Updated', 'Default address has been updated.');
         } catch (PDOException $e) {
             set_flash('error', 'Error', 'Could not update default address.');
@@ -79,9 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 try {
-    $addresses = $pdo->prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
-    $addresses->execute([$user_id]);
-    $addresses = $addresses->fetchAll();
+    $addresses = getAddressesByUser($pdo, $user_id);
 } catch (PDOException $e) {
     $addresses = [];
 }

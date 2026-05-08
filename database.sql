@@ -105,8 +105,8 @@ CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 
 -- Seed data: Admin account (password: admin123)
-INSERT INTO users (username, email, password_hash, role, is_approved) VALUES 
-('admin', 'admin@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
+INSERT INTO users (username, email, password_hash, role, is_approved) VALUES
+('admin', 'admin123@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
 
 -- Seed data: Sample categories
 INSERT INTO categories (name) VALUES 
@@ -117,9 +117,9 @@ INSERT INTO categories (name) VALUES
 ('Sports');
 
 -- Seed data: Sample products (5 products, one per category)
-INSERT INTO products (category_id, seller_id, name, description, price, stock, image_path) VALUES 
-(1, NULL, 'Wireless Bluetooth Headphones', 'High-quality over-ear headphones with 20-hour battery life and active noise cancellation.', 79.99, 50, '/uploads/products/headphones.jpg'),
-(2, NULL, 'Classic Cotton T-Shirt', 'Soft premium cotton t-shirt available in multiple colors. Comfortable for everyday wear.', 24.99, 100, '/uploads/products/tshirt.jpg'),
-(3, NULL, 'Indoor Plant Pot Set', 'Set of 3 ceramic plant pots with drainage holes. Perfect for indoor herbs and small plants.', 34.99, 30, '/uploads/products/pots.jpg'),
-(4, NULL, 'JavaScript: The Good Parts', 'Essential reading for any JavaScript developer. Learn the best parts of the language.', 19.99, 75, '/uploads/products/book.jpg'),
-(5, NULL, 'Adjustable Dumbbell Set', 'Space-saving adjustable dumbbells from 5-25 lbs. Perfect for home workouts.', 149.99, 20, '/uploads/products/dumbbells.jpg');
+INSERT INTO products (category_id, seller_id, name, description, price, stock, image_path) VALUES
+(1, 1, 'Wireless Bluetooth Headphones', 'High-quality over-ear headphones with 20-hour battery life and active noise cancellation.', 79.99, 50, '/uploads/products/headphones.jpg'),
+(2, 1, 'Classic Cotton T-Shirt', 'Soft premium cotton t-shirt available in multiple colors. Comfortable for everyday wear.', 24.99, 100, '/uploads/products/tshirt.jpg'),
+(3, 1, 'Indoor Plant Pot Set', 'Set of 3 ceramic plant pots with drainage holes. Perfect for indoor herbs and small plants.', 34.99, 30, '/uploads/products/pots.jpg'),
+(4, 1, 'JavaScript: The Good Parts', 'Essential reading for any JavaScript developer. Learn the best parts of the language.', 19.99, 75, '/uploads/products/book.jpg'),
+(5, 1, 'Adjustable Dumbbell Set', 'Space-saving adjustable dumbbells from 5-25 lbs. Perfect for home workouts.', 149.99, 20, '/uploads/products/dumbbells.jpg');

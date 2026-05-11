@@ -20,6 +20,10 @@ function sanitize($input) {
     return htmlspecialchars($input ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function format_currency($amount) {
+    return '₱' . number_format((float)$amount, 2);
+}
+
 function asset_url($path) {
     if (empty($path)) {
         return '';

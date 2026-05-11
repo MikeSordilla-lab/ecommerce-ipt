@@ -52,7 +52,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <tr>
                                     <td>#<?= $order['id'] ?></td>
                                     <td><?= sanitize($order['username']) ?></td>
-                                    <td>$<?= number_format($order['total'], 2) ?></td>
+                                    <td><?= format_currency($order['total']) ?></td>
                                     <td><?= sanitize($order['payment_method']) ?></td>
                                     <td>
                                         <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">

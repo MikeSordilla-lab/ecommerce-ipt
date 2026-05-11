@@ -184,14 +184,14 @@ generate_csrf();
                             <?php foreach ($cart_items as $item): ?>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-body"><?= sanitize($item['name']) ?> x <?= $item['quantity'] ?></span>
-                                    <span class="text-heading">$<?= number_format($item['price'] * $item['quantity'], 2) ?></span>
+                                    <span class="text-heading"><?= format_currency($item['price'] * $item['quantity']) ?></span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Subtotal</span>
-                            <span class="text-heading">$<?= number_format($subtotal, 2) ?></span>
+                            <span class="text-heading"><?= format_currency($subtotal) ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Shipping</span>
@@ -200,7 +200,7 @@ generate_csrf();
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong class="text-heading">Total</strong>
-                            <strong class="text-heading">$<?= number_format($subtotal, 2) ?></strong>
+                            <strong class="text-heading"><?= format_currency($subtotal) ?></strong>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
                             <i class="bi bi-credit-card"></i> Place Order

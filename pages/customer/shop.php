@@ -53,6 +53,7 @@ try {
     $cart_count = 0;
 }
 
+generate_csrf();
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -90,11 +91,9 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="col-auto">
             <a href="<?= SITE_URL ?>/pages/customer/cart.php" class="btn btn-outline-primary position-relative">
                 <i class="bi bi-cart3"></i> Cart
-                <?php if ($cart_count > 0): ?>
-                    <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        <?= $cart_count ?>
-                    </span>
-                <?php endif; ?>
+                <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="<?= $cart_count > 0 ? '' : 'display: none;' ?>">
+                    <?= (int)$cart_count ?>
+                </span>
             </a>
         </div>
     </div>
@@ -129,10 +128,10 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="col">
             <div class="btn-group" role="group" aria-label="Price filter">
                 <?php $current_price_range = $_GET['price_range'] ?? ''; ?>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'under25' ? 'active' : '' ?>" onclick="window.location='?price_range=under25<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Under $25</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '25to50' ? 'active' : '' ?>" onclick="window.location='?price_range=25to50<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">$25–50</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '50to100' ? 'active' : '' ?>" onclick="window.location='?price_range=50to100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">$50–100</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'over100' ? 'active' : '' ?>" onclick="window.location='?price_range=over100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Over $100</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'under25' ? 'active' : '' ?>" onclick="window.location='?price_range=under25<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Under ₱25</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '25to50' ? 'active' : '' ?>" onclick="window.location='?price_range=25to50<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">₱25-50</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '50to100' ? 'active' : '' ?>" onclick="window.location='?price_range=50to100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">₱50-100</button>
+                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'over100' ? 'active' : '' ?>" onclick="window.location='?price_range=over100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Over ₱100</button>
             </div>
         </div>
     </div>
@@ -165,10 +164,20 @@ require_once __DIR__ . '/../../includes/header.php';
                             </span>
                             <h5 class="card-title text-heading"><?= sanitize($product['name']) ?></h5>
                             <p class="card-text text-body small"><?= sanitize(substr($product['description'], 0, 100)) ?>...</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="product-price">$<?= number_format($product['price'], 2) ?></span>
-                                <a href="<?= SITE_URL ?>/pages/customer/product_detail.php?id=<?= $product['id'] ?>"
-                                   class="btn btn-sm btn-outline-primary">View</a>
+                            <div class="product-card-actions">
+                                <span class="product-price"><?= format_currency($product['price']) ?></span>
+                                <div class="d-flex gap-2">
+                                    <form method="POST" action="<?= SITE_URL ?>/api/cart_add.php" class="add-to-cart-form">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-sm btn-primary" <?= $product['stock'] <= 0 ? 'disabled' : '' ?>>
+                                            <i class="bi bi-cart-plus"></i> Add
+                                        </button>
+                                    </form>
+                                    <a href="<?= SITE_URL ?>/pages/customer/product_detail.php?id=<?= $product['id'] ?>"
+                                       class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
                             </div>
                         </div>
                     </div>

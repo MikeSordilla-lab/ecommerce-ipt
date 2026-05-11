@@ -135,7 +135,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <tr>
                                     <td>#<?= $order['id'] ?></td>
                                     <td><?= sanitize($order['username']) ?></td>
-                                    <td>$<?= number_format($order['total'], 2) ?></td>
+                                    <td><?= format_currency($order['total']) ?></td>
                                     <td>
                                         <?php
                                         $status_class = match($order['status']) {

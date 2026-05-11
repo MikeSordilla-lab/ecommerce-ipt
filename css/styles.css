@@ -100,12 +100,14 @@ a:hover {
     font-weight: 300;
     font-size: 1.25rem;
     color: var(--color-heading) !important;
-    letter-spacing: -0.22px;
+    letter-spacing: 0;
+    gap: 0.5rem;
 }
 
 .brand-icon {
     color: var(--color-primary);
-    margin-right: 0.25rem;
+    display: inline-flex;
+    align-items: center;
 }
 
 .nav-link {
@@ -115,6 +117,11 @@ a:hover {
     border-radius: var(--radius-standard);
     padding: 0.5rem 0.75rem !important;
     transition: background-color 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 40px;
+    line-height: 1.2;
 }
 
 .nav-link:hover {
@@ -125,6 +132,14 @@ a:hover {
 .nav-link.active {
     color: var(--color-primary) !important;
     background-color: rgba(83, 58, 253, 0.08);
+}
+
+.navbar-nav {
+    gap: 0.25rem;
+}
+
+.user-menu-link {
+    gap: 0.6rem;
 }
 
 .btn {
@@ -391,6 +406,18 @@ a:hover {
     font-size: 1.25rem;
     font-weight: 400;
     color: var(--color-heading);
+}
+
+.product-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.product-card-actions .btn {
+    min-width: 64px;
 }
 
 .stock-badge {

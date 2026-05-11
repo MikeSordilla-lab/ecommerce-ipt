@@ -3,6 +3,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $is_logged_in = is_logged_in();
 $user_role = get_user_role();
 $username = get_logged_in_username();
+$profile_image = '';
+
+if ($is_logged_in) {
+    try {
+        $profile_stmt = $pdo->prepare('SELECT profile_image FROM users WHERE id = ?');
+        $profile_stmt->execute([$_SESSION['user_id']]);
+        $profile_image = $profile_stmt->fetchColumn() ?: '';
+    } catch (PDOException $e) {
+        $profile_image = '';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +29,7 @@ $username = get_logged_in_username();
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-light" href="<?= SITE_URL ?>">
+            <a class="navbar-brand fw-light d-flex align-items-center" href="<?= SITE_URL ?>">
                 <span class="brand-icon"><i class="bi bi-bag"></i></span>
                 <span><?= SITE_NAME ?></span>
             </a>
@@ -26,7 +37,7 @@ $username = get_logged_in_username();
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     <?php if ($is_logged_in): ?>
                         <?php if ($user_role === 'customer'): ?>
                             <li class="nav-item">
@@ -92,10 +103,10 @@ $username = get_logged_in_username();
                                 </a>
                             </li>
                         <?php endif; ?>
-<li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <span class="user-avatar-small" data-username="<?= sanitize($username) ?>" data-profile-image=""></span>
-                                <span><?= sanitize($username) ?></span>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle user-menu-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <span class="user-avatar-small" data-username="<?= sanitize($username) ?>" data-profile-image="<?= sanitize(asset_url($profile_image)) ?>"></span>
+                                <span class="user-menu-name"><?= sanitize($username) ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="<?= SITE_URL ?>/pages/profile.php">

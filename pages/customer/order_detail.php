@@ -64,9 +64,9 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <?php foreach ($items as $item): ?>
                                     <tr>
                                         <td><?= sanitize($item['product_name']) ?></td>
-                                        <td>$<?= number_format($item['price_at_purchase'], 2) ?></td>
+                                        <td><?= format_currency($item['price_at_purchase']) ?></td>
                                         <td><?= $item['quantity'] ?></td>
-                                        <td>$<?= number_format($item['price_at_purchase'] * $item['quantity'], 2) ?></td>
+                                        <td><?= format_currency($item['price_at_purchase'] * $item['quantity']) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -76,7 +76,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="card-footer bg-white">
                     <div class="d-flex justify-content-between">
                         <span class="text-body">Total</span>
-                        <strong class="text-heading">$<?= number_format($order['total'], 2) ?></strong>
+                        <strong class="text-heading"><?= format_currency($order['total']) ?></strong>
                     </div>
                 </div>
             </div>

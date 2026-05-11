@@ -100,7 +100,7 @@ generate_csrf();
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>$<?= number_format($item['price'], 2) ?></td>
+                                            <td><?= format_currency($item['price']) ?></td>
                                             <td>
                                                 <form method="POST" class="d-flex align-items-center gap-2">
                                                     <?= csrf_field() ?>
@@ -110,7 +110,7 @@ generate_csrf();
                                                     <button type="submit" name="update" class="btn btn-sm btn-outline-primary">Update</button>
                                                 </form>
                                             </td>
-                                            <td>$<?= number_format($item['subtotal'], 2) ?></td>
+                                            <td><?= format_currency($item['subtotal']) ?></td>
                                             <td>
                                                 <form method="POST">
                                                     <?= csrf_field() ?>
@@ -140,7 +140,7 @@ generate_csrf();
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Subtotal</span>
-                            <span class="text-heading">$<?= number_format($subtotal, 2) ?></span>
+                            <span class="text-heading"><?= format_currency($subtotal) ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Shipping</span>
@@ -149,7 +149,7 @@ generate_csrf();
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong class="text-heading">Total</strong>
-                            <strong class="text-heading">$<?= number_format($subtotal, 2) ?></strong>
+                            <strong class="text-heading"><?= format_currency($subtotal) ?></strong>
                         </div>
                         <?php
                         $has_stock_issues = false;

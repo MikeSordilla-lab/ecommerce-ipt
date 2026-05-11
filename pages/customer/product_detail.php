@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cart_count->execute([$_SESSION['user_id']]);
             $count = $cart_count->fetchColumn() ?: 0;
 
-            set_flash('success', 'Added to Cart', "\"{$product['name']}\" ($quantity) has been added to your cart.");
+            set_flash('success', 'Added to Cart', "\"{$product['name']}\" has been added to your cart.");
             redirect(SITE_URL . '/pages/customer/cart.php');
         } catch (PDOException $e) {
             set_flash('error', 'Error', 'Could not add to cart.');
@@ -87,7 +87,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <h1 class="h2 text-heading mb-2"><?= sanitize($product['name']) ?></h1>
             <p class="text-body small mb-2">Sold by: <?= sanitize($product['seller_name'] ?? 'Shop') ?></p>
 
-            <h2 class="product-price mb-3">$<?= number_format($product['price'], 2) ?></h2>
+            <h2 class="product-price mb-3"><?= format_currency($product['price']) ?></h2>
 
             <p class="text-body mb-4"><?= nl2br(sanitize($product['description'])) ?></p>
 

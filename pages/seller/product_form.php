@@ -145,7 +145,7 @@ generate_csrf();
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="price" class="form-label">Price ($)</label>
+                                <label for="price" class="form-label">Price (PHP)</label>
                                 <input type="number" class="form-control" id="price" name="price"
                                        value="<?= $product['price'] ?? '' ?>" step="0.01" min="0.01" max="999999.99" required>
                             </div>

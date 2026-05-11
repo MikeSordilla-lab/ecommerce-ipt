@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     initLoadingStates();
     initCSRFInjection();
+    initProductCardAddToCart();
 });
 
 function initLoadingStates() {
     document.querySelectorAll('form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
+            if (form.classList.contains('add-to-cart-form')) {
+                return;
+            }
             var submitBtn = form.querySelector('[type="submit"]');
             if (submitBtn && !submitBtn.classList.contains('no-loading')) {
                 submitBtn.classList.add('btn-loading');
@@ -14,6 +18,52 @@ function initLoadingStates() {
                 submitBtn.setAttribute('data-original-text', originalText);
                 submitBtn.innerHTML = 'Loading...';
             }
+        });
+    });
+}
+
+function initProductCardAddToCart() {
+    document.querySelectorAll('.add-to-cart-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var submitBtn = form.querySelector('[type="submit"]');
+            var originalText = submitBtn ? submitBtn.innerHTML : '';
+            var wasDisabled = submitBtn ? submitBtn.disabled : false;
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Adding...';
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    updateCartCount(data.cart_count || 0);
+                    showSuccess('Successfully', data.message || 'Successfully added to cart.');
+                } else {
+                    showError('Could not add item', data.message || 'Please try again.');
+                }
+            })
+            .catch(function() {
+                showError('Could not add item', 'Please try again.');
+            })
+            .finally(function() {
+                if (submitBtn) {
+                    submitBtn.disabled = wasDisabled;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
         });
     });
 }

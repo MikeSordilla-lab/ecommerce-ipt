@@ -56,7 +56,7 @@ class CartModule
             $stmt->execute([$userId, $productId, $quantity]);
         }
 
-        return ['success' => true, 'cart_count' => $this->getCartCount($pdo, $userId), 'message' => 'Item added to cart'];
+        return ['success' => true, 'cart_count' => $this->getCartCount($pdo, $userId), 'message' => 'Successfully added to cart.'];
     }
 
     public function updateItem(PDO $pdo, int $userId, int $cartItemId, int $quantity): array

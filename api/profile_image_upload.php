@@ -81,7 +81,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Profile image uploaded successfully',
-        'profile_image' => $profile_image_url
+        'profile_image' => asset_url($profile_image_url)
     ]);
 } catch (PDOException $e) {
     unlink($upload_path);

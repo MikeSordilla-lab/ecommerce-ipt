@@ -60,7 +60,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <td><?= sanitize($product['name']) ?></td>
                                     <td><?= sanitize($product['category_name']) ?></td>
                                     <td><?= sanitize($product['seller_name'] ?? 'N/A') ?></td>
-                                    <td>$<?= number_format($product['price'], 2) ?></td>
+                                    <td><?= format_currency($product['price']) ?></td>
                                     <td><?= $product['stock'] ?></td>
                                     <td>
                                         <span class="badge badge-<?= $product['is_active'] ? 'success' : 'danger' ?>">

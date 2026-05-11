@@ -99,14 +99,14 @@ require_once __DIR__ . '/../../includes/header.php';
                                                     <div class="small">
                                                         <span class="text-heading"><?= sanitize($item['product_name']) ?></span>
                                                         <span class="text-body">
-                                                            x<?= (int)$item['quantity'] ?> · $<?= number_format((float)$item['price_at_purchase'], 2) ?>
+                                                            x<?= (int)$item['quantity'] ?> · <?= format_currency($item['price_at_purchase']) ?>
                                                         </span>
                                                     </div>
                                                 <?php endforeach; ?>
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td>$<?= number_format($order['total'], 2) ?></td>
+                                    <td><?= format_currency($order['total']) ?></td>
                                     <td><?= sanitize($order['payment_method']) ?></td>
                                     <td>
                                         <span class="badge badge-<?= seller_order_status_badge($order['status']) ?>">

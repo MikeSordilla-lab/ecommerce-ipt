@@ -1,83 +1,109 @@
 <?php
-$page_title = 'Register';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
+$page_title = "Register";
+require_once __DIR__ . "/../../includes/config.php";
+require_once __DIR__ . "/../../includes/functions.php";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validate_csrf($_POST['csrf_token'] ?? '')) {
-        set_flash('error', 'Error', 'Invalid CSRF token.');
-        redirect($_SERVER['REQUEST_URI']);
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (!validate_csrf($_POST["csrf_token"] ?? "")) {
+        set_flash("error", "Error", "Invalid CSRF token.");
+        redirect($_SERVER["REQUEST_URI"]);
     }
 
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
-    $role = $_POST['role'] ?? 'customer';
+    $username = trim($_POST["username"] ?? "");
+    $email = trim($_POST["email"] ?? "");
+    $password = $_POST["password"] ?? "";
+    $confirm_password = $_POST["confirm_password"] ?? "";
+    $role = $_POST["role"] ?? "customer";
 
     $errors = [];
 
     if (empty($username)) {
-        $errors[] = 'Username is required.';
+        $errors[] = "Username is required.";
     } elseif (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
-        $errors[] = 'Username must be 3-50 characters (letters, numbers, underscore only).';
+        $errors[] =
+            "Username must be 3-50 characters (letters, numbers, underscore only).";
     }
 
     if (empty($email)) {
-        $errors[] = 'Email is required.';
+        $errors[] = "Email is required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Please enter a valid email address.';
+        $errors[] = "Please enter a valid email address.";
     }
 
     if (empty($password)) {
-        $errors[] = 'Password is required.';
+        $errors[] = "Password is required.";
     } elseif (strlen($password) < 6) {
-        $errors[] = 'Password must be at least 6 characters.';
+        $errors[] = "Password must be at least 6 characters.";
     }
 
     if ($password !== $confirm_password) {
-        $errors[] = 'Passwords do not match.';
+        $errors[] = "Passwords do not match.";
     }
 
-    if (!in_array($role, ['customer', 'seller'])) {
-        $role = 'customer';
+    if (!in_array($role, ["customer", "seller"])) {
+        $role = "customer";
     }
 
     if (!empty($errors)) {
         foreach ($errors as $error) {
-            set_flash('error', 'Validation Error', $error);
+            add_flash("error", "Validation Error", $error);
         }
-        redirect(SITE_URL . '/pages/auth/register.php');
+        redirect(SITE_URL . "/pages/auth/register.php");
     }
 
     try {
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ? OR email = ?');
+        $stmt = $pdo->prepare(
+            "SELECT id FROM users WHERE username = ? OR email = ?",
+        );
         $stmt->execute([$username, $email]);
         if ($stmt->fetch()) {
-            set_flash('error', 'Registration Failed', 'Username or email already exists.');
-            redirect(SITE_URL . '/pages/auth/register.php');
+            set_flash(
+                "error",
+                "Registration Failed",
+                "Username or email already exists.",
+            );
+            redirect(SITE_URL . "/pages/auth/register.php");
         }
 
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $is_approved = ($role === 'seller') ? 0 : 1;
+        $is_approved = $role === "seller" ? 0 : 1;
 
-        $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role, is_approved) VALUES (?, ?, ?, ?, ?)');
-        $stmt->execute([$username, $email, $password_hash, $role, $is_approved]);
+        $stmt = $pdo->prepare(
+            "INSERT INTO users (username, email, password_hash, role, is_approved) VALUES (?, ?, ?, ?, ?)",
+        );
+        $stmt->execute([
+            $username,
+            $email,
+            $password_hash,
+            $role,
+            $is_approved,
+        ]);
 
-        if ($role === 'seller') {
-            set_flash('success', 'Registration Successful', 'Your seller account is pending admin approval.');
+        if ($role === "seller") {
+            set_flash(
+                "success",
+                "Registration Successful",
+                "Your seller account is pending admin approval.",
+            );
         } else {
-            set_flash('success', 'Registration Successful', 'You can now log in with your credentials.');
+            set_flash(
+                "success",
+                "Registration Successful",
+                "You can now log in with your credentials.",
+            );
         }
-        redirect(SITE_URL . '/pages/auth/login.php');
-
+        redirect(SITE_URL . "/pages/auth/login.php");
     } catch (PDOException $e) {
-        set_flash('error', 'Error', 'A database error occurred. Please try again.');
-        redirect(SITE_URL . '/pages/auth/register.php');
+        set_flash(
+            "error",
+            "Error",
+            "A database error occurred. Please try again.",
+        );
+        redirect(SITE_URL . "/pages/auth/register.php");
     }
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . "/../../includes/header.php";
 generate_csrf();
 ?>
 
@@ -93,13 +119,17 @@ generate_csrf();
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username"
-                                   value="<?= sanitize($_POST['username'] ?? '') ?>" required autofocus>
+                                   value="<?= sanitize(
+                                       $_POST["username"] ?? "",
+                                   ) ?>" required autofocus>
                         </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email"
-                                   value="<?= sanitize($_POST['email'] ?? '') ?>" required>
+                                   value="<?= sanitize(
+                                       $_POST["email"] ?? "",
+                                   ) ?>" required>
                         </div>
 
                         <div class="mb-3">
@@ -146,4 +176,4 @@ generate_csrf();
     </div>
 </div>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>

@@ -1,23 +1,38 @@
 <?php
-$page_title = 'All Products';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/auth.php';
-require_role('admin');
+$page_title = "All Products";
+require_once __DIR__ . "/../../includes/config.php";
+require_once __DIR__ . "/../../includes/functions.php";
+require_once __DIR__ . "/../../includes/auth.php";
+require_role("admin");
 
 try {
-    $products = $pdo->query('
+    $page = isset($_GET["page"]) ? max(1, (int) $_GET["page"]) : 1;
+    $per_page = 20;
+    $offset = ($page - 1) * $per_page;
+
+    $countStmt = $pdo->query("SELECT COUNT(*) FROM products");
+    $total_products = (int) $countStmt->fetchColumn();
+    $total_pages = (int) ceil($total_products / $per_page);
+
+    $stmt = $pdo->prepare('
         SELECT p.*, c.name as category_name, u.username as seller_name
         FROM products p
         JOIN categories c ON p.category_id = c.id
         LEFT JOIN users u ON p.seller_id = u.id
         ORDER BY p.created_at DESC
-    ')->fetchAll();
+        LIMIT :limit OFFSET :offset
+    ');
+    $stmt->bindValue(":limit", $per_page, PDO::PARAM_INT);
+    $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $products = $stmt->fetchAll();
 } catch (PDOException $e) {
     $products = [];
+    $total_pages = 0;
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+$csrf_token = generate_csrf();
+require_once __DIR__ . "/../../includes/header.php";
 ?>
 
 <div class="container">
@@ -43,29 +58,81 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($products as $product): ?>
                                 <tr>
                                     <td>
-                                        <?php if ($product['image_path']): ?>
-                                            <img src="<?= sanitize(asset_url($product['image_path'])) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                        <?php if ($product["image_path"]): ?>
+                                            <img src="<?= sanitize(
+                                                asset_url(
+                                                    $product["image_path"],
+                                                ),
+                                            ) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                         <?php else: ?>
                                             <div class="bg-light rounded" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                                 <i class="bi bi-image text-muted"></i>
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= sanitize($product['name']) ?></td>
-                                    <td><?= sanitize($product['category_name']) ?></td>
-                                    <td><?= sanitize($product['seller_name'] ?? 'N/A') ?></td>
-                                    <td><?= format_currency($product['price']) ?></td>
-                                    <td><?= $product['stock'] ?></td>
+                                    <td><?= sanitize($product["name"]) ?></td>
+                                    <td><?= sanitize(
+                                        $product["category_name"],
+                                    ) ?></td>
+                                    <td><?= sanitize(
+                                        $product["seller_name"] ?? "N/A",
+                                    ) ?></td>
+                                    <td><?= format_currency(
+                                        $product["price"],
+                                    ) ?></td>
+                                    <td><?= $product["stock"] ?></td>
                                     <td>
-                                        <span class="badge badge-<?= $product['is_active'] ? 'success' : 'danger' ?>">
-                                            <?= $product['is_active'] ? 'Active' : 'Inactive' ?>
+                                        <span class="badge badge-<?= $product[
+                                            "is_active"
+                                        ]
+                                            ? "success"
+                                            : "danger" ?>">
+                                            <?= $product["is_active"]
+                                                ? "Active"
+                                                : "Inactive" ?>
                                         </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <form method="POST" action="<?= SITE_URL ?>/api/product_status.php">
+                                                <input type="hidden" name="csrf_token" value="<?= sanitize(
+                                                    $csrf_token,
+                                                ) ?>">
+                                                <input type="hidden" name="product_id" value="<?= (int) $product[
+                                                    "id"
+                                                ] ?>">
+                                                <input type="hidden" name="is_active" value="<?= $product[
+                                                    "is_active"
+                                                ]
+                                                    ? 0
+                                                    : 1 ?>">
+                                                <button type="submit" class="btn btn-sm <?= $product[
+                                                    "is_active"
+                                                ]
+                                                    ? "btn-outline-warning"
+                                                    : "btn-outline-success" ?>">
+                                                    <?= $product["is_active"]
+                                                        ? "Deactivate"
+                                                        : "Activate" ?>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="<?= SITE_URL ?>/api/product_delete.php" onsubmit="return confirm('Delete this product? Products with order history can only be deactivated.');">
+                                                <input type="hidden" name="csrf_token" value="<?= sanitize(
+                                                    $csrf_token,
+                                                ) ?>">
+                                                <input type="hidden" name="product_id" value="<?= (int) $product[
+                                                    "id"
+                                                ] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -74,7 +141,35 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
             </div>
         </div>
+
+        <?php if ($total_pages > 1): ?>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <?php if ($page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page -
+                                1 ?>">Previous</a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <li class="page-item <?= $i == $page
+                            ? "active"
+                            : "" ?>">
+                            <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page +
+                                1 ?>">Next</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>

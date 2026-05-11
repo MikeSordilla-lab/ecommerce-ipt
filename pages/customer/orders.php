@@ -1,22 +1,24 @@
 <?php
-$page_title = 'My Orders';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/auth.php';
+$page_title = "My Orders";
+require_once __DIR__ . "/../../includes/config.php";
+require_once __DIR__ . "/../../includes/functions.php";
+require_once __DIR__ . "/../../includes/auth.php";
 
-require_role('customer');
+require_role("customer");
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION["user_id"];
 
 try {
-    $orders = $pdo->prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC');
+    $orders = $pdo->prepare(
+        "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC",
+    );
     $orders->execute([$user_id]);
     $orders = $orders->fetchAll();
 } catch (PDOException $e) {
     $orders = [];
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . "/../../includes/header.php";
 ?>
 
 <div class="container">
@@ -40,6 +42,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th>Date</th>
                                 <th>Total</th>
                                 <th>Payment</th>
+                                <th>Payment Status</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -47,17 +50,41 @@ require_once __DIR__ . '/../../includes/header.php';
                         <tbody>
                             <?php foreach ($orders as $order): ?>
                                 <tr>
-                                    <td>#<?= $order['id'] ?></td>
-                                    <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
-                                    <td><?= format_currency($order['total']) ?></td>
-                                    <td><?= sanitize($order['payment_method']) ?></td>
+                                    <td>#<?= $order["id"] ?></td>
+                                    <td><?= date(
+                                        "M d, Y",
+                                        strtotime($order["created_at"]),
+                                    ) ?></td>
+                                    <td><?= format_currency(
+                                        $order["total"],
+                                    ) ?></td>
+                                    <td><?= sanitize(
+                                        get_payment_method_label(
+                                            $order["payment_method"],
+                                        ),
+                                    ) ?></td>
+                                    <td><span class="badge badge-warning"><?= sanitize(
+                                        get_payment_status_label(
+                                            $order["payment_method"],
+                                            $order["status"],
+                                        ),
+                                    ) ?></span></td>
                                     <td>
-                                        <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">
-                                            <?= ucfirst($order['status']) ?>
+                                        <span class="badge badge-<?= match (
+                                            $order["status"]
+                                        ) {
+                                            "pending" => "warning",
+                                            "shipped" => "info",
+                                            "delivered" => "success",
+                                            default => "secondary",
+                                        } ?>">
+                                            <?= ucfirst($order["status"]) ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="<?= SITE_URL ?>/pages/customer/order_detail.php?id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary">
+                                        <a href="<?= SITE_URL ?>/pages/customer/order_detail.php?id=<?= $order[
+    "id"
+] ?>" class="btn btn-sm btn-outline-primary">
                                             View Details
                                         </a>
                                     </td>
@@ -71,4 +98,4 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>

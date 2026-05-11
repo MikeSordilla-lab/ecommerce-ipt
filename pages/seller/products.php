@@ -1,12 +1,12 @@
 <?php
-$page_title = 'My Products';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/auth.php';
+$page_title = "My Products";
+require_once __DIR__ . "/../../includes/config.php";
+require_once __DIR__ . "/../../includes/functions.php";
+require_once __DIR__ . "/../../includes/auth.php";
 
 require_approved_seller();
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION["user_id"];
 
 try {
     $products = $pdo->prepare('
@@ -22,7 +22,8 @@ try {
     $products = [];
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+$csrf_token = generate_csrf();
+require_once __DIR__ . "/../../includes/header.php";
 ?>
 
 <div class="container">
@@ -60,25 +61,74 @@ require_once __DIR__ . '/../../includes/header.php';
                             <?php foreach ($products as $product): ?>
                                 <tr>
                                     <td>
-                                        <?php if ($product['image_path']): ?>
-                                            <img src="<?= sanitize(asset_url($product['image_path'])) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                        <?php if ($product["image_path"]): ?>
+                                            <img src="<?= sanitize(
+                                                asset_url(
+                                                    $product["image_path"],
+                                                ),
+                                            ) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                         <?php else: ?>
                                             <div class="bg-light rounded" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                                 <i class="bi bi-image text-muted"></i>
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= sanitize($product['name']) ?></td>
-                                    <td><?= sanitize($product['category_name']) ?></td>
-                                    <td><?= format_currency($product['price']) ?></td>
-                                    <td><?= $product['stock'] ?></td>
+                                    <td><?= sanitize($product["name"]) ?></td>
+                                    <td><?= sanitize(
+                                        $product["category_name"],
+                                    ) ?></td>
+                                    <td><?= format_currency(
+                                        $product["price"],
+                                    ) ?></td>
+                                    <td><?= $product["stock"] ?></td>
                                     <td>
-                                        <span class="badge badge-<?= $product['is_active'] ? 'success' : 'danger' ?>">
-                                            <?= $product['is_active'] ? 'Active' : 'Inactive' ?>
+                                        <span class="badge badge-<?= $product[
+                                            "is_active"
+                                        ]
+                                            ? "success"
+                                            : "danger" ?>">
+                                            <?= $product["is_active"]
+                                                ? "Active"
+                                                : "Inactive" ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="<?= SITE_URL ?>/pages/seller/product_form.php?id=<?= $product['id'] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <a href="<?= SITE_URL ?>/pages/seller/product_form.php?id=<?= $product[
+    "id"
+] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            <form method="POST" action="<?= SITE_URL ?>/api/product_status.php">
+                                                <input type="hidden" name="csrf_token" value="<?= sanitize(
+                                                    $csrf_token,
+                                                ) ?>">
+                                                <input type="hidden" name="product_id" value="<?= (int) $product[
+                                                    "id"
+                                                ] ?>">
+                                                <input type="hidden" name="is_active" value="<?= $product[
+                                                    "is_active"
+                                                ]
+                                                    ? 0
+                                                    : 1 ?>">
+                                                <button type="submit" class="btn btn-sm <?= $product[
+                                                    "is_active"
+                                                ]
+                                                    ? "btn-outline-warning"
+                                                    : "btn-outline-success" ?>">
+                                                    <?= $product["is_active"]
+                                                        ? "Deactivate"
+                                                        : "Activate" ?>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="<?= SITE_URL ?>/api/product_delete.php" onsubmit="return confirm('Delete this product? Products with order history can only be deactivated.');">
+                                                <input type="hidden" name="csrf_token" value="<?= sanitize(
+                                                    $csrf_token,
+                                                ) ?>">
+                                                <input type="hidden" name="product_id" value="<?= (int) $product[
+                                                    "id"
+                                                ] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -90,4 +140,4 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>

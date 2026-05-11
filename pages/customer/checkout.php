@@ -1,15 +1,15 @@
 <?php
-$page_title = 'Checkout';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/auth.php';
-require_once __DIR__ . '/../../includes/modules/CartModule.php';
-require_once __DIR__ . '/../../includes/modules/OrderPlacementModule.php';
-require_once __DIR__ . '/../../includes/modules/AddressModule.php';
+$page_title = "Checkout";
+require_once __DIR__ . "/../../includes/config.php";
+require_once __DIR__ . "/../../includes/functions.php";
+require_once __DIR__ . "/../../includes/auth.php";
+require_once __DIR__ . "/../../includes/modules/CartModule.php";
+require_once __DIR__ . "/../../includes/modules/OrderPlacementModule.php";
+require_once __DIR__ . "/../../includes/modules/AddressModule.php";
 
-require_role('customer');
+require_role("customer");
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION["user_id"];
 
 try {
     $cart = new CartModule();
@@ -23,75 +23,111 @@ try {
 }
 
 if (empty($cart_items)) {
-    set_flash('warning', 'Empty Cart', 'Your cart is empty.');
-    redirect(SITE_URL . '/pages/customer/cart.php');
+    set_flash("warning", "Empty Cart", "Your cart is empty.");
+    redirect(SITE_URL . "/pages/customer/cart.php");
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validate_csrf($_POST['csrf_token'] ?? '')) {
-        set_flash('error', 'Error', 'Invalid CSRF token.');
-        redirect($_SERVER['REQUEST_URI']);
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (!validate_csrf($_POST["csrf_token"] ?? "")) {
+        set_flash("error", "Error", "Invalid CSRF token.");
+        redirect($_SERVER["REQUEST_URI"]);
     }
 
-    $full_name = trim($_POST['full_name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $save_address = isset($_POST['save_address']);
-    $notes = trim($_POST['notes'] ?? '');
+    $full_name = trim($_POST["full_name"] ?? "");
+    $phone = trim($_POST["phone"] ?? "");
+    $address = trim($_POST["address"] ?? "");
+    $save_address = isset($_POST["save_address"]);
+    $notes = trim($_POST["notes"] ?? "");
+    $payment_method = strtoupper(trim($_POST["payment_method"] ?? ""));
+    $confirm_cod = isset($_POST["confirm_cod"]);
 
     $address_errors = validateAddressInput([
-        'full_name' => $full_name,
-        'phone' => $phone,
-        'address' => $address
+        "full_name" => $full_name,
+        "phone" => $phone,
+        "address" => $address,
     ]);
 
     $orderPlacement = new OrderPlacementModule();
-    $stock_validation = $orderPlacement->validateStockAvailability($pdo, $cart_items);
+    $stock_validation = $orderPlacement->validateStockAvailability(
+        $pdo,
+        $cart_items,
+    );
 
-    $errors = array_merge($address_errors, $stock_validation['errors']);
+    $errors = array_merge($address_errors, $stock_validation["errors"]);
+
+    if ($payment_method !== "COD") {
+        $errors[] = "Cash on Delivery must be selected as the payment method.";
+    }
+
+    if (!$confirm_cod) {
+        $errors[] =
+            "Please confirm that you will pay with Cash on Delivery when the order arrives.";
+    }
 
     if (!empty($errors)) {
         foreach ($errors as $error) {
-            set_flash('error', 'Validation Error', $error);
+            add_flash("error", "Validation Error", $error);
         }
-        redirect(SITE_URL . '/pages/customer/checkout.php');
+        redirect(SITE_URL . "/pages/customer/checkout.php");
     }
 
     $shipping_address = [
-        'full_name' => $full_name,
-        'phone' => $phone,
-        'address' => $address
+        "full_name" => $full_name,
+        "phone" => $phone,
+        "address" => $address,
     ];
 
-    $orderCartItems = array_map(fn($item) => [
-        'product_id' => $item['product_id'],
-        'name' => $item['name'],
-        'price' => $item['price'],
-        'quantity' => $item['quantity']
-    ], $cart_items);
+    $orderCartItems = array_map(
+        fn($item) => [
+            "product_id" => $item["product_id"],
+            "name" => $item["name"],
+            "price" => $item["price"],
+            "quantity" => $item["quantity"],
+        ],
+        $cart_items,
+    );
 
-    $result = $orderPlacement->placeOrder($pdo, $user_id, $orderCartItems, $shipping_address, $notes);
+    $result = $orderPlacement->placeOrder(
+        $pdo,
+        $user_id,
+        $orderCartItems,
+        $shipping_address,
+        $notes,
+        $payment_method,
+    );
 
-    if ($result['success']) {
-        $order_id = $result['order_id'];
+    if ($result["success"]) {
+        $order_id = $result["order_id"];
 
         if ($save_address) {
             try {
-                $has_default = array_reduce($addresses, fn($carry, $addr) => $carry || !empty($addr['is_default']), false);
+                $has_default = array_reduce(
+                    $addresses,
+                    fn($carry, $addr) => $carry || !empty($addr["is_default"]),
+                    false,
+                );
                 createAddress($pdo, $user_id, $shipping_address, !$has_default);
             } catch (PDOException $e) {
             }
         }
 
-        set_flash('success', 'Order Placed!', "Your order #$order_id has been placed successfully.");
-        redirect(SITE_URL . '/pages/customer/order_detail.php?id=' . $order_id);
+        set_flash(
+            "success",
+            "Order Placed!",
+            "Your order #$order_id has been placed successfully.",
+        );
+        redirect(SITE_URL . "/pages/customer/order_detail.php?id=" . $order_id);
     } else {
-        set_flash('error', 'Error', 'Could not place order. Please try again.');
-        redirect(SITE_URL . '/pages/customer/checkout.php');
+        set_flash(
+            "error",
+            "Error",
+            $result["message"] ?? "Could not place order. Please try again.",
+        );
+        redirect(SITE_URL . "/pages/customer/checkout.php");
     }
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . "/../../includes/header.php";
 generate_csrf();
 ?>
 
@@ -112,14 +148,28 @@ generate_csrf();
                                 <label class="form-label">Saved Addresses</label>
                                 <?php foreach ($addresses as $addr): ?>
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" name="saved_address" value="<?= $addr['id'] ?>"
-                                               id="addr_<?= $addr['id'] ?>" data-address="<?= htmlspecialchars(json_encode([
-                                                    'full_name' => $addr['full_name'],
-                                                    'phone' => $addr['phone'],
-                                                    'address' => $addr['address']
-                                                ]), ENT_QUOTES, 'UTF-8') ?>">
-                                        <label class="form-check-label" for="addr_<?= $addr['id'] ?>">
-                                            <?= sanitize($addr['full_name']) ?> - <?= sanitize(substr($addr['address'], 0, 50)) ?>...
+                                        <input class="form-check-input" type="radio" name="saved_address" value="<?= $addr[
+                                            "id"
+                                        ] ?>"
+                                               id="addr_<?= $addr[
+                                                   "id"
+                                               ] ?>" data-address="<?= htmlspecialchars(
+    json_encode([
+        "full_name" => $addr["full_name"],
+        "phone" => $addr["phone"],
+        "address" => $addr["address"],
+    ]),
+    ENT_QUOTES,
+    "UTF-8",
+) ?>">
+                                        <label class="form-check-label" for="addr_<?= $addr[
+                                            "id"
+                                        ] ?>">
+                                            <?= sanitize(
+                                                $addr["full_name"],
+                                            ) ?> - <?= sanitize(
+     substr($addr["address"], 0, 50),
+ ) ?>...
                                         </label>
                                     </div>
                                 <?php endforeach; ?>
@@ -134,16 +184,22 @@ generate_csrf();
                             <div class="col-md-6">
                                 <label for="full_name" class="form-label">Full Name</label>
                                 <input type="text" class="form-control" id="full_name" name="full_name"
-                                       value="<?= sanitize($_POST['full_name'] ?? '') ?>" required>
+                                       value="<?= sanitize(
+                                           $_POST["full_name"] ?? "",
+                                       ) ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">Phone</label>
                                 <input type="text" class="form-control" id="phone" name="phone"
-                                       value="<?= sanitize($_POST['phone'] ?? '') ?>" required>
+                                       value="<?= sanitize(
+                                           $_POST["phone"] ?? "",
+                                       ) ?>" required>
                             </div>
                             <div class="col-12">
                                 <label for="address" class="form-label">Address</label>
-                                <textarea class="form-control" id="address" name="address" rows="3" required><?= sanitize($_POST['address'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="address" name="address" rows="3" required><?= sanitize(
+                                    $_POST["address"] ?? "",
+                                ) ?></textarea>
                             </div>
                             <div class="col-12">
                                 <div class="form-check">
@@ -153,6 +209,27 @@ generate_csrf();
                                     </label>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-primary mb-4">
+                    <div class="card-header bg-white">
+                        <h3 class="h5 mb-0 text-heading">Payment Method</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="COD" checked required>
+                            <label class="form-check-label" for="payment_cod">
+                                <strong>Cash on Delivery</strong>
+                                <span class="d-block small text-body">Pay in cash when your order is delivered.</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="confirm_cod" id="confirm_cod" value="1" required>
+                            <label class="form-check-label" for="confirm_cod">
+                                I confirm that I will pay with Cash on Delivery when the order arrives.
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -176,15 +253,21 @@ generate_csrf();
                         <div class="mb-3">
                             <?php foreach ($cart_items as $item): ?>
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-body"><?= sanitize($item['name']) ?> x <?= $item['quantity'] ?></span>
-                                    <span class="text-heading"><?= format_currency($item['price'] * $item['quantity']) ?></span>
+                                    <span class="text-body"><?= sanitize(
+                                        $item["name"],
+                                    ) ?> x <?= $item["quantity"] ?></span>
+                                    <span class="text-heading"><?= format_currency(
+                                        $item["price"] * $item["quantity"],
+                                    ) ?></span>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Subtotal</span>
-                            <span class="text-heading"><?= format_currency($subtotal) ?></span>
+                            <span class="text-heading"><?= format_currency(
+                                $subtotal,
+                            ) ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-body">Shipping</span>
@@ -193,12 +276,18 @@ generate_csrf();
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong class="text-heading">Total</strong>
-                            <strong class="text-heading"><?= format_currency($subtotal) ?></strong>
+                            <strong class="text-heading"><?= format_currency(
+                                $subtotal,
+                            ) ?></strong>
+                        </div>
+                        <div class="alert alert-info small mb-3">
+                            <strong>Payment:</strong> Cash on Delivery<br>
+                            <strong>Status:</strong> To Pay on Delivery
                         </div>
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
-                            <i class="bi bi-credit-card"></i> Place Order
+                            <i class="bi bi-truck"></i> Place COD Order
                         </button>
-                        <p class="text-body small text-center mt-2 mb-0">Cash on Delivery</p>
+                        <p class="text-body small text-center mt-2 mb-0">You will pay when your order is delivered.</p>
                     </div>
                 </div>
             </div>
@@ -244,4 +333,4 @@ document.querySelectorAll('input[name="saved_address"]').forEach(function(radio)
 });
 </script>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>

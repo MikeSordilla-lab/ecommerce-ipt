@@ -2,39 +2,87 @@
 
 class OrderPlacementModule
 {
-    public function placeOrder(PDO $pdo, int $userId, array $cartItems, array $shippingAddress, ?string $notes = null): array
-    {
+    public function placeOrder(
+        PDO $pdo,
+        int $userId,
+        array $cartItems,
+        array $shippingAddress,
+        ?string $notes = null,
+        string $paymentMethod = "COD",
+    ): array {
         try {
             $pdo->beginTransaction();
+
+            $paymentMethod = strtoupper(trim($paymentMethod));
+            if ($paymentMethod !== "COD") {
+                throw new InvalidArgumentException(
+                    "Only Cash on Delivery is currently supported.",
+                );
+            }
 
             $total = $this->calculateOrderTotal($cartItems);
             $shippingAddressJson = json_encode($shippingAddress);
 
-            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total, shipping_address, notes, status, created_at) VALUES (?, ?, ?, ?, 'pending', NOW())");
-            $stmt->execute([$userId, $total, $shippingAddressJson, $notes]);
+            $stmt = $pdo->prepare(
+                "INSERT INTO orders (user_id, total, payment_method, shipping_address, notes, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', NOW())",
+            );
+            $stmt->execute([
+                $userId,
+                $total,
+                $paymentMethod,
+                $shippingAddressJson,
+                $notes,
+            ]);
             $orderId = (int) $pdo->lastInsertId();
 
-            $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, product_name, price_at_purchase, quantity) VALUES (?, ?, ?, ?, ?)");
-            $stmtStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
+            $stmtItem = $pdo->prepare(
+                "INSERT INTO order_items (order_id, product_id, product_name, price_at_purchase, quantity) VALUES (?, ?, ?, ?, ?)",
+            );
+            $stmtStock = $pdo->prepare(
+                "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?",
+            );
 
             foreach ($cartItems as $item) {
-                $stmtItem->execute([$orderId, $item['product_id'], $item['name'], $item['price'], $item['quantity']]);
+                $stmtItem->execute([
+                    $orderId,
+                    $item["product_id"],
+                    $item["name"],
+                    $item["price"],
+                    $item["quantity"],
+                ]);
 
-                $stmtStock->execute([$item['quantity'], $item['product_id'], $item['quantity']]);
+                $stmtStock->execute([
+                    $item["quantity"],
+                    $item["product_id"],
+                    $item["quantity"],
+                ]);
                 if ($stmtStock->rowCount() === 0) {
-                    throw new Exception("Insufficient stock for product: " . ($item['name'] ?? $item['product_id']));
+                    throw new Exception(
+                        "Insufficient stock for product: " .
+                            ($item["name"] ?? $item["product_id"]),
+                    );
                 }
             }
 
-            $stmtCart = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+            $stmtCart = $pdo->prepare(
+                "DELETE FROM cart_items WHERE user_id = ?",
+            );
             $stmtCart->execute([$userId]);
 
             $pdo->commit();
 
-            return ['success' => true, 'order_id' => $orderId, 'message' => 'Order placed successfully'];
+            return [
+                "success" => true,
+                "order_id" => $orderId,
+                "message" => "Order placed successfully",
+            ];
         } catch (Exception $e) {
             $pdo->rollBack();
-            return ['success' => false, 'order_id' => null, 'message' => 'Order placement failed: ' . $e->getMessage()];
+            return [
+                "success" => false,
+                "order_id" => null,
+                "message" => "Order placement failed: " . $e->getMessage(),
+            ];
         }
     }
 
@@ -42,30 +90,34 @@ class OrderPlacementModule
     {
         $errors = [];
 
-        $stmt = $pdo->prepare("SELECT id, stock, name FROM products WHERE id = ?");
+        $stmt = $pdo->prepare(
+            "SELECT id, stock, name FROM products WHERE id = ?",
+        );
 
         foreach ($cartItems as $item) {
-            $stmt->execute([$item['product_id']]);
+            $stmt->execute([$item["product_id"]]);
             $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$product) {
-                $errors[] = "Product not found: " . ($item['name'] ?? $item['product_id']);
+                $errors[] =
+                    "Product not found: " .
+                    ($item["name"] ?? $item["product_id"]);
                 continue;
             }
 
-            if ((int) $product['stock'] < (int) $item['quantity']) {
-                $errors[] = "Insufficient stock for '{$product['name']}'. Available: {$product['stock']}, Requested: {$item['quantity']}";
+            if ((int) $product["stock"] < (int) $item["quantity"]) {
+                $errors[] = "Insufficient stock for '{$product["name"]}'. Available: {$product["stock"]}, Requested: {$item["quantity"]}";
             }
         }
 
-        return ['valid' => empty($errors), 'errors' => $errors];
+        return ["valid" => empty($errors), "errors" => $errors];
     }
 
     public function calculateOrderTotal(array $cartItems): float
     {
         $total = 0.0;
         foreach ($cartItems as $item) {
-            $total += (float) $item['price'] * (int) $item['quantity'];
+            $total += (float) $item["price"] * (int) $item["quantity"];
         }
         return round($total, 2);
     }
@@ -76,16 +128,16 @@ class OrderPlacementModule
 
         if (!is_array($data)) {
             return [
-                'full_name' => '',
-                'phone' => '',
-                'address' => ''
+                "full_name" => "",
+                "phone" => "",
+                "address" => "",
             ];
         }
 
         return [
-            'full_name' => $data['full_name'] ?? '',
-            'phone' => $data['phone'] ?? '',
-            'address' => $data['address'] ?? ''
+            "full_name" => $data["full_name"] ?? "",
+            "phone" => $data["phone"] ?? "",
+            "address" => $data["address"] ?? "",
         ];
     }
 }

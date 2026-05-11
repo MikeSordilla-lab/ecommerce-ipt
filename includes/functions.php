@@ -20,6 +20,26 @@ function sanitize($input) {
     return htmlspecialchars($input ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function asset_url($path) {
+    if (empty($path)) {
+        return '';
+    }
+
+    if (preg_match('#^(https?:)?//#', $path) || strpos($path, 'data:') === 0) {
+        return $path;
+    }
+
+    if (defined('SITE_URL') && strpos($path, SITE_URL) === 0) {
+        return $path;
+    }
+
+    if (strpos($path, '/') === 0) {
+        return rtrim(SITE_URL, '/') . $path;
+    }
+
+    return rtrim(SITE_URL, '/') . '/' . $path;
+}
+
 function is_logged_in() {
     return isset($_SESSION['user_id']);
 }

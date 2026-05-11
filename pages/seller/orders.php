@@ -1,12 +1,22 @@
 <?php
-$page_title = 'Orders';
+$page_title = 'Order Management';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
 
 require_approved_seller();
 
-$user_id = $_SESSION['user_id'];
+$seller_id = $_SESSION['user_id'];
+$order_statuses = ['pending', 'shipped', 'delivered'];
+
+function seller_order_status_badge(string $status): string {
+    return match($status) {
+        'pending' => 'warning',
+        'shipped' => 'info',
+        'delivered' => 'success',
+        default => 'secondary'
+    };
+}
 
 try {
     $stmt = $pdo->prepare('
@@ -17,18 +27,37 @@ try {
         WHERE oi.product_id IN (SELECT id FROM products WHERE seller_id = ?)
         ORDER BY o.created_at DESC
     ');
-    $stmt->execute([$user_id]);
+    $stmt->execute([$seller_id]);
     $orders = $stmt->fetchAll();
+
+    $order_items = [];
+    if (!empty($orders)) {
+        $order_ids = array_column($orders, 'id');
+        $placeholders = implode(',', array_fill(0, count($order_ids), '?'));
+        $item_stmt = $pdo->prepare("
+            SELECT oi.order_id, oi.product_name, oi.quantity, oi.price_at_purchase
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.seller_id = ? AND oi.order_id IN ($placeholders)
+            ORDER BY oi.id ASC
+        ");
+        $item_stmt->execute(array_merge([$seller_id], $order_ids));
+
+        foreach ($item_stmt->fetchAll() as $item) {
+            $order_items[$item['order_id']][] = $item;
+        }
+    }
 } catch (PDOException $e) {
     $orders = [];
+    $order_items = [];
 }
 
-require_once __DIR__ . '/../../includes/header.php';
 generate_csrf();
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="container">
-    <h1 class="h2 mb-4 text-heading">Orders</h1>
+    <h1 class="h2 mb-4 text-heading">Order Management</h1>
 
     <?php if (empty($orders)): ?>
         <div class="empty-state">
@@ -45,38 +74,59 @@ generate_csrf();
                             <tr>
                                 <th>Order ID</th>
                                 <th>Customer</th>
+                                <th>Your Items</th>
                                 <th>Total</th>
+                                <th>Payment</th>
                                 <th>Status</th>
-                                <th>Date</th>
+                                <th>Updated</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($orders as $order): ?>
+                                <?php
+                                $items = $order_items[$order['id']] ?? [];
+                                ?>
                                 <tr>
                                     <td>#<?= $order['id'] ?></td>
                                     <td><?= sanitize($order['username']) ?></td>
-                                    <td>$<?= number_format($order['total'], 2) ?></td>
                                     <td>
-                                        <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">
+                                        <?php if (empty($items)): ?>
+                                            <span class="text-body small">No seller items found</span>
+                                        <?php else: ?>
+                                            <div class="d-flex flex-column gap-1">
+                                                <?php foreach ($items as $item): ?>
+                                                    <div class="small">
+                                                        <span class="text-heading"><?= sanitize($item['product_name']) ?></span>
+                                                        <span class="text-body">
+                                                            x<?= (int)$item['quantity'] ?> · $<?= number_format((float)$item['price_at_purchase'], 2) ?>
+                                                        </span>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>$<?= number_format($order['total'], 2) ?></td>
+                                    <td><?= sanitize($order['payment_method']) ?></td>
+                                    <td>
+                                        <span class="badge badge-<?= seller_order_status_badge($order['status']) ?>">
                                             <?= ucfirst($order['status']) ?>
                                         </span>
                                     </td>
-                                    <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
+                                    <td><?= date('M d, Y', strtotime($order['updated_at'])) ?></td>
                                     <td>
-                                        <?php if ($order['status'] === 'pending'): ?>
-                                            <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order['id'] ?>">
-                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                                <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                                    <option value="shipped">Mark as Shipped</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-sm btn-primary">Update</button>
-                                            </form>
-                                        <?php elseif ($order['status'] === 'shipped'): ?>
-                                            <span class="badge badge-info">Awaiting Delivery</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-success">Completed</span>
-                                        <?php endif; ?>
+                                        <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order['id'] ?>">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                            <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                                <?php foreach ($order_statuses as $status): ?>
+                                                    <option value="<?= $status ?>" <?= $order['status'] === $status ? 'selected' : '' ?>>
+                                                        <?= ucfirst($status) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary no-loading">Update</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

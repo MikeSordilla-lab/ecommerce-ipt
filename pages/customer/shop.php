@@ -152,7 +152,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="col">
                     <div class="card product-card h-100">
                         <?php if ($product['image_path']): ?>
-                            <img src="<?= sanitize($product['image_path']) ?>" class="card-img-top"
+                            <img src="<?= sanitize(asset_url($product['image_path'])) ?>" class="card-img-top"
                                  alt="<?= sanitize($product['name']) ?>">
                         <?php else: ?>
                             <div class="card-img-top bg-light d-flex align-items-center justify-content-center">

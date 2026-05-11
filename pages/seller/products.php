@@ -61,7 +61,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <tr>
                                     <td>
                                         <?php if ($product['image_path']): ?>
-                                            <img src="<?= sanitize($product['image_path']) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                            <img src="<?= sanitize(asset_url($product['image_path'])) ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                         <?php else: ?>
                                             <div class="bg-light rounded" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                                 <i class="bi bi-image text-muted"></i>

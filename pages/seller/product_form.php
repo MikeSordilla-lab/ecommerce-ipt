@@ -74,10 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
         $filename = ($is_edit ? "product_{$edit_id}" : 'product_new') . '_' . time() . '.' . $ext;
-        $upload_path = __DIR__ . '/../../uploads/products/' . $filename;
+        if (!is_dir(UPLOAD_PATH)) {
+            mkdir(UPLOAD_PATH, 0755, true);
+        }
+        $upload_path = UPLOAD_PATH . $filename;
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
-            $image_path = '/uploads/products/' . $filename;
+            $image_path = UPLOAD_URL . $filename;
         }
     }
 
@@ -158,7 +161,7 @@ generate_csrf();
                             <input type="file" class="form-control" id="image" name="image" accept="image/jpeg,image/png,image/webp">
                             <?php if (!empty($product['image_path'])): ?>
                                 <div class="mt-2">
-                                    <img src="<?= sanitize($product['image_path']) ?>" alt="Current image" style="max-width: 200px;">
+                                    <img src="<?= sanitize(asset_url($product['image_path'])) ?>" alt="Current image" style="max-width: 200px;">
                                     <p class="small text-body mt-1">Current image</p>
                                 </div>
                             <?php endif; ?>

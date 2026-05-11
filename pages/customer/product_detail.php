@@ -74,7 +74,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <div class="row">
         <div class="col-md-6">
             <?php if ($product['image_path']): ?>
-                <img src="<?= sanitize($product['image_path']) ?>" class="img-fluid rounded" alt="<?= sanitize($product['name']) ?>">
+                <img src="<?= sanitize(asset_url($product['image_path'])) ?>" class="img-fluid rounded" alt="<?= sanitize($product['name']) ?>">
             <?php else: ?>
                 <div class="bg-light rounded d-flex align-items-center justify-content-center" style="min-height: 400px;">
                     <i class="bi bi-image text-muted" style="font-size: 6rem;"></i>

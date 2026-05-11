@@ -5,6 +5,8 @@ require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_role('admin');
 
+$order_statuses = ['pending', 'shipped', 'delivered'];
+
 try {
     $orders = $pdo->query('
         SELECT o.*, u.username
@@ -16,8 +18,8 @@ try {
     $orders = [];
 }
 
-require_once __DIR__ . '/../../includes/header.php';
 generate_csrf();
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="container">
@@ -58,31 +60,18 @@ generate_csrf();
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
-                                    <?php
-$current_status = $order['status'];
-$transitions = [
-    'pending' => ['shipped'],
-    'shipped' => ['delivered'],
-    'delivered' => []
-];
-$valid_next = $transitions[$current_status] ?? [];
-?>
                                     <td>
-                                        <?php if (!empty($valid_next)): ?>
                                         <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order['id'] ?>">
                                             <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                             <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                                <?php foreach ($valid_next as $next_status): ?>
-                                                <option value="<?= $next_status ?>"><?= ucfirst($next_status) ?></option>
+                                                <?php foreach ($order_statuses as $status): ?>
+                                                <option value="<?= $status ?>" <?= $order['status'] === $status ? 'selected' : '' ?>>
+                                                    <?= ucfirst($status) ?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                            <button type="submit" class="btn btn-sm btn-primary no-loading">Update</button>
                                         </form>
-                                        <?php else: ?>
-                                            <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">
-                                                <?= ucfirst($order['status']) ?>
-                                            </span>
-                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

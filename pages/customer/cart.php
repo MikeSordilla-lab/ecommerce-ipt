@@ -86,7 +86,7 @@ generate_csrf();
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <?php if ($item['image_path']): ?>
-                                                        <img src="<?= sanitize($item['image_path']) ?>" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" class="me-3">
+                                                        <img src="<?= sanitize(asset_url($item['image_path'])) ?>" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" class="me-3">
                                                     <?php else: ?>
                                                         <i class="bi bi-image text-muted me-3" style="font-size: 2rem;"></i>
                                                     <?php endif; ?>

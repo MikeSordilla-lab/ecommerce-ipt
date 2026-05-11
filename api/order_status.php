@@ -17,6 +17,12 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'sell
     exit;
 }
 
+if ($_SESSION['role'] === 'seller' && !check_approved_seller()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Seller approval required']);
+    exit;
+}
+
 $csrf_token = $_POST['csrf_token'] ?? '';
 if (!validate_csrf($csrf_token)) {
     http_response_code(403);
@@ -65,19 +71,6 @@ try {
             echo json_encode(['success' => false, 'message' => 'You do not have permission to update this order']);
             exit;
         }
-    }
-
-    $current_status = $order['status'];
-    $transitions = [
-        'pending' => ['shipped'],
-        'shipped' => ['delivered'],
-        'delivered' => []
-    ];
-
-    if (!isset($transitions[$current_status]) || !in_array($new_status, $transitions[$current_status])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid status transition']);
-        exit;
     }
 
     $stmt = $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?');

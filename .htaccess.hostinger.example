@@ -1,0 +1,24 @@
+# Hostinger deployment template
+# Copy these lines into public_html/.htaccess and replace placeholder values.
+# Do not commit or share a .htaccess file that contains real database passwords.
+
+SetEnv APP_ENV production
+SetEnv APP_DEBUG false
+SetEnv SITE_URL https://your-domain.com
+SetEnv DB_HOST localhost
+SetEnv DB_PORT 3306
+SetEnv DB_NAME your_hostinger_database_name
+SetEnv DB_USER your_hostinger_database_user
+SetEnv DB_PASS your_hostinger_database_password
+SetEnv SESSION_COOKIE_SECURE true
+SetEnv SESSION_COOKIE_SAMESITE Strict
+
+# Optional PHP upload settings. Hostinger plans may limit these values.
+# If these cause a 500 error, remove them and configure PHP options in hPanel instead.
+php_value upload_max_filesize 20M
+php_value post_max_size 25M
+php_value max_execution_time 180
+php_value max_input_time 180
+
+# Basic hardening
+Options -Indexes

@@ -1,16 +1,10 @@
 <?php
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Strict',
-    'use_strict_mode' => true
-]);
-
-header('Content-Type: application/json');
-
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/modules/AddressModule.php';
+
+header('Content-Type: application/json');
 
 if (!check_role('customer')) {
     http_response_code(403);

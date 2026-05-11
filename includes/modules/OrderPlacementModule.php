@@ -20,8 +20,8 @@ class OrderPlacementModule
             foreach ($cartItems as $item) {
                 $stmtItem->execute([$orderId, $item['product_id'], $item['name'], $item['price'], $item['quantity']]);
 
-                $affected = $stmtStock->execute([$item['quantity'], $item['product_id'], $item['quantity']]);
-                if ($affected === 0) {
+                $stmtStock->execute([$item['quantity'], $item['product_id'], $item['quantity']]);
+                if ($stmtStock->rowCount() === 0) {
                     throw new Exception("Insufficient stock for product: " . ($item['name'] ?? $item['product_id']));
                 }
             }

@@ -15,10 +15,7 @@ try {
     $cart = new CartModule();
     $cart_items = $cart->getCart($pdo, $user_id);
     $subtotal = $cart->getCartSubtotal($cart_items);
-
-    $stmt = $pdo->prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
-    $stmt->execute([$user_id]);
-    $addresses = $stmt->fetchAll();
+    $addresses = getAddressesByUser($pdo, $user_id);
 } catch (PDOException $e) {
     $cart_items = [];
     $addresses = [];
@@ -80,12 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($save_address) {
             try {
-                $stmt = $pdo->prepare('SELECT id FROM addresses WHERE user_id = ? AND is_default = 1');
-                $stmt->execute([$user_id]);
-                $has_default = $stmt->fetch();
-
-                $stmt = $pdo->prepare('INSERT INTO addresses (user_id, full_name, phone, address, is_default) VALUES (?, ?, ?, ?, ?)');
-                $stmt->execute([$user_id, $full_name, $phone, $address, $has_default ? 0 : 1]);
+                $has_default = array_reduce($addresses, fn($carry, $addr) => $carry || !empty($addr['is_default']), false);
+                createAddress($pdo, $user_id, $shipping_address, !$has_default);
             } catch (PDOException $e) {
             }
         }

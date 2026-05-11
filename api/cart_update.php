@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/modules/CartModule.php';
 
 header('Content-Type: application/json');
 
@@ -45,41 +46,9 @@ if ($quantity <= 0) {
 
 try {
     $user_id = $_SESSION['user_id'];
-
-    $stmt = $pdo->prepare('
-        SELECT ci.id, ci.quantity, p.stock, p.price, p.is_active
-        FROM cart_items ci
-        JOIN products p ON ci.product_id = p.id
-        WHERE ci.id = ? AND ci.user_id = ?
-    ');
-    $stmt->execute([$cart_item_id, $user_id]);
-    $cart_item = $stmt->fetch();
-
-    if (!$cart_item) {
-        echo json_encode(['success' => false, 'new_subtotal' => 0, 'message' => 'Cart item not found']);
-        exit;
-    }
-
-    if (!$cart_item['is_active']) {
-        echo json_encode(['success' => false, 'new_subtotal' => 0, 'message' => 'Product is no longer available']);
-        exit;
-    }
-
-    if ($quantity > $cart_item['stock']) {
-        echo json_encode(['success' => false, 'new_subtotal' => 0, 'message' => 'Quantity exceeds available stock']);
-        exit;
-    }
-
-    $stmt = $pdo->prepare('UPDATE cart_items SET quantity = ? WHERE id = ?');
-    $stmt->execute([$quantity, $cart_item_id]);
-
-    $new_subtotal = (float)$cart_item['price'] * $quantity;
-
-    echo json_encode([
-        'success' => true,
-        'new_subtotal' => round($new_subtotal, 2),
-        'message' => 'Cart updated successfully'
-    ]);
+    $cart = new CartModule();
+    $result = $cart->updateItem($pdo, $user_id, $cart_item_id, $quantity);
+    echo json_encode($result);
 
 } catch (PDOException $e) {
     http_response_code(500);

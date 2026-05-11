@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/modules/OrderStatusModule.php';
 
 header('Content-Type: application/json');
 
@@ -39,8 +40,7 @@ if ($order_id <= 0) {
     exit;
 }
 
-$valid_statuses = ['pending', 'shipped', 'delivered'];
-if (!in_array($new_status, $valid_statuses)) {
+if (!OrderStatusModule::isValid($new_status)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid status value']);
     exit;
@@ -54,6 +54,12 @@ try {
     if (!$order) {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Order not found']);
+        exit;
+    }
+
+    if (!OrderStatusModule::canTransition($order['status'], $new_status)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid status transition']);
         exit;
     }
 

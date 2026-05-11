@@ -1,21 +1,8 @@
 <?php
+require_once __DIR__ . '/../ImageHelper.php';
 
 class CartModule
 {
-    private function resolveDummyJsonImage(string $productName): ?string
-    {
-        $url = 'https://dummyjson.com/products/search?q=' . urlencode($productName);
-        $json = @file_get_contents($url);
-        if ($json === false) {
-            return null;
-        }
-        $data = json_decode($json, true);
-        if (!is_array($data) || empty($data['products'][0]['thumbnail'])) {
-            return null;
-        }
-        return $data['products'][0]['thumbnail'];
-    }
-
     public function addItem(PDO $pdo, int $userId, int $productId, int $quantity = 1): array
     {
         if ($quantity < 1) {
@@ -119,9 +106,7 @@ class CartModule
 
         $cartItems = array_map(function ($item) {
             $item['subtotal'] = (float)$item['price'] * (int)$item['quantity'];
-            if (empty($item['image_path'])) {
-                $item['image_path'] = $this->resolveDummyJsonImage($item['name']);
-            }
+            $item['image_path'] = ImageHelper::resolveProductImage($item['image_path'] ?? null);
             return $item;
         }, $items);
 

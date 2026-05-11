@@ -3,20 +3,11 @@ $page_title = 'Order Management';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/modules/OrderStatusModule.php';
 
 require_approved_seller();
 
 $seller_id = $_SESSION['user_id'];
-$order_statuses = ['pending', 'shipped', 'delivered'];
-
-function seller_order_status_badge(string $status): string {
-    return match($status) {
-        'pending' => 'warning',
-        'shipped' => 'info',
-        'delivered' => 'success',
-        default => 'secondary'
-    };
-}
 
 try {
     $stmt = $pdo->prepare('
@@ -109,8 +100,8 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <td><?= format_currency($order['total']) ?></td>
                                     <td><?= sanitize($order['payment_method']) ?></td>
                                     <td>
-                                        <span class="badge badge-<?= seller_order_status_badge($order['status']) ?>">
-                                            <?= ucfirst($order['status']) ?>
+                                        <span class="badge badge-<?= OrderStatusModule::badgeClass($order['status']) ?>">
+                                            <?= sanitize(OrderStatusModule::label($order['status'])) ?>
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($order['updated_at'])) ?></td>
@@ -119,9 +110,9 @@ require_once __DIR__ . '/../../includes/header.php';
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                             <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                                <?php foreach ($order_statuses as $status): ?>
+                                                <?php foreach (OrderStatusModule::selectableStatuses($order['status']) as $status): ?>
                                                     <option value="<?= $status ?>" <?= $order['status'] === $status ? 'selected' : '' ?>>
-                                                        <?= ucfirst($status) ?>
+                                                        <?= sanitize(OrderStatusModule::label($status)) ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>

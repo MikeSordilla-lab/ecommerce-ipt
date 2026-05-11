@@ -29,9 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $quantity = max(1, (int)$_POST['quantity']);
 
         try {
-            $stmt = $pdo->prepare('UPDATE cart_items SET quantity = ? WHERE id = ? AND user_id = ?');
-            $stmt->execute([$quantity, $cart_item_id, $user_id]);
-            set_flash('success', 'Updated', 'Cart has been updated.');
+            $result = $cart->updateItem($pdo, $user_id, $cart_item_id, $quantity);
+            if ($result['success']) {
+                set_flash('success', 'Updated', 'Cart has been updated.');
+            } else {
+                set_flash('error', 'Error', $result['message']);
+            }
         } catch (PDOException $e) {
             set_flash('error', 'Error', 'Could not update cart.');
         }

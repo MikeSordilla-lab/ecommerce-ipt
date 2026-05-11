@@ -3,6 +3,7 @@ $page_title = 'Product Form';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/ImageHelper.php';
 
 require_approved_seller();
 
@@ -59,29 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image_path = $product['image_path'] ?? null;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $allowed = ['image/jpeg', 'image/png', 'image/webp'];
-        $max_size = 2 * 1024 * 1024;
+        $prefix = $is_edit ? "product_{$edit_id}" : 'product_new';
+        $upload = ImageHelper::moveUploadedImage($_FILES['image'], UPLOAD_PATH, UPLOAD_URL, $prefix);
 
-        if (!in_array($_FILES['image']['type'], $allowed)) {
-            set_flash('error', 'Error', 'Only JPG, PNG, and WebP images are allowed.');
+        if (!$upload['success']) {
+            $message = $upload['message'] === 'Invalid file type. Allowed: JPG, PNG, WebP'
+                ? 'Only JPG, PNG, and WebP images are allowed.'
+                : $upload['message'];
+            set_flash('error', 'Error', $message);
             redirect(SITE_URL . "/pages/seller/product_form.php" . ($is_edit ? "?id=$edit_id" : ""));
         }
 
-        if ($_FILES['image']['size'] > $max_size) {
-            set_flash('error', 'Error', 'Image must be under 2MB.');
-            redirect(SITE_URL . "/pages/seller/product_form.php" . ($is_edit ? "?id=$edit_id" : ""));
-        }
-
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $filename = ($is_edit ? "product_{$edit_id}" : 'product_new') . '_' . time() . '.' . $ext;
-        if (!is_dir(UPLOAD_PATH)) {
-            mkdir(UPLOAD_PATH, 0755, true);
-        }
-        $upload_path = UPLOAD_PATH . $filename;
-
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
-            $image_path = UPLOAD_URL . $filename;
-        }
+        $image_path = $upload['url'];
     }
 
     try {

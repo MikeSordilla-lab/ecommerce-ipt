@@ -1,21 +1,8 @@
 <?php
+require_once __DIR__ . '/../ImageHelper.php';
 
 class ProductBrowsingModule
 {
-    private function resolveDummyJsonImage(string $productName): ?string
-    {
-        $url = 'https://dummyjson.com/products/search?q=' . urlencode($productName);
-        $json = @file_get_contents($url);
-        if ($json === false) {
-            return null;
-        }
-        $data = json_decode($json, true);
-        if (!is_array($data) || empty($data['products'][0]['thumbnail'])) {
-            return null;
-        }
-        return $data['products'][0]['thumbnail'];
-    }
-
     public function getProducts(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 12): array
     {
         $conditions = ['p.is_active = :is_active'];
@@ -80,9 +67,7 @@ class ProductBrowsingModule
 
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($products as &$product) {
-            if (empty($product['image_path'])) {
-                $product['image_path'] = $this->resolveDummyJsonImage($product['name']);
-            }
+            $product['image_path'] = ImageHelper::resolveProductImage($product['image_path'] ?? null);
         }
         unset($product);
 

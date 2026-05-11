@@ -1,16 +1,10 @@
 <?php
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Strict',
-    'use_strict_mode' => true
-]);
-
-header('Content-Type: application/json');
-
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/modules/AddressModule.php';
+
+header('Content-Type: application/json');
 
 if (!check_role('customer')) {
     http_response_code(403);
@@ -46,16 +40,6 @@ $stmt->execute([$addressId, $userId]);
 if (!$stmt->fetch()) {
     http_response_code(404);
     echo json_encode(['success' => false, 'message' => 'Address not found']);
-    exit;
-}
-
-$stmt = $pdo->prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending' LIMIT 1");
-$stmt->execute([$userId]);
-$pendingOrder = $stmt->fetch();
-
-if ($pendingOrder) {
-    http_response_code(409);
-    echo json_encode(['success' => false, 'message' => 'Cannot delete address that is used in pending orders']);
     exit;
 }
 

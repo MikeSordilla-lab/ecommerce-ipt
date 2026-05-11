@@ -86,6 +86,11 @@ $username = get_logged_in_username();
                                     <i class="bi bi-box-seam"></i> Orders
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link <?= $current_page === 'profile.php' ? 'active' : '' ?>" href="<?= SITE_URL ?>/pages/profile.php">
+                                    <i class="bi bi-gear"></i> Profile
+                                </a>
+                            </li>
                         <?php endif; ?>
 <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">

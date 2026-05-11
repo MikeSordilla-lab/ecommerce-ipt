@@ -40,32 +40,6 @@ try {
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
-<?php if ($current_user): ?>
-<div class="container">
-    <div class="card shadow-primary mb-4 profile-card">
-        <div class="card-body py-3">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="profile-avatar-sm">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="fw-medium text-heading"><?= sanitize($current_user['username']) ?></div>
-                    <div class="small text-body"><?= sanitize($current_user['email']) ?></div>
-                </div>
-                <div class="col-auto">
-                    <span class="badge badge-danger">Admin</span>
-                </div>
-                <div class="col-auto">
-                    <small class="text-body">Member since <?= date('M Y', strtotime($current_user['created_at'])) ?></small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
 <div class="container">
     <h1 class="h2 mb-4 text-heading">Admin Dashboard</h1>
 

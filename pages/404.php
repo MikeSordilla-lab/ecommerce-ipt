@@ -1,7 +1,7 @@
 <?php
 $page_title = 'Page Not Found';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 if (is_logged_in()) {
     $role = get_user_role();
@@ -22,7 +22,7 @@ if (is_logged_in()) {
     $home_link = '/';
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="container text-center py-5">
@@ -38,4 +38,4 @@ require_once __DIR__ . '/../../includes/header.php';
     </a>
 </div>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

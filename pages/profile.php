@@ -1,8 +1,8 @@
 <?php
 $page_title = 'Profile';
-require_once __DIR__ . '/../../includes/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/auth.php';
 
 require_auth();
 
@@ -29,7 +29,7 @@ if (strpos($username_parts, ' ') !== false) {
     $initials = strtoupper(substr($username_parts, 0, 2));
 }
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="container">
@@ -123,4 +123,4 @@ document.getElementById('profileImageForm').addEventListener('submit', function(
 });
 </script>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

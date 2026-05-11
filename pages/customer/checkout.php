@@ -226,18 +226,26 @@ document.querySelectorAll('input[name="saved_address"]').forEach(function(radio)
             fullName.value = '';
             phone.value = '';
             address.value = '';
-            fullName.required = true;
-            phone.required = true;
-            address.required = true;
+            fullName.setAttribute('required', '');
+            phone.setAttribute('required', '');
+            address.setAttribute('required', '');
         } else {
             fields.style.display = 'block';
-            var addrData = JSON.parse(this.dataset.address || '{}');
-            fullName.value = addrData.full_name || '';
-            phone.value = addrData.phone || '';
-            address.value = addrData.address || '';
-            fullName.required = false;
-            phone.required = false;
-            address.required = false;
+            if (this.dataset.address) {
+                try {
+                    var addrData = JSON.parse(this.dataset.address);
+                    fullName.value = addrData.full_name || '';
+                    phone.value = addrData.phone || '';
+                    address.value = addrData.address || '';
+                } catch (e) {
+                    fullName.value = '';
+                    phone.value = '';
+                    address.value = '';
+                }
+            }
+            fullName.removeAttribute('required');
+            phone.removeAttribute('required');
+            address.removeAttribute('required');
         }
     });
 });

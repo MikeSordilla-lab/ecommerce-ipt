@@ -58,16 +58,31 @@ generate_csrf();
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
+                                    <?php
+$current_status = $order['status'];
+$transitions = [
+    'pending' => ['shipped'],
+    'shipped' => ['delivered'],
+    'delivered' => []
+];
+$valid_next = $transitions[$current_status] ?? [];
+?>
                                     <td>
+                                        <?php if (!empty($valid_next)): ?>
                                         <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order['id'] ?>">
                                             <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                             <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                                <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
-                                                <option value="shipped" <?= $order['status'] === 'shipped' ? 'selected' : '' ?>>Shipped</option>
-                                                <option value="delivered" <?= $order['status'] === 'delivered' ? 'selected' : '' ?>>Delivered</option>
+                                                <?php foreach ($valid_next as $next_status): ?>
+                                                <option value="<?= $next_status ?>"><?= ucfirst($next_status) ?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                             <button type="submit" class="btn btn-sm btn-primary">Update</button>
                                         </form>
+                                        <?php else: ?>
+                                            <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">
+                                                <?= ucfirst($order['status']) ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -92,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 order_id: orderId,
                 status: status
             })
-            .then(function(response) {
-                if (response.ok) {
+            .then(function(data) {
+                if (data.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Updated',
@@ -104,9 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         location.reload();
                     });
                 } else {
-                    return response.json().then(function(data) {
-                        throw new Error(data.error || 'Could not update order status.');
-                    });
+                    throw new Error(data.message || 'Could not update order status.');
                 }
             })
             .catch(function(error) {

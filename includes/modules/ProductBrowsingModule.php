@@ -64,6 +64,9 @@ class ProductBrowsingModule
         $totalPages = (int) ceil($total / $perPage);
         $offset = ($page - 1) * $perPage;
 
+        $params['limit'] = (int) $perPage;
+        $params['offset'] = (int) $offset;
+
         $sql = "SELECT p.*, c.name AS category_name, u.username AS seller_name
                 FROM products p
                 JOIN categories c ON p.category_id = c.id
@@ -73,8 +76,6 @@ class ProductBrowsingModule
                 LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->bindValue('limit', (int) $perPage, PDO::PARAM_INT);
-        $stmt->bindValue('offset', (int) $offset, PDO::PARAM_INT);
         $stmt->execute($params);
 
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);

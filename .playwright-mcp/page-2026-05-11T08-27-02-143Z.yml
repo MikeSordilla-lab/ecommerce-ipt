@@ -1,0 +1,42 @@
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link " Shop" [ref=e4] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt
+        - generic [ref=e6]: 
+        - text: Shop
+      - list [ref=e8]:
+        - listitem [ref=e9]:
+          - link " Login" [ref=e10] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+            - generic [ref=e11]: 
+            - text: Login
+        - listitem [ref=e12]:
+          - link " Register" [ref=e13] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+            - generic [ref=e14]: 
+            - text: Register
+  - main [ref=e15]:
+    - generic [ref=e20]:
+      - heading "Welcome Back" [level=1] [ref=e21]
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]: Username
+          - textbox "Username" [active] [ref=e25]
+        - generic [ref=e26]:
+          - generic [ref=e27]: Password
+          - textbox "Password" [ref=e28]
+        - generic [ref=e30]:
+          - checkbox "Keep me signed in" [ref=e31]
+          - generic [ref=e32]: Keep me signed in
+        - button "Sign In" [ref=e34] [cursor=pointer]
+      - paragraph [ref=e36]:
+        - text: Don't have an account?
+        - link "Register" [ref=e37] [cursor=pointer]:
+          - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+  - contentinfo [ref=e38]:
+    - generic [ref=e40]:
+      - generic [ref=e41]: © 2026 Shop. All rights reserved.
+      - generic [ref=e43]:
+        - generic [ref=e44]: 
+        - text: Shop with confidence

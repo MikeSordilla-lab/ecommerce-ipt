@@ -1,0 +1,44 @@
+[     114ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  555449ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  555455ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/headphones.jpg:0
+[  555456ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/tshirt.jpg:0
+[  555456ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/pots.jpg:0
+[  555486ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/book.jpg:0
+[  555487ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/dumbbells.jpg:0
+[  573396ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  573396ms] [INFO] Autofocus processing was blocked because a document already has a focused element. @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  582605ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  588199ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  593354ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  604306ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  608237ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  608242ms] [INFO] Autofocus processing was blocked because a document already has a focused element. @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  613628ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  613628ms] [INFO] Autofocus processing was blocked because a document already has a focused element. @ http://localhost/ecommerce-ipt/pages/auth/login.php:0
+[  620725ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[  620726ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/headphones.jpg:0
+[  620732ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/pots.jpg:0
+[  620732ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/tshirt.jpg:0
+[  620733ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/book.jpg:0
+[  620733ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/dumbbells.jpg:0
+[  626449ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost/ecommerce-ipt/api/order_status.php:0
+[  626449ms] [ERROR] Fetch error: Error: Network response was not ok
+    at http://localhost/ecommerce-ipt/js/app.js:70:19 @ http://localhost/ecommerce-ipt/js/app.js:74
+[ 1072746ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost/ecommerce-ipt/api/order_status.php:0
+[ 1072746ms] [ERROR] Fetch error: Error: Network response was not ok
+    at http://localhost/ecommerce-ipt/js/app.js:70:19 @ http://localhost/ecommerce-ipt/js/app.js:74
+[ 1074409ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/product_new_1778227392.jpg:0
+[ 1074409ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/headphones.jpg:0
+[ 1074413ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/tshirt.jpg:0
+[ 1074413ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/pots.jpg:0
+[ 1074413ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/dumbbells.jpg:0
+[ 1074413ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost/uploads/products/book.jpg:0
+[ 1078736ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost/ecommerce-ipt/api/order_status.php:0
+[ 1078737ms] [ERROR] Fetch error: Error: Network response was not ok
+    at http://localhost/ecommerce-ipt/js/app.js:70:19 @ http://localhost/ecommerce-ipt/js/app.js:74
+[ 1144514ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost/ecommerce-ipt/api/order_status.php:0
+[ 1144515ms] [ERROR] Fetch error: Error: Network response was not ok
+    at http://localhost/ecommerce-ipt/js/app.js:70:19 @ http://localhost/ecommerce-ipt/js/app.js:74
+[ 1151241ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost/ecommerce-ipt/api/order_status.php:0
+[ 1151241ms] [ERROR] Fetch error: Error: Network response was not ok
+    at http://localhost/ecommerce-ipt/js/app.js:70:19 @ http://localhost/ecommerce-ipt/js/app.js:74

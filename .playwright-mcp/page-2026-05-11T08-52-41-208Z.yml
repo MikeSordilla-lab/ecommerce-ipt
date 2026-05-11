@@ -1,0 +1,112 @@
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link [ref=e4] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt
+        - generic [ref=e6]: 
+        - text: Shop
+      - list [ref=e8]:
+        - listitem [ref=e9]:
+          - link [ref=e10] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/admin/dashboard.php
+            - generic [ref=e11]: 
+            - text: Dashboard
+        - listitem [ref=e12]:
+          - link [ref=e13] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/admin/users.php
+            - generic [ref=e14]: 
+            - text: Users
+        - listitem [ref=e15]:
+          - link [ref=e16] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/admin/products.php
+            - generic [ref=e17]: 
+            - text: Products
+        - listitem [ref=e18]:
+          - link [ref=e19] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/admin/orders.php
+            - generic [ref=e20]: 
+            - text: Orders
+        - listitem [ref=e21]:
+          - link [ref=e22] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/profile.php
+            - generic [ref=e23]: 
+            - text: Profile
+        - listitem [ref=e24]:
+          - button [ref=e25] [cursor=pointer]:
+            - generic [ref=e27]: AD
+            - generic [ref=e28]: admin
+          - text:  
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - heading [level=1] [ref=e31]: Admin Dashboard
+      - generic [ref=e32]:
+        - generic [ref=e36]:
+          - generic [ref=e38]: 
+          - generic [ref=e39]:
+            - heading [level=3] [ref=e40]: "3"
+            - text: Total Users
+        - generic [ref=e44]:
+          - generic [ref=e46]: 
+          - generic [ref=e47]:
+            - heading [level=3] [ref=e48]: "7"
+            - text: Products
+        - generic [ref=e52]:
+          - generic [ref=e54]: 
+          - generic [ref=e55]:
+            - heading [level=3] [ref=e56]: "4"
+            - text: Orders
+        - generic [ref=e60]:
+          - generic [ref=e62]: 
+          - generic [ref=e63]:
+            - heading [level=3] [ref=e64]: "0"
+            - text: Pending Sellers
+      - generic [ref=e65]:
+        - heading [level=3] [ref=e67]: Recent Orders
+        - table [ref=e70]:
+          - rowgroup [ref=e71]:
+            - row [ref=e72]:
+              - columnheader [ref=e73]: Order ID
+              - columnheader [ref=e74]: Customer
+              - columnheader [ref=e75]: Total
+              - columnheader [ref=e76]: Status
+              - columnheader [ref=e77]: Date
+          - rowgroup [ref=e78]:
+            - row [ref=e79]:
+              - cell [ref=e80]: "#8"
+              - cell [ref=e81]: mike
+              - cell [ref=e82]: $20.00
+              - cell [ref=e83]:
+                - generic [ref=e84]: Shipped
+              - cell [ref=e85]: May 11, 2026
+            - row [ref=e86]:
+              - cell [ref=e87]: "#3"
+              - cell [ref=e88]: mike
+              - cell [ref=e89]: $70.00
+              - cell [ref=e90]:
+                - generic [ref=e91]: Shipped
+              - cell [ref=e92]: May 08, 2026
+            - row [ref=e93]:
+              - cell [ref=e94]: "#2"
+              - cell [ref=e95]: mike
+              - cell [ref=e96]: $14.00
+              - cell [ref=e97]:
+                - generic [ref=e98]: Shipped
+              - cell [ref=e99]: May 08, 2026
+            - row [ref=e100]:
+              - cell [ref=e101]: "#1"
+              - cell [ref=e102]: mike
+              - cell [ref=e103]: $24.99
+              - cell [ref=e104]:
+                - generic [ref=e105]: Shipped
+              - cell [ref=e106]: May 08, 2026
+  - contentinfo [ref=e107]:
+    - generic [ref=e109]:
+      - generic [ref=e110]: © 2026 Shop. All rights reserved.
+      - generic [ref=e112]:
+        - generic [ref=e113]: 
+        - text: Shop with confidence
+  - dialog "Access Denied" [ref=e115]:
+    - heading "Access Denied" [level=2] [ref=e120]
+    - generic [ref=e121]: You must be a seller to access this page.
+    - text: "!"
+    - button "OK" [active] [ref=e123] [cursor=pointer]

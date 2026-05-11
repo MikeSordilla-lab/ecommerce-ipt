@@ -39,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($_POST['description'] ?? '');
     $price = (float)$_POST['price'];
     $stock = (int)$_POST['stock'];
-    $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $is_active = array_key_exists('is_active', $_POST)
+        ? (($_POST['is_active'] === '1') ? 1 : 0)
+        : ($product['is_active'] ?? 1);
 
     $errors = [];
     if (!$category_id) $errors[] = 'Category is required.';

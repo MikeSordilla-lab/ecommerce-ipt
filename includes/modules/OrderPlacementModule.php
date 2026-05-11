@@ -14,7 +14,7 @@ class OrderPlacementModule
             $stmt->execute([$userId, $total, $shippingAddressJson, $notes]);
             $orderId = (int) $pdo->lastInsertId();
 
-            $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, product_name, price, quantity) VALUES (?, ?, ?, ?, ?)");
+            $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, product_name, price_at_purchase, quantity) VALUES (?, ?, ?, ?, ?)");
             $stmtStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
 
             foreach ($cartItems as $item) {

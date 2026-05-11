@@ -24,6 +24,7 @@ try {
 }
 
 require_once __DIR__ . '/../../includes/header.php';
+generate_csrf();
 ?>
 
 <div class="container">
@@ -47,6 +48,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -61,6 +63,21 @@ require_once __DIR__ . '/../../includes/header.php';
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
+                                    <td>
+                                        <?php if ($order['status'] === 'pending'): ?>
+                                            <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order['id'] ?>">
+                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                                    <option value="shipped">Mark as Shipped</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                            </form>
+                                        <?php elseif ($order['status'] === 'shipped'): ?>
+                                            <span class="badge badge-info">Awaiting Delivery</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-success">Completed</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -70,5 +87,45 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.order-status-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var orderId = form.dataset.orderId;
+            var status = form.querySelector('select[name="status"]').value;
+
+            fetchPost('<?= SITE_URL ?>/api/order_status.php', {
+                order_id: orderId,
+                status: status
+            })
+            .then(function(data) {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated',
+                        text: 'Order status has been updated.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else {
+                    throw new Error(data.message || 'Could not update order status.');
+                }
+            })
+            .catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Could not update order status.'
+                });
+            });
+        });
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

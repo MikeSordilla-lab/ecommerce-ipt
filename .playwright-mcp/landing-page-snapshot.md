@@ -1,0 +1,227 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link " Shop" [ref=e4] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt
+        - generic [ref=e5]: 
+        - generic [ref=e6]: Shop
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Features" [ref=e9] [cursor=pointer]:
+            - /url: "#features"
+        - listitem [ref=e10]:
+          - link "How It Works" [ref=e11] [cursor=pointer]:
+            - /url: "#how-it-works"
+        - listitem [ref=e12]:
+          - link "Categories" [ref=e13] [cursor=pointer]:
+            - /url: "#categories"
+        - listitem [ref=e14]:
+          - link "Products" [ref=e15] [cursor=pointer]:
+            - /url: "#products"
+      - generic [ref=e16]:
+        - link "Login" [ref=e17] [cursor=pointer]:
+          - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - link "Start Shopping" [ref=e18] [cursor=pointer]:
+          - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+        - text: 
+  - generic [ref=e20]:
+    - heading "The smarter way to shop online" [level=1] [ref=e21]:
+      - text: The smarter way
+      - text: to shop online
+    - paragraph [ref=e22]: Discover quality products from trusted sellers. Track your orders every step of the way. Pay securely with cash on delivery.
+    - generic [ref=e23]:
+      - link "Start Shopping" [ref=e24] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+      - link "Learn More" [ref=e25] [cursor=pointer]:
+        - /url: "#features"
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - heading "Built for modern commerce" [level=2] [ref=e29]
+      - paragraph [ref=e30]: Everything you need for a seamless shopping experience.
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e34]: 
+        - heading "Quality Products" [level=3] [ref=e35]
+        - paragraph [ref=e36]: Browse curated products across multiple categories. Find exactly what you need at competitive prices from verified sellers.
+      - generic [ref=e37]:
+        - generic [ref=e39]: 
+        - heading "Order Tracking" [level=3] [ref=e40]
+        - paragraph [ref=e41]: Stay updated with real-time order status. Know exactly when your products are shipped, in transit, and delivered.
+      - generic [ref=e42]:
+        - generic [ref=e44]: 
+        - heading "Secure Checkout" [level=3] [ref=e45]
+        - paragraph [ref=e46]: Pay with confidence using cash on delivery. Only pay when your order arrives at your doorstep.
+  - generic [ref=e48]:
+    - heading "How it works" [level=2] [ref=e49]
+    - paragraph [ref=e50]: Three simple steps from browsing to receiving.
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - generic [ref=e53]: "1"
+        - heading "Browse & Discover" [level=3] [ref=e54]
+        - paragraph [ref=e55]: Explore products by category, search for specific items, or browse featured picks from top sellers.
+      - generic [ref=e56]:
+        - generic [ref=e57]: "2"
+        - heading "Add to Cart" [level=3] [ref=e58]
+        - paragraph [ref=e59]: Build your cart with everything you need. Review quantities, prices, and your total before checkout.
+      - generic [ref=e60]:
+        - generic [ref=e61]: "3"
+        - heading "Receive & Pay" [level=3] [ref=e62]
+        - paragraph [ref=e63]: Place your order and wait for delivery. Pay cash when your package arrives — no upfront payment needed.
+  - generic [ref=e65]:
+    - heading "Shop by category" [level=2] [ref=e66]
+    - paragraph [ref=e67]: Find what you're looking for in our curated collections.
+    - generic [ref=e68]:
+      - link " Books 1 product" [ref=e69] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e71]: 
+        - heading "Books" [level=3] [ref=e72]
+        - text: 1 product
+      - link " Clothing 1 product" [ref=e73] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e75]: 
+        - heading "Clothing" [level=3] [ref=e76]
+        - text: 1 product
+      - link " Electronics 4 products" [ref=e77] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e79]: 
+        - heading "Electronics" [level=3] [ref=e80]
+        - text: 4 products
+      - link " Graphics Cards 10 products" [ref=e81] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e83]: 
+        - heading "Graphics Cards" [level=3] [ref=e84]
+        - text: 10 products
+      - link " Home & Garden 1 product" [ref=e85] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e87]: 
+        - heading "Home & Garden" [level=3] [ref=e88]
+        - text: 1 product
+      - link " Memory 5 products" [ref=e89] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e91]: 
+        - heading "Memory" [level=3] [ref=e92]
+        - text: 5 products
+      - link " Monitors 5 products" [ref=e93] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e95]: 
+        - heading "Monitors" [level=3] [ref=e96]
+        - text: 5 products
+      - link " Peripherals 15 products" [ref=e97] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e99]: 
+        - heading "Peripherals" [level=3] [ref=e100]
+        - text: 15 products
+      - link " Processors 10 products" [ref=e101] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e103]: 
+        - heading "Processors" [level=3] [ref=e104]
+        - text: 10 products
+      - link " Sports 1 product" [ref=e105] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e107]: 
+        - heading "Sports" [level=3] [ref=e108]
+        - text: 1 product
+      - link " Storage 4 products" [ref=e109] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - generic [ref=e111]: 
+        - heading "Storage" [level=3] [ref=e112]
+        - text: 4 products
+  - generic [ref=e114]:
+    - heading "Featured products" [level=2] [ref=e115]
+    - paragraph [ref=e116]: Handpicked items ready to ship.
+    - generic [ref=e117]:
+      - link "Intel Core i3-13100F Intel Core i3-13100F Entry-level Intel processor for budget gaming and everyday desktop builds. ₱109.99 18 in stock" [ref=e118] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "Intel Core i3-13100F" [ref=e119]
+        - generic [ref=e120]:
+          - heading "Intel Core i3-13100F" [level=3] [ref=e121]
+          - paragraph [ref=e122]: Entry-level Intel processor for budget gaming and everyday desktop builds.
+          - generic [ref=e124]: ₱109.99
+          - generic [ref=e125]: 18 in stock
+      - link "Intel Core i5-13400F Intel Core i5-13400F Mainstream Intel CPU with strong multi-core performance for gaming and productivity. ₱189.99 15 in stock" [ref=e126] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "Intel Core i5-13400F" [ref=e127]
+        - generic [ref=e128]:
+          - heading "Intel Core i5-13400F" [level=3] [ref=e129]
+          - paragraph [ref=e130]: Mainstream Intel CPU with strong multi-core performance for gaming and productivity.
+          - generic [ref=e132]: ₱189.99
+          - generic [ref=e133]: 15 in stock
+      - link "Intel Core i5-13600K Intel Core i5-13600K Unlocked Intel processor built for high-refresh gaming and creator workloads. ₱289.99 12 in stock" [ref=e134] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "Intel Core i5-13600K" [ref=e135]
+        - generic [ref=e136]:
+          - heading "Intel Core i5-13600K" [level=3] [ref=e137]
+          - paragraph [ref=e138]: Unlocked Intel processor built for high-refresh gaming and creator workloads.
+          - generic [ref=e140]: ₱289.99
+          - generic [ref=e141]: 12 in stock
+      - link "Intel Core i7-13700K Intel Core i7-13700K High-performance Intel CPU for demanding games, streaming, and heavy multitasking. ₱389.99 10 in stock" [ref=e142] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "Intel Core i7-13700K" [ref=e143]
+        - generic [ref=e144]:
+          - heading "Intel Core i7-13700K" [level=3] [ref=e145]
+          - paragraph [ref=e146]: High-performance Intel CPU for demanding games, streaming, and heavy multitasking.
+          - generic [ref=e148]: ₱389.99
+          - generic [ref=e149]: 10 in stock
+      - link "Intel Core i9-13900K Intel Core i9-13900K Flagship Intel processor with top-tier performance for enthusiasts and creators. ₱529.99 7 in stock" [ref=e150] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "Intel Core i9-13900K" [ref=e151]
+        - generic [ref=e152]:
+          - heading "Intel Core i9-13900K" [level=3] [ref=e153]
+          - paragraph [ref=e154]: Flagship Intel processor with top-tier performance for enthusiasts and creators.
+          - generic [ref=e156]: ₱529.99
+          - generic [ref=e157]: 7 in stock
+      - link "AMD Ryzen 5 5600G AMD Ryzen 5 5600G AMD desktop processor with integrated Radeon graphics for compact PC builds. ₱129.99 16 in stock" [ref=e158] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - img "AMD Ryzen 5 5600G" [ref=e159]
+        - generic [ref=e160]:
+          - heading "AMD Ryzen 5 5600G" [level=3] [ref=e161]
+          - paragraph [ref=e162]: AMD desktop processor with integrated Radeon graphics for compact PC builds.
+          - generic [ref=e164]: ₱129.99
+          - generic [ref=e165]: 16 in stock
+    - link "View All Products" [ref=e167] [cursor=pointer]:
+      - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+  - generic [ref=e169]:
+    - heading "Trusted by shoppers and sellers alike" [level=2] [ref=e170]:
+      - text: Trusted by shoppers
+      - text: and sellers alike
+    - paragraph [ref=e171]: Join a growing community of buyers and sellers on Shop.
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - generic [ref=e174]: "57"
+        - generic [ref=e175]: Active Products
+      - generic [ref=e176]:
+        - generic [ref=e177]: "2"
+        - generic [ref=e178]: Verified Sellers
+      - generic [ref=e179]:
+        - generic [ref=e180]: "4"
+        - generic [ref=e181]: Orders Placed
+  - generic [ref=e183]:
+    - heading "Start shopping today" [level=2] [ref=e184]
+    - paragraph [ref=e185]: It's free to register. Browse products, manage your cart, and track orders — all in one place.
+    - generic [ref=e186]:
+      - link "Create Account" [ref=e187] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+      - link "Sign In" [ref=e188] [cursor=pointer]:
+        - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+  - contentinfo [ref=e189]:
+    - generic [ref=e190]:
+      - generic [ref=e191]:
+        - generic [ref=e192]: 
+        - text: Shop
+      - list [ref=e193]:
+        - listitem [ref=e194]:
+          - link "Features" [ref=e195] [cursor=pointer]:
+            - /url: "#features"
+        - listitem [ref=e196]:
+          - link "How It Works" [ref=e197] [cursor=pointer]:
+            - /url: "#how-it-works"
+        - listitem [ref=e198]:
+          - link "Categories" [ref=e199] [cursor=pointer]:
+            - /url: "#categories"
+        - listitem [ref=e200]:
+          - link "Login" [ref=e201] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/auth/login.php
+        - listitem [ref=e202]:
+          - link "Register" [ref=e203] [cursor=pointer]:
+            - /url: http://localhost/ecommerce-ipt/pages/auth/register.php
+      - generic [ref=e204]: © 2026 Shop. All rights reserved.

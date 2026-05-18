@@ -137,7 +137,7 @@ require_once __DIR__ . "/../../includes/header.php";
                                         "M d, Y",
                                         strtotime($order["updated_at"]),
                                     ) ?></td>
-                                    <td>
+                                    <td class="actions-cell">
                                         <form method="POST" action="<?= SITE_URL ?>/api/order_status.php" class="order-status-form d-flex gap-2" data-order-id="<?= $order[
     "id"
 ] ?>">
@@ -145,7 +145,7 @@ require_once __DIR__ . "/../../includes/header.php";
                                             <input type="hidden" name="order_id" value="<?= $order[
                                                 "id"
                                             ] ?>">
-                                            <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                            <select name="status" class="form-select form-select-sm">
                                                 <?php foreach (
                                                     OrderStatusModule::selectableStatuses(
                                                         $order["status"],
@@ -165,7 +165,10 @@ require_once __DIR__ . "/../../includes/header.php";
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <button type="submit" class="btn btn-sm btn-primary no-loading">Update</button>
+                                            <button type="submit" class="icon-btn icon-btn-primary no-loading" aria-label="Update order status" title="Update">
+                                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                                                <span class="sr-only">Update</span>
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>

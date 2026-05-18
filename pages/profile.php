@@ -199,11 +199,9 @@ document.getElementById('profileInfoForm').addEventListener('submit', function(e
         });
         document.querySelector('#passwordForm input[name="username"]').value = username;
         document.querySelector('#passwordForm input[name="email"]').value = email;
-        document.querySelectorAll('.user-avatar-small, .user-avatar-large').forEach(function(el) {
-            if (!el.dataset.profileImage) {
-                el.innerHTML = '<span class="initials">' + username.substring(0, 2).toUpperCase() + '</span>';
-            }
-        });
+        if (typeof window.renderUserAvatars === 'function') {
+            window.renderUserAvatars();
+        }
     });
 });
 
@@ -248,8 +246,10 @@ document.getElementById('profileImageForm').addEventListener('submit', function(
 
         document.querySelectorAll('.user-avatar-small, .user-avatar-large').forEach(function(avatar) {
             avatar.dataset.profileImage = data.profile_image;
-            avatar.innerHTML = '<img src="' + data.profile_image + '" alt="Profile" class="profile-image-img">';
         });
+        if (typeof window.renderUserAvatars === 'function') {
+            window.renderUserAvatars();
+        }
 
         form.reset();
         Swal.fire({

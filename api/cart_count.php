@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $user_id = $_SESSION['user_id'];
 
-    $stmt = $pdo->prepare('SELECT COUNT(*) FROM cart_items WHERE user_id = ?');
+    $stmt = $pdo->prepare('SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?');
     $stmt->execute([$user_id]);
     $count = $stmt->fetchColumn();
 

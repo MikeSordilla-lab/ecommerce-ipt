@@ -4,6 +4,11 @@ $is_logged_in = is_logged_in();
 $user_role = get_user_role();
 $username = get_logged_in_username();
 $profile_image = "";
+$cart_count = 0;
+$stylesheet_path = dirname(__DIR__) . "/css/styles.css";
+$stylesheet_version = is_file($stylesheet_path)
+    ? (string) filemtime($stylesheet_path)
+    : "1";
 
 if ($is_logged_in) {
     try {
@@ -14,6 +19,18 @@ if ($is_logged_in) {
         $profile_image = $profile_stmt->fetchColumn() ?: "";
     } catch (PDOException $e) {
         $profile_image = "";
+    }
+
+    if ($user_role === "customer") {
+        try {
+            $cart_stmt = $pdo->prepare(
+                "SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?",
+            );
+            $cart_stmt->execute([$_SESSION["user_id"]]);
+            $cart_count = (int) $cart_stmt->fetchColumn();
+        } catch (PDOException $e) {
+            $cart_count = 0;
+        }
     }
 }
 ?>
@@ -30,7 +47,7 @@ if ($is_logged_in) {
         : "") . SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="<?= SITE_URL ?>/css/styles.css" rel="stylesheet">
+    <link href="<?= SITE_URL ?>/css/styles.css?v=<?= $stylesheet_version ?>" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
@@ -58,8 +75,17 @@ if ($is_logged_in) {
                                 <a class="nav-link <?= $current_page ===
                                 "cart.php"
                                     ? "active"
-                                    : "" ?>" href="<?= SITE_URL ?>/pages/customer/cart.php">
-                                    <i class="bi bi-cart3"></i> Cart
+                                    : "" ?> position-relative" href="<?= SITE_URL ?>/pages/customer/cart.php">
+                                    <span class="position-relative d-inline-flex">
+                                        <i class="bi bi-cart3"></i>
+                                        <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="<?= $cart_count >
+                                        0
+                                            ? ""
+                                            : "display: none;" ?>">
+                                            <?= (int) $cart_count ?>
+                                        </span>
+                                    </span>
+                                    Cart
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -253,12 +279,31 @@ if ($is_logged_in) {
         var initials = getInitials(username);
 
         if (profileImage && profileImage.trim() !== '') {
-            el.innerHTML = '<img src="' + profileImage + '" alt="Avatar" class="profile-image-img">';
+            var image = document.createElement('img');
+            image.src = profileImage;
+            image.alt = 'Avatar';
+            image.className = 'profile-image-img';
+            image.onerror = function() {
+                el.dataset.profileImage = '';
+                window.renderUserAvatars();
+            };
+            el.replaceChildren(image);
         } else {
-            el.innerHTML = '<span class="initials">' + initials.toUpperCase() + '</span>';
+            var initialsEl = document.createElement('span');
+            initialsEl.className = 'initials';
+            initialsEl.textContent = initials.toUpperCase();
+            el.replaceChildren(initialsEl);
         }
     }
 
-    document.querySelectorAll('.user-avatar-small, .user-avatar-tiny, .user-avatar-large').forEach(renderAvatar);
+    window.renderUserAvatars = function() {
+        document.querySelectorAll('.user-avatar-small, .user-avatar-tiny, .user-avatar-large').forEach(renderAvatar);
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.renderUserAvatars);
+    } else {
+        window.renderUserAvatars();
+    }
 })();
 </script>

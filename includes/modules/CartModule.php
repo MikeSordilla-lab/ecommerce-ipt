@@ -115,7 +115,7 @@ class CartModule
 
     public function getCartCount(PDO $pdo, int $userId): int
     {
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM cart_items WHERE user_id = ?');
+        $stmt = $pdo->prepare('SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?');
         $stmt->execute([$userId]);
         return (int)$stmt->fetchColumn();
     }

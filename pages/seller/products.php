@@ -92,11 +92,14 @@ require_once __DIR__ . "/../../includes/header.php";
                                                 : "Inactive" ?>
                                         </span>
                                     </td>
-                                    <td>
-                                        <div class="d-flex gap-2 flex-wrap">
+                                    <td class="actions-cell">
+                                        <div class="action-buttons">
                                             <a href="<?= SITE_URL ?>/pages/seller/product_form.php?id=<?= $product[
     "id"
-] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+] ?>" class="icon-btn icon-btn-primary" aria-label="Edit product" title="Edit">
+                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                                <span class="sr-only visually-hidden">Edit</span>
+                                            </a>
                                             <form method="POST" action="<?= SITE_URL ?>/api/product_status.php">
                                                 <input type="hidden" name="csrf_token" value="<?= sanitize(
                                                     $csrf_token,
@@ -109,14 +112,27 @@ require_once __DIR__ . "/../../includes/header.php";
                                                 ]
                                                     ? 0
                                                     : 1 ?>">
-                                                <button type="submit" class="btn btn-sm <?= $product[
+                                                <button type="submit" class="icon-btn no-loading <?= $product[
                                                     "is_active"
                                                 ]
-                                                    ? "btn-outline-warning"
-                                                    : "btn-outline-success" ?>">
-                                                    <?= $product["is_active"]
+                                                    ? "icon-btn-warning"
+                                                    : "icon-btn-success" ?>" aria-label="<?= $product[
+    "is_active"
+]
+    ? "Deactivate product"
+    : "Activate product" ?>" title="<?= $product["is_active"]
+    ? "Deactivate"
+    : "Activate" ?>">
+                                                    <i class="bi <?= $product[
+                                                        "is_active"
+                                                    ]
+                                                        ? "bi-slash-circle"
+                                                        : "bi-check2" ?>" aria-hidden="true"></i>
+                                                    <span class="sr-only visually-hidden"><?= $product[
+                                                        "is_active"
+                                                    ]
                                                         ? "Deactivate"
-                                                        : "Activate" ?>
+                                                        : "Activate" ?></span>
                                                 </button>
                                             </form>
                                             <form method="POST" action="<?= SITE_URL ?>/api/product_delete.php" onsubmit="return confirm('Delete this product? Products with order history can only be deactivated.');">
@@ -126,7 +142,10 @@ require_once __DIR__ . "/../../includes/header.php";
                                                 <input type="hidden" name="product_id" value="<?= (int) $product[
                                                     "id"
                                                 ] ?>">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                <button type="submit" class="icon-btn icon-btn-danger no-loading" aria-label="Delete product" title="Delete">
+                                                    <i class="bi bi-trash3" aria-hidden="true"></i>
+                                                    <span class="sr-only visually-hidden">Delete</span>
+                                                </button>
                                             </form>
                                         </div>
                                     </td>

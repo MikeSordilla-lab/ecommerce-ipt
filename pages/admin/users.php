@@ -101,6 +101,7 @@ require_once __DIR__ . "/../../includes/header.php";
                                         strtotime($user["created_at"]),
                                     ) ?></td>
                                     <td class="actions-cell">
+                                        <div class="action-buttons">
                                         <?php if (
                                             $user["role"] === "seller" &&
                                             !$user["is_approved"]
@@ -113,12 +114,15 @@ require_once __DIR__ . "/../../includes/header.php";
                                                     "id"
                                                 ] ?>">
                                                 <input type="hidden" name="approve_seller" value="1">
-                                                <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                                <button type="submit" class="icon-btn icon-btn-success no-loading" aria-label="Approve seller" title="Approve">
+                                                    <i class="bi bi-person-check" aria-hidden="true"></i>
+                                                    <span class="sr-only">Approve</span>
+                                                </button>
                                             </form>
                                         <?php endif; ?>
 
                                         <?php if ($can_modify): ?>
-                                            <form method="POST" action="<?= SITE_URL ?>/api/user_update.php" class="role-form d-inline">
+                                            <form method="POST" action="<?= SITE_URL ?>/api/user_update.php" class="role-form">
                                                 <input type="hidden" name="csrf_token" value="<?= sanitize(
                                                     $csrf_token,
                                                 ) ?>">
@@ -146,22 +150,29 @@ require_once __DIR__ . "/../../includes/header.php";
                                             </form>
 
                                             <?php if ($has_orders): ?>
-                                                <button type="button" class="btn btn-sm btn-danger" disabled title="Cannot delete user with orders">Delete</button>
+                                                <button type="button" class="icon-btn icon-btn-danger" disabled aria-label="Cannot delete user with orders" title="Cannot delete user with orders">
+                                                    <i class="bi bi-trash3" aria-hidden="true"></i>
+                                                    <span class="sr-only">Delete</span>
+                                                </button>
                                             <?php else: ?>
-                                                <form method="POST" action="<?= SITE_URL ?>/api/user_update.php" class="delete-form d-inline" onsubmit="return confirmDelete(this)">
+                                                <form method="POST" action="<?= SITE_URL ?>/api/user_update.php" class="delete-form" onsubmit="return confirmDelete(this)">
                                                     <input type="hidden" name="csrf_token" value="<?= sanitize(
                                                         $csrf_token,
                                                     ) ?>">
                                                     <input type="hidden" name="user_id" value="<?= $user[
-                                                        "id"
-                                                    ] ?>">
+                                                    "id"
+                                                ] ?>">
                                                     <input type="hidden" name="delete" value="1">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                    <button type="submit" class="icon-btn icon-btn-danger no-loading" aria-label="Delete user" title="Delete">
+                                                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                                                        <span class="sr-only">Delete</span>
+                                                    </button>
                                                 </form>
                                             <?php endif; ?>
                                         <?php else: ?>
                                             <span class="text-muted small">Current User</span>
                                         <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

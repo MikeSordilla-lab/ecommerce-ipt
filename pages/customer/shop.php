@@ -42,7 +42,7 @@ try {
     $total_pages = $result['total_pages'];
 
     $cart_count = 0;
-    $cart_stmt = $pdo->prepare('SELECT COUNT(*) FROM cart_items WHERE user_id = ?');
+    $cart_stmt = $pdo->prepare('SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?');
     $cart_stmt->execute([$_SESSION['user_id']]);
     $cart_count = $cart_stmt->fetchColumn();
 

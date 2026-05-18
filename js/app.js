@@ -214,13 +214,12 @@ function confirmAction(title, message, callback) {
 }
 
 function updateCartCount(count) {
-  var badge = document.querySelector(".cart-badge");
-  if (badge) {
+  document.querySelectorAll(".cart-badge").forEach(function (badge) {
     if (count > 0) {
       badge.textContent = count;
       badge.style.display = "inline";
     } else {
       badge.style.display = "none";
     }
-  }
+  });
 }

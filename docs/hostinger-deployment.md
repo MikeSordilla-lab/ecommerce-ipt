@@ -74,7 +74,7 @@ public_html/pages/
 public_html/uploads/
 ```
 
-If you place the app in a subfolder, for example `public_html/ecommerce-ipt`, then your `SITE_URL` must include that path.
+If you place the app in a subfolder, for example `public_html/ecommerce-ipt`, then set `SITE_URL` with that path. If `SITE_URL` is not configured, the app infers the base URL from the current request, which works for normal domain-root and subfolder deployments.
 
 ## 5. Configure environment variables
 
@@ -188,6 +188,14 @@ Change the admin password after deployment.
 6. Update order status from Pending to Shipped to Delivered.
 
 ## 9. Common Hostinger issues
+
+### Landing page CSS or links point to localhost
+
+Check:
+
+- Your `.htaccess` does not contain an old local `SITE_URL`.
+- `SITE_URL` is either unset so the app can infer the Hostinger URL, or set to the exact public URL.
+- If the app is deployed in a subfolder, include that subfolder in `SITE_URL`.
 
 ### Database connection failed
 

@@ -19,9 +19,9 @@ The app reads configuration from environment variables in `includes/config.php`.
 | `APP_ENV` | `local` | Use `production` on deployed servers. |
 | `APP_DEBUG` | `true` outside production | Shows database connection errors when enabled. Set to `false` in production. |
 | `SITE_NAME` | `Shop` | Name shown in page titles and navbar. |
-| `SITE_URL` | `http://localhost/ecommerce-ipt` | Full public base URL with no trailing slash. |
+| `SITE_URL` | Auto-detected from the request, or `http://localhost/ecommerce-ipt` in CLI | Full public base URL with no trailing slash. Set explicitly if your host sits behind a proxy or uses an unusual document root. |
 | `DB_HOST` | `localhost` | Database host. |
-| `DB_PORT` | `3307` | Database port. Change to `3306` on most hosts. |
+| `DB_PORT` | `3307` on localhost, `3306` on other hosts | Database port. Set explicitly if your database uses a custom port. |
 | `DB_NAME` | `ecommerce_ipt` | Database name. |
 | `DB_USER` | `root` | Database username. |
 | `DB_PASS` | empty | Database password. |
@@ -266,6 +266,14 @@ Check:
 - `DB_PASS`
 - Database server is running
 - PDO MySQL extension is enabled
+
+### Landing page assets or links point to localhost in production
+
+Check:
+
+- `SITE_URL` is either unset so the app can infer the current host, or set to your exact deployed URL.
+- Your deployment did not preserve an old `.htaccess` with a local `SITE_URL`.
+- If deploying to a subfolder, `SITE_URL` includes that subfolder.
 
 ### Login works locally but not in production
 

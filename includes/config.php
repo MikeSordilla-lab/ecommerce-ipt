@@ -47,6 +47,49 @@ function app_is_https(): bool
     return false;
 }
 
+function app_default_site_url(): string
+{
+    $host = $_SERVER["HTTP_HOST"] ?? "";
+
+    if ($host === "") {
+        return "http://localhost/ecommerce-ipt";
+    }
+
+    $scheme = app_is_https() ? "https" : "http";
+    $script_name = str_replace("\\", "/", $_SERVER["SCRIPT_NAME"] ?? "");
+    $base_path = rtrim(str_replace("\\", "/", dirname($script_name)), "/");
+
+    foreach (["/pages/", "/api/"] as $public_dir) {
+        $position = strpos($script_name, $public_dir);
+        if ($position !== false) {
+            $base_path = substr($script_name, 0, $position);
+            break;
+        }
+    }
+
+    if ($base_path === "/" || $base_path === ".") {
+        $base_path = "";
+    }
+
+    return $scheme . "://" . $host . $base_path;
+}
+
+function app_default_db_port(): int
+{
+    $host = strtolower($_SERVER["HTTP_HOST"] ?? "");
+
+    if (
+        $host === "" ||
+        $host === "localhost" ||
+        str_starts_with($host, "localhost:") ||
+        str_starts_with($host, "127.0.0.1")
+    ) {
+        return 3307;
+    }
+
+    return 3306;
+}
+
 $app_env = strtolower((string) env_value("APP_ENV", "local"));
 $is_https = app_is_https();
 $secure_session_cookie = env_bool(
@@ -67,7 +110,7 @@ define("APP_ENV", $app_env);
 define("APP_DEBUG", env_bool("APP_DEBUG", $app_env !== "production"));
 
 define("DB_HOST", env_value("DB_HOST", "localhost"));
-define("DB_PORT", (int) env_value("DB_PORT", 3307));
+define("DB_PORT", (int) env_value("DB_PORT", app_default_db_port()));
 define("DB_NAME", env_value("DB_NAME", "ecommerce_ipt"));
 define("DB_USER", env_value("DB_USER", "root"));
 define("DB_PASS", env_value("DB_PASS", ""));
@@ -76,7 +119,7 @@ define("DB_CHARSET", env_value("DB_CHARSET", "utf8mb4"));
 define("SITE_NAME", env_value("SITE_NAME", "Shop"));
 define(
     "SITE_URL",
-    rtrim(env_value("SITE_URL", "http://localhost/ecommerce-ipt"), "/"),
+    rtrim(env_value("SITE_URL", app_default_site_url()), "/"),
 );
 
 define(

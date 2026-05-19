@@ -1,0 +1,56 @@
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { apiFetch } from "@/api/client";
+import type { Order } from "@/api/types";
+import { Button, Card, Loading, Money, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { useAuth } from "@/auth/auth-context";
+
+type AdminDashboard = {
+  stats: { users: number; products: number; orders: number; pending_sellers: number };
+  recent_orders: Order[];
+};
+
+export default function AdminDashboardScreen() {
+  const { signOut } = useAuth();
+  const [data, setData] = useState<AdminDashboard | null>(null);
+  const [message, setMessage] = useState("");
+
+  useFocusEffect(
+    useCallback(() => {
+      apiFetch<AdminDashboard>("/api/mobile/admin/dashboard.php")
+        .then(setData)
+        .catch((error) => setMessage(error instanceof Error ? error.message : "Could not load admin dashboard"));
+    }, []),
+  );
+
+  if (!data && !message) return <Loading />;
+
+  return (
+    <Screen>
+      <Title>Admin Dashboard</Title>
+      {message ? <Muted>{message}</Muted> : null}
+      {data ? (
+        <>
+          <Card>
+            <Subtitle>Stats</Subtitle>
+            <Muted>Users: {data.stats.users}</Muted>
+            <Muted>Products: {data.stats.products}</Muted>
+            <Muted>Orders: {data.stats.orders}</Muted>
+            <Muted>Pending sellers: {data.stats.pending_sellers}</Muted>
+          </Card>
+          <Button title="Users" onPress={() => router.push("/admin/users")} />
+          <Button title="Products" variant="secondary" onPress={() => router.push("/admin/products")} />
+          <Button title="Orders" variant="secondary" onPress={() => router.push("/admin/orders")} />
+          <Button title="Sign Out" variant="secondary" onPress={signOut} />
+          {data.recent_orders.map((order) => (
+            <Card key={order.id}>
+              <Subtitle>Order #{order.id}</Subtitle>
+              <Money value={order.total} />
+              <Muted>{order.username} · {order.status}</Muted>
+            </Card>
+          ))}
+        </>
+      ) : null}
+    </Screen>
+  );
+}

@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS mobile_tokens;
 DROP TABLE IF EXISTS addresses;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
@@ -69,6 +70,18 @@ CREATE TABLE cart_items (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     UNIQUE KEY unique_cart_item (user_id, product_id)
+);
+
+-- Create mobile auth tokens table for Expo Go sessions
+CREATE TABLE mobile_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_mobile_tokens_user (user_id),
+    INDEX idx_mobile_tokens_expires (expires_at)
 );
 
 -- Create orders table

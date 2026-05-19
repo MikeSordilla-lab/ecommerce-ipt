@@ -1,13 +1,22 @@
 # Secrets and environment-specific configuration
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 !.env.*.example
+!**/.env.example
+!**/.env.*.example
+.htaccess
+.htaccess.local
+.htaccess.*.local
+.htaccess.hostinger.generated
 
 # Dependency folders
 node_modules/
 vendor/
 mobile/node_modules/
+**/node_modules/
 
 # Build output and framework caches
 dist/
@@ -15,6 +24,7 @@ build/
 coverage/
 .expo/
 mobile/.expo/
+mobile/expo-env.d.ts
 .next/
 .vite/
 
@@ -64,5 +74,3 @@ uploads/products/product_new_*
 *.sqlite3
 *.db
 *.dump
-.htaccess
-.htaccesss

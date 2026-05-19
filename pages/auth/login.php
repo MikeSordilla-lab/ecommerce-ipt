@@ -18,11 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare('SELECT id, username, password_hash, role, is_approved FROM users WHERE username = ?');
+        $stmt = $pdo->prepare('SELECT id, username, password_hash, role, is_approved, email_verified_at FROM users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            if (empty($user['email_verified_at'])) {
+                set_flash('warning', 'Email Verification Required', 'Please verify your email address before logging in.');
+                redirect(SITE_URL . '/pages/auth/login.php');
+            }
+
             if ($user['role'] === 'seller' && !$user['is_approved']) {
                 set_flash('warning', 'Account Pending', 'Your seller account is pending admin approval.');
                 redirect(SITE_URL . '/pages/auth/login.php');

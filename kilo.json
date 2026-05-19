@@ -1,0 +1,12 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "mcp": {
+    "stitch": {
+      "type": "remote",
+      "url": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "AQ.Ab8RN6Kogu-a0jhHxot8u8-5Ci9wnJiUs6Bo_nNTLt6Mq6A2_w"
+      }
+    }
+  }
+}

@@ -64,3 +64,5 @@ uploads/products/product_new_*
 *.sqlite3
 *.db
 *.dump
+.htaccess
+.htaccesss

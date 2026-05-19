@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Shop Mobile",
+    "slug": "ecommerce-ipt-mobile",
+    "scheme": "ecommerceipt",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

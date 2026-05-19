@@ -1,0 +1,8 @@
+{
+    "name": "ecommerce-ipt/pc-shop",
+    "description": "PHP and MySQL PC parts e-commerce application.",
+    "license": "proprietary",
+    "require": {
+        "phpmailer/phpmailer": "^7.1"
+    }
+}

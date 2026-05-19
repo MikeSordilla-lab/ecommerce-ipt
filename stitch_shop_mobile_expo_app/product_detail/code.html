@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Product Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Safe area padding for sticky footer */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+        
+        /* Custom scrollbar hiding for clean UI */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "magenta-light": "#ffd7ef",
+                        "surface": "#f8f9ff",
+                        "primary-fixed": "#e3dfff",
+                        "success-text": "#108c3d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#400013",
+                        "tertiary-fixed-dim": "#ffb2bd",
+                        "on-background": "#0b1c31",
+                        "tertiary-fixed": "#ffd9dd",
+                        "border": "#e5edf5",
+                        "secondary": "#4d6079",
+                        "surface-container-highest": "#d4e3ff",
+                        "warning": "#9b6829",
+                        "surface-tint": "#5036fa",
+                        "inverse-primary": "#c5c0ff",
+                        "primary-container": "#533afd",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d4e3ff",
+                        "on-surface-variant": "#474556",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#51647d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#ddd9ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#cee1ff",
+                        "success": "#15be53",
+                        "label": "#273951",
+                        "on-secondary-fixed": "#071c32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#130067",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#b5c8e5",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "on-secondary-fixed-variant": "#364860",
+                        "on-tertiary": "#ffffff",
+                        "magenta": "#f96bee",
+                        "outline-variant": "#c8c4da",
+                        "background": "#ffffff",
+                        "outline": "#777588",
+                        "surface-dim": "#cadbf8",
+                        "on-tertiary-container": "#ffd2d7",
+                        "on-surface": "#0b1c31",
+                        "on-primary-fixed-variant": "#3600e1",
+                        "primary": "#3904e7",
+                        "secondary-fixed": "#d3e4ff",
+                        "inverse-surface": "#213147",
+                        "tertiary-container": "#c2004b",
+                        "tertiary": "#960038",
+                        "surface-container-low": "#eff3ff",
+                        "brand-dark": "#1c1e54",
+                        "on-tertiary-fixed-variant": "#900036"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "micro": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "tabular-nums": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.26px", "fontWeight": "300" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.64px", "fontWeight": "300" }],
+                        "tabular-nums": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.36px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0px", "fontWeight": "300" }],
+                        "headline-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.96px", "fontWeight": "300" }],
+                        "label-md": ["14px", { "lineHeight": "14px", "letterSpacing": "0px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "22px", "letterSpacing": "0px", "fontWeight": "300" }],
+                        "headline-sm": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.22px", "fontWeight": "300" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pt-safe relative pb-[100px]">
+<!-- Task-Focused Navigation (Suppresses global shell) -->
+<header class="fixed top-0 left-0 w-full z-50 pt-safe bg-gradient-to-b from-black/30 to-transparent pointer-events-none">
+<div class="px-margin-mobile py-md flex justify-between items-center w-full pointer-events-auto">
+<a class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur-md shadow-sm border border-border/50 text-on-background active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur-md shadow-sm border border-border/50 text-on-background active:scale-95 transition-transform">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+</div>
+</header>
+<!-- Hero Image Area -->
+<div class="w-full h-[486px] md:h-[574px] relative bg-surface-container-low">
+<img alt="Product Hero" class="w-full h-full object-cover" data-alt="A pristine, minimalist product shot of a high-end, silver machined aluminum smartwatch resting entirely alone on a brilliant, pure white seamless surface. The lighting is incredibly soft and diffused studio light, creating completely smooth gradients across the metallic curves. Subtle, pale blue-tinted shadows subtly ground the object, adding delicate chromatic depth indicative of a premium, aerodynamic corporate identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHJKjzze1_x4QpzysC8kUgD5y8pnOy2yfm0JTGYpCMvGNX7aEJ7M2W4bxW6L8zXvUNojypS3VCIJuD_D13TYbSGB_sBYKIoWX_gugIkctaxDgk19mSu9XiFARBQNv-ssn5lLzlorJfjP_p-ef1SdFX186KPew2sGBKMtEWI7Nz-bI-YV8qOVDveVQ-u8qj8tqzQSldwP8fw5kdjyw2oL_DBayISPRiKfCc-h-aq9OscnltO3_k43hGMvGZITiXgrw35O1wwtizhBDG"/>
+</div>
+<!-- Main Content Canvas -->
+<main class="flex-1 bg-surface-container-lowest rounded-t-xl -mt-xl relative z-10 shadow-[0px_-15px_35px_rgba(23,23,23,0.08)]">
+<div class="px-margin-mobile py-lg flex flex-col gap-md max-w-4xl mx-auto">
+<!-- Metadata & Brand -->
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-widest">Chronos Engineering</span>
+<div class="flex gap-sm">
+<span class="font-label-sm text-label-sm px-sm py-micro bg-surface-container rounded text-secondary">Wearables</span>
+</div>
+</div>
+<!-- Title & Price Group -->
+<div class="flex flex-col gap-sm">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">
+                    Precision Machined Monolith Series
+                </h1>
+<p class="font-headline-md text-headline-md text-primary-container font-medium mt-sm">
+                    $485.00
+                </p>
+</div>
+<div class="h-px bg-border w-full my-sm"></div>
+<!-- Description -->
+<article class="font-body-md text-body-md text-on-surface-variant flex flex-col gap-md">
+<p>
+                    Engineered from a singular, dense block of aerospace-grade aluminum, the Monolith Series embodies rigorous structural clarity. We discarded superfluous features to focus intensely on aerodynamic form and tactile responsiveness.
+                </p>
+<p>
+                    The ultra-smooth anodized finish provides a subtle, mathematically precise resistance against the skin, while the sapphire crystal face ensures absolute optical clarity under varied lighting conditions. Designed explicitly for professionals who demand uncompromising quality and understated, powerful aesthetics.
+                </p>
+</article>
+<!-- Specification Highlights (Bento-style micro grid) -->
+<div class="grid grid-cols-2 gap-md mt-lg">
+<div class="bg-surface rounded-lg p-md border border-border shadow-[0px_8px_20px_rgba(23,23,23,0.04)]">
+<span class="material-symbols-outlined text-secondary mb-sm">layers</span>
+<h3 class="font-label-md text-label-md text-on-background mb-micro">Material</h3>
+<p class="font-label-sm text-label-sm text-secondary">Aero-Grade Aluminum</p>
+</div>
+<div class="bg-surface rounded-lg p-md border border-border shadow-[0px_8px_20px_rgba(23,23,23,0.04)]">
+<span class="material-symbols-outlined text-secondary mb-sm">water_drop</span>
+<h3 class="font-label-md text-label-md text-on-background mb-micro">Resistance</h3>
+<p class="font-label-sm text-label-sm text-secondary">5ATM Water Rated</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Action Footer -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-border shadow-[0px_-20px_40px_rgba(50,50,93,0.06)] z-50 pb-safe">
+<div class="px-margin-mobile py-md flex items-center justify-between gap-lg max-w-4xl mx-auto">
+<!-- Quantity Picker -->
+<div class="flex items-center bg-surface border border-border rounded h-[52px] px-sm w-32 shadow-sm">
+<button aria-label="Decrease quantity" class="w-8 h-8 flex items-center justify-center text-secondary active:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">remove</span>
+</button>
+<span class="flex-1 text-center font-tabular-nums text-tabular-nums text-on-background font-medium">1</span>
+<button aria-label="Increase quantity" class="w-8 h-8 flex items-center justify-center text-secondary active:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+</button>
+</div>
+<!-- Primary Action -->
+<button class="flex-1 bg-primary-container text-on-primary font-body-lg text-body-lg h-[52px] rounded flex items-center justify-center shadow-[0px_15px_35px_rgba(23,23,23,0.08)] hover:bg-primary transition-colors active:scale-[0.98]">
+                Add to Cart
+            </button>
+</div>
+</footer>
+</body></html>

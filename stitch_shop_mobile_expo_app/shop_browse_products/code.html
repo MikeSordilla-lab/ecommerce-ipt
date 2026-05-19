@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Shop Feed</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "magenta-light": "#ffd7ef",
+                        "surface": "#f8f9ff",
+                        "primary-fixed": "#e3dfff",
+                        "success-text": "#108c3d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#400013",
+                        "tertiary-fixed-dim": "#ffb2bd",
+                        "on-background": "#0b1c31",
+                        "tertiary-fixed": "#ffd9dd",
+                        "border": "#e5edf5",
+                        "secondary": "#4d6079",
+                        "surface-container-highest": "#d4e3ff",
+                        "warning": "#9b6829",
+                        "surface-tint": "#5036fa",
+                        "inverse-primary": "#c5c0ff",
+                        "primary-container": "#533afd",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d4e3ff",
+                        "on-surface-variant": "#474556",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#51647d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#ddd9ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#cee1ff",
+                        "success": "#15be53",
+                        "label": "#273951",
+                        "on-secondary-fixed": "#071c32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#130067",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#b5c8e5",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "on-secondary-fixed-variant": "#364860",
+                        "on-tertiary": "#ffffff",
+                        "magenta": "#f96bee",
+                        "outline-variant": "#c8c4da",
+                        "background": "#ffffff",
+                        "outline": "#777588",
+                        "surface-dim": "#cadbf8",
+                        "on-tertiary-container": "#ffd2d7",
+                        "on-surface": "#0b1c31",
+                        "on-primary-fixed-variant": "#3600e1",
+                        "primary": "#3904e7",
+                        "secondary-fixed": "#d3e4ff",
+                        "inverse-surface": "#213147",
+                        "tertiary-container": "#c2004b",
+                        "tertiary": "#960038",
+                        "surface-container-low": "#eff3ff",
+                        "brand-dark": "#1c1e54",
+                        "on-tertiary-fixed-variant": "#900036"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "micro": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "tabular-nums": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.26px", "fontWeight": "300"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.64px", "fontWeight": "300"}],
+                        "tabular-nums": ["12px", {"lineHeight": "16px", "letterSpacing": "-0.36px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "letterSpacing": "0px", "fontWeight": "300"}],
+                        "headline-lg": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.96px", "fontWeight": "300"}],
+                        "label-md": ["14px", {"lineHeight": "14px", "letterSpacing": "0px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "22px", "letterSpacing": "0px", "fontWeight": "300"}],
+                        "headline-sm": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.22px", "fontWeight": "300"}]
+                    },
+                    boxShadow: {
+                        'ambient': 'rgba(23, 23, 23, 0.08) 0px 15px 35px',
+                        'elevated': 'rgba(50, 50, 93, 0.25) 0px 30px 45px -30px, rgba(0, 0, 0, 0.1) 0px 18px 36px -18px',
+                        'nav': '0 -2px 10px rgba(23,23,23,0.05)',
+                        'header': '0 2px 10px rgba(23,23,23,0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased pb-[80px]">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-on-background rounded-b-lg border-b border-border dark:border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile py-md w-full sticky top-0 z-40">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-border flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold">Shop</h1>
+<button class="w-8 h-8 flex items-center justify-center text-primary dark:text-primary-fixed hover:bg-surface-container-low transition-colors active:scale-95 rounded-full">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Search & Filter Controls -->
+<section class="px-margin-mobile py-md mt-sm flex gap-sm items-center">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-full bg-surface-container-lowest border border-border rounded pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow shadow-sm" placeholder="Search products..." type="text"/>
+</div>
+<button class="flex items-center justify-center gap-1 bg-surface-container-lowest border border-border rounded px-3 py-2 text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors shadow-sm">
+<span>Filter</span>
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</section>
+<!-- Categories -->
+<div class="px-margin-mobile pb-lg overflow-x-auto whitespace-nowrap hide-scrollbar flex gap-sm">
+<button class="bg-[#f7fafc] text-[#64748d] border border-transparent rounded px-4 py-1.5 font-label-md text-label-md">All</button>
+<button class="bg-primary-container text-on-primary rounded px-4 py-1.5 font-label-md text-label-md">Electronics</button>
+<button class="bg-[#f7fafc] text-[#64748d] border border-transparent rounded px-4 py-1.5 font-label-md text-label-md">Home</button>
+<button class="bg-[#f7fafc] text-[#64748d] border border-transparent rounded px-4 py-1.5 font-label-md text-label-md">Apparel</button>
+<button class="bg-[#f7fafc] text-[#64748d] border border-transparent rounded px-4 py-1.5 font-label-md text-label-md">Books</button>
+</div>
+<!-- Product Grid -->
+<main class="px-margin-mobile flex flex-col gap-lg">
+<!-- Product Card 1 -->
+<article class="bg-surface-container-lowest rounded-[6px] shadow-ambient border border-border flex flex-col overflow-hidden">
+<div class="w-full h-48 bg-surface-container relative">
+<img alt="Premium Wireless Headphones" class="w-full h-full object-cover" data-alt="A sleek pair of premium wireless headphones resting on a minimalist white surface. The lighting is soft and high-key, creating a clean, modern aesthetic suitable for a high-end e-commerce platform. Subtle shadows add depth to the product." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUaYpTmpuFfYiZvTlAFQwbycCelbtTMiuKaozegaCAtUFEFlriveZzoGBlmAVwH49v8ExFSfuaiVx1I-75VYjct5LQGU99csPirvudgMsMhCQJRkYjXcKC-GDePDKpvLC9ulZ8PIe6Pejtk-B1nRpYv0dOeAfWw-KMPl197I8eyAq_wOETTAE1Vuzzye1T_pxm6ylFACRVn2nCMA_Ea9QZVhsxsGeh9snuFVWMz3B0YBtKboYPMF5rcz6D3IixUWUdKoHzoEyZz4aI"/>
+<div class="absolute top-2 right-2 bg-success/20 border border-success/40 text-success-text rounded px-2 py-0.5 font-label-sm text-label-sm backdrop-blur-sm">
+                    In Stock
+                </div>
+</div>
+<div class="p-md flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<h2 class="font-headline-sm text-headline-sm text-on-background">Acoustic Pro Headphones</h2>
+<span class="font-body-lg text-body-lg text-primary font-bold">$299</span>
+</div>
+<p class="font-body-md text-body-md text-secondary line-clamp-2">Experience studio-quality sound with our latest noise-cancelling wireless headphones. Perfect for audiophiles and commuters alike.</p>
+<button class="mt-sm w-full bg-primary-container text-on-primary rounded font-label-md text-label-md py-3 flex justify-center items-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                    Add to Cart
+                </button>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface-container-lowest rounded-[6px] shadow-ambient border border-border flex flex-col overflow-hidden">
+<div class="w-full h-48 bg-surface-container relative">
+<img alt="Vintage Polaroid Camera" class="w-full h-full object-cover" data-alt="A vintage instant camera sitting on a clean, light-colored desk. The scene is brightly lit with natural daylight, emphasizing the camera's retro design details against a minimalist background. The color palette features cool, subtle tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY3dhnvV3xwTwjQVrOc7W2Jm9MWkUwOcPnSe9qxKTY8xUlVo6IKPWHbeTFQybt_ZmzWKXv8rXSquw24-YvHHb_J9z-lLyhm2cb-SmjZ3vEM6Z-jQwPm5zFSWEwNB7C01k2C5BCv6BRpH0a2mskxqzItgGlhYfUhvCf0QnQZqrGrmCy88mk6fqstEO_0gbUe8XAurUM4lRcXfOGIvzkkkRDyYAbqJsWZOxUtgn1N3qsQKBnq-WAE-_w-Xe7v_4uZIRyyWGkDsJV6yVX"/>
+<div class="absolute top-2 right-2 bg-warning/10 border border-warning/30 text-warning rounded px-2 py-0.5 font-label-sm text-label-sm backdrop-blur-sm">
+                    Low Stock
+                </div>
+</div>
+<div class="p-md flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<h2 class="font-headline-sm text-headline-sm text-on-background">Retro Instant Camera</h2>
+<span class="font-body-lg text-body-lg text-primary font-bold">$145</span>
+</div>
+<p class="font-body-md text-body-md text-secondary line-clamp-2">Capture memories instantly with this fully restored classic camera. Includes one pack of color film.</p>
+<button class="mt-sm w-full bg-primary-container text-on-primary rounded font-label-md text-label-md py-3 flex justify-center items-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                    Add to Cart
+                </button>
+</div>
+</article>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-background dark:bg-on-background px-md pb-safe border-t border-border dark:border-outline-variant shadow-nav h-[56px] z-50">
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed border-t-2 border-primary dark:border-primary-fixed pt-1 w-16 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="storefront" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<span class="font-label-sm text-label-sm mt-1">Shop</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 border-t-2 border-transparent w-16 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-sm text-label-sm mt-1">Cart</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 border-t-2 border-transparent w-16 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 border-t-2 border-transparent w-16 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</body></html>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../ValidationHelper.php';
 
 function validateAddressInput(array $data): array
 {
@@ -14,8 +15,8 @@ function validateAddressInput(array $data): array
     $phone = trim($data['phone'] ?? '');
     if (empty($phone)) {
         $errors[] = 'Phone number is required.';
-    } elseif (!preg_match('/^[\d\s+\-()]{5,20}$/', $phone)) {
-        $errors[] = 'Phone must be 5-20 characters (digits, spaces, +, -, or parentheses only).';
+    } elseif (normalize_ph_mobile($phone) === null) {
+        $errors[] = 'Phone must be a Philippine mobile number, e.g. 09171234567 or +639171234567.';
     }
 
     $address = trim($data['address'] ?? '');
@@ -31,7 +32,7 @@ function validateAddressInput(array $data): array
 function createAddress(PDO $pdo, int $userId, array $data, bool $setAsDefault = false): int
 {
     $fullName = trim($data['full_name']);
-    $phone = trim($data['phone']);
+    $phone = normalize_ph_mobile($data['phone']) ?? trim($data['phone']);
     $address = trim($data['address']);
 
     $pdo->beginTransaction();

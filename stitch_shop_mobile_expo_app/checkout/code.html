@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Checkout - Shop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "magenta-light": "#ffd7ef",
+                        "surface": "#f8f9ff",
+                        "primary-fixed": "#e3dfff",
+                        "success-text": "#108c3d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#400013",
+                        "tertiary-fixed-dim": "#ffb2bd",
+                        "on-background": "#0b1c31",
+                        "tertiary-fixed": "#ffd9dd",
+                        "border": "#e5edf5",
+                        "secondary": "#4d6079",
+                        "surface-container-highest": "#d4e3ff",
+                        "warning": "#9b6829",
+                        "surface-tint": "#5036fa",
+                        "inverse-primary": "#c5c0ff",
+                        "primary-container": "#533afd",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d4e3ff",
+                        "on-surface-variant": "#474556",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#51647d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#ddd9ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#cee1ff",
+                        "success": "#15be53",
+                        "label": "#273951",
+                        "on-secondary-fixed": "#071c32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#130067",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#b5c8e5",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "on-secondary-fixed-variant": "#364860",
+                        "on-tertiary": "#ffffff",
+                        "magenta": "#f96bee",
+                        "outline-variant": "#c8c4da",
+                        "background": "#ffffff",
+                        "outline": "#777588",
+                        "surface-dim": "#cadbf8",
+                        "on-tertiary-container": "#ffd2d7",
+                        "on-surface": "#0b1c31",
+                        "on-primary-fixed-variant": "#3600e1",
+                        "primary": "#3904e7",
+                        "secondary-fixed": "#d3e4ff",
+                        "inverse-surface": "#213147",
+                        "tertiary-container": "#c2004b",
+                        "tertiary": "#960038",
+                        "surface-container-low": "#eff3ff",
+                        "brand-dark": "#1c1e54",
+                        "on-tertiary-fixed-variant": "#900036"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sm": "8px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "micro": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit": "8px",
+                        "safe-bottom": "env(safe-area-inset-bottom)"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "tabular-nums": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    fontSize: {
+                        "headline-md": ["26px", { lineHeight: "32px", letterSpacing: "-0.26px", fontWeight: "300" }],
+                        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["32px", { lineHeight: "36px", letterSpacing: "-0.64px", fontWeight: "300" }],
+                        "tabular-nums": ["12px", { lineHeight: "16px", letterSpacing: "-0.36px", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "26px", letterSpacing: "0px", fontWeight: "300" }],
+                        "headline-lg": ["48px", { lineHeight: "52px", letterSpacing: "-0.96px", fontWeight: "300" }],
+                        "label-md": ["14px", { lineHeight: "14px", letterSpacing: "0px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "22px", letterSpacing: "0px", fontWeight: "300" }],
+                        "headline-sm": ["22px", { lineHeight: "28px", letterSpacing: "-0.22px", fontWeight: "300" }]
+                    },
+                    boxShadow: {
+                        'ambient': 'rgba(23, 23, 23, 0.08) 0px 15px 35px',
+                        'elevated': 'rgba(50, 50, 93, 0.25) 0px 30px 45px -30px, rgba(0, 0, 0, 0.1) 0px 18px 36px -18px',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Hanken Grotesk', sans-serif; background-color: #f8f9ff; color: #0b1c31; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+        
+        /* Form Inputs */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #533afd !important;
+            box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.1) !important;
+        }
+        
+        /* Custom Radio */
+        input[type="radio"]:checked {
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+            border-color: #533afd;
+            background-color: #533afd;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface min-h-screen pb-[100px]">
+<!-- Top Navigation (Transactional intent -> no full shell, just a back button header) -->
+<header class="bg-background w-full px-margin-mobile py-md flex items-center justify-between sticky top-0 z-40 border-b border-border shadow-sm">
+<button aria-label="Go Back" class="text-on-background active:scale-95 transition-transform w-10 h-10 flex items-center justify-center -ml-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-on-background font-bold text-center flex-1 pr-8">Checkout</h1>
+</header>
+<main class="w-full max-w-3xl mx-auto px-margin-mobile pt-lg flex flex-col gap-xl">
+<!-- Step 1: Order Summary -->
+<section class="flex flex-col gap-md">
+<h2 class="font-headline-sm text-headline-sm text-on-background font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+                Order Summary
+            </h2>
+<div class="bg-background rounded-lg shadow-ambient border border-border p-md flex flex-col gap-md">
+<!-- Item 1 -->
+<div class="flex items-center gap-md pb-md border-b border-border">
+<div class="w-16 h-16 rounded bg-surface-container-low overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="A sleek, minimalist smart watch displaying a clean digital face, resting on a pristine white surface. Soft, high-key lighting casts a gentle blue-tinted shadow. The aesthetic is corporate modern, clean, and highly engineered." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS51--1NfdWkMhlCc6_p8nMW-wpWvbPn7UedOYuqaqkBkqmC413xa61AxlhgEOjQTUUL9D0wAIjpSJr7ZpVbhpEPJV3rQ5Zl2mgt7gzIxFx9TF9ihrqj8CXc8OqWlj1pi8qJUu7s8QkrlexrYkMM5X7dBag67C9J-F-0_kPX5PgI30xoIGbCfYxC84aP4SPsJQwYAZEPP2NNsfQF3oSl2gPHCroYq_J-deDGatlB8kuqUT_X_ElGXizPGX0Yx5H4Oset3VZ5xwHHvI"/>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-body-md text-body-md text-on-background font-bold">Minimalist Smart Watch</span>
+<span class="font-label-sm text-label-sm text-secondary">Matte Black • Qty 1</span>
+</div>
+<span class="font-tabular-nums text-tabular-nums text-on-background font-bold">$299.00</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-md pb-md border-b border-border">
+<div class="w-16 h-16 rounded bg-surface-container-low overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="Premium over-ear noise-canceling headphones in a sleek silver finish, resting on a clean white desk. The lighting is bright and modern, creating a soft, blue-tinted ambient shadow underneath. The overall look is high-end, technical, and luxurious." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbp8OKMy13BP7zmur52vBIgQ6zs64EDM4Y1LwHzdgLK5hWncJdMX_4_-2YuWxd3XN-VXn6BDeDYTQVBsztPj0TFOhdSHf2C3H3f-tPggNz8Ox-8oKgIJc-wkOsF9cutJ4O0n1hWgI0u0sfGhAN7rB5yWABcwei68aLwB2deDAFBP1MCw7yhSFDXKhssdcEznFNGFBor6zko03Tf7TpwwTWPQLEXTfD3qXS9mQz4ClbpbwzHvhlamW8jZualdN50OSh_ijcP45sMHIi"/>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-body-md text-body-md text-on-background font-bold">Aero Headphones</span>
+<span class="font-label-sm text-label-sm text-secondary">Silver • Qty 1</span>
+</div>
+<span class="font-tabular-nums text-tabular-nums text-on-background font-bold">$199.00</span>
+</div>
+<!-- Totals -->
+<div class="flex flex-col gap-sm pt-sm">
+<div class="flex justify-between font-body-md text-body-md text-secondary">
+<span>Subtotal</span>
+<span class="font-tabular-nums text-tabular-nums">$498.00</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md text-secondary">
+<span>Shipping</span>
+<span class="font-tabular-nums text-tabular-nums">$12.00</span>
+</div>
+<div class="flex justify-between font-headline-sm text-headline-sm text-on-background font-bold mt-sm pt-sm border-t border-border border-dashed">
+<span>Total</span>
+<span class="font-tabular-nums text-tabular-nums text-primary">$510.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Step 2: Shipping -->
+<section class="flex flex-col gap-md">
+<h2 class="font-headline-sm text-headline-sm text-on-background font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+                Shipping Details
+            </h2>
+<div class="bg-background rounded-lg shadow-ambient border border-border p-md flex flex-col gap-md">
+<!-- Saved Address Option -->
+<label class="flex items-start gap-md p-md rounded border border-primary bg-surface cursor-pointer relative transition-all">
+<input checked="" class="mt-1 w-4 h-4 text-primary bg-background border-border focus:ring-primary" name="address" type="radio"/>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-background font-bold">Home</span>
+<span class="bg-surface-container-high text-label px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Default</span>
+</div>
+<span class="font-body-md text-body-md text-secondary mt-1">Jane Doe</span>
+<span class="font-body-md text-body-md text-secondary">123 Corporate Blvd, Apt 4B</span>
+<span class="font-body-md text-body-md text-secondary">New York, NY 10001</span>
+</div>
+</label>
+<!-- Add New Address Toggle (Visually simplified for demo) -->
+<label class="flex items-center gap-md p-md rounded border border-border hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="w-4 h-4 text-primary bg-background border-border focus:ring-primary" name="address" type="radio"/>
+<span class="font-body-md text-body-md text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">add_circle</span>
+                        Use a different address
+                    </span>
+</label>
+</div>
+</section>
+<!-- Step 3: Payment -->
+<section class="flex flex-col gap-md">
+<h2 class="font-headline-sm text-headline-sm text-on-background font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">payments</span>
+                Payment Method
+            </h2>
+<div class="bg-background rounded-lg shadow-ambient border border-border p-md flex flex-col gap-md">
+<!-- Fixed to COD per PRD -->
+<div class="flex items-center gap-md p-md rounded border border-primary bg-surface">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<div class="w-2.5 h-2.5 bg-background rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-background font-bold">Cash on Delivery</span>
+<span class="font-label-sm text-label-sm text-secondary">Pay with cash when your order arrives.</span>
+</div>
+<span class="material-symbols-outlined text-primary ml-auto opacity-50 text-[40px]">local_atm</span>
+</div>
+<div class="bg-surface-container-low rounded p-md flex items-start gap-sm mt-sm">
+<span class="material-symbols-outlined text-secondary text-sm mt-0.5">info</span>
+<p class="font-label-sm text-label-sm text-secondary">Please have the exact amount ready if possible. Our couriers carry limited change.</p>
+</div>
+</div>
+</section>
+<!-- Step 4: Notes -->
+<section class="flex flex-col gap-md pb-xl">
+<h2 class="font-headline-sm text-headline-sm text-on-background font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+                Order Notes
+            </h2>
+<div class="bg-background rounded-lg shadow-ambient border border-border p-md">
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-label" for="order-notes">Special instructions for delivery</label>
+<textarea class="w-full rounded border border-border p-sm font-body-md text-body-md text-on-background placeholder-secondary-fixed-dim bg-background transition-all" id="order-notes" placeholder="e.g., Leave package at the back door..." rows="3"></textarea>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action Area -->
+<div class="fixed bottom-0 left-0 w-full bg-background border-t border-border p-margin-mobile shadow-elevated z-50 pb-[calc(20px+env(safe-area-inset-bottom))]">
+<div class="max-w-3xl mx-auto flex items-center justify-between gap-md">
+<div class="flex flex-col hidden sm:flex">
+<span class="font-label-sm text-label-sm text-secondary">Total to pay</span>
+<span class="font-headline-sm text-headline-sm text-on-background font-bold">$510.00</span>
+</div>
+<button class="flex-1 sm:flex-none bg-primary text-on-primary font-body-md text-body-md h-14 px-8 rounded flex items-center justify-center gap-sm hover:bg-opacity-90 active:scale-[0.98] transition-all shadow-md">
+                Place Order
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+</button>
+</div>
+</div>
+</body></html>

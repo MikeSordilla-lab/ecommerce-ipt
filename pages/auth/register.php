@@ -2,6 +2,8 @@
 $page_title = "Register";
 require_once __DIR__ . "/../../includes/config.php";
 require_once __DIR__ . "/../../includes/functions.php";
+require_once __DIR__ . "/../../includes/ValidationHelper.php";
+require_once __DIR__ . "/../../includes/MailHelper.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!validate_csrf($_POST["csrf_token"] ?? "")) {
@@ -32,8 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (empty($password)) {
         $errors[] = "Password is required.";
-    } elseif (strlen($password) < 6) {
-        $errors[] = "Password must be at least 6 characters.";
+    } else {
+        $errors = array_merge($errors, validate_password_strength($password));
     }
 
     if ($password !== $confirm_password) {
@@ -78,18 +80,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $role,
             $is_approved,
         ]);
+        $user_id = (int) $pdo->lastInsertId();
+        $token = create_email_verification($pdo, $user_id);
+        $email_sent = send_verification_email($email, $username, $token);
 
         if ($role === "seller") {
             set_flash(
-                "success",
-                "Registration Successful",
-                "Your seller account is pending admin approval.",
+                $email_sent ? "success" : "warning",
+                "Verify Your Email",
+                $email_sent
+                    ? "Check your email to verify your seller account. After verification, your seller account will still need admin approval."
+                    : "Your account was created, but the verification email could not be sent. Please contact support.",
             );
         } else {
             set_flash(
-                "success",
-                "Registration Successful",
-                "You can now log in with your credentials.",
+                $email_sent ? "success" : "warning",
+                "Verify Your Email",
+                $email_sent
+                    ? "Check your email to verify your account before logging in."
+                    : "Your account was created, but the verification email could not be sent. Please contact support.",
             );
         }
         redirect(SITE_URL . "/pages/auth/login.php");
@@ -135,6 +144,7 @@ generate_csrf();
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
+                            <div class="form-text" id="passwordHelp">Use at least 8 characters with at least one letter and one number.</div>
                         </div>
 
                         <div class="mb-3">
@@ -175,5 +185,23 @@ generate_csrf();
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var password = document.getElementById('password');
+    var help = document.getElementById('passwordHelp');
+    if (!password || !help) return;
+
+    password.addEventListener('input', function() {
+        var value = password.value;
+        var valid = value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
+        help.classList.toggle('text-success', valid);
+        help.classList.toggle('text-danger', value.length > 0 && !valid);
+        help.textContent = valid
+            ? 'Password strength looks good.'
+            : 'Use at least 8 characters with at least one letter and one number.';
+    });
+});
+</script>
 
 <?php require_once __DIR__ . "/../../includes/footer.php"; ?>

@@ -77,12 +77,19 @@ function app_default_site_url(): string
 function app_default_db_port(): int
 {
     $host = strtolower($_SERVER["HTTP_HOST"] ?? "");
+    $host_without_port = preg_replace("/:\\d+$/", "", $host);
+    $is_private_ipv4 =
+        preg_match("/^10\\./", $host_without_port) ||
+        preg_match("/^192\\.168\\./", $host_without_port) ||
+        preg_match("/^172\\.(1[6-9]|2\\d|3[01])\\./", $host_without_port) ||
+        preg_match("/^100\\.(6[4-9]|[7-9]\\d|1[01]\\d|12[0-7])\\./", $host_without_port);
 
     if (
         $host === "" ||
         $host === "localhost" ||
         str_starts_with($host, "localhost:") ||
-        str_starts_with($host, "127.0.0.1")
+        str_starts_with($host, "127.0.0.1") ||
+        $is_private_ipv4
     ) {
         return 3307;
     }
@@ -127,6 +134,14 @@ define(
     env_value("UPLOAD_PATH", dirname(__DIR__) . "/uploads/products/"),
 );
 define("UPLOAD_URL", env_value("UPLOAD_URL", "/uploads/products/"));
+
+define("MAIL_HOST", env_value("MAIL_HOST", ""));
+define("MAIL_PORT", (int) env_value("MAIL_PORT", 587));
+define("MAIL_USERNAME", env_value("MAIL_USERNAME", ""));
+define("MAIL_PASSWORD", env_value("MAIL_PASSWORD", ""));
+define("MAIL_FROM_ADDRESS", env_value("MAIL_FROM_ADDRESS", "no-reply@example.com"));
+define("MAIL_FROM_NAME", env_value("MAIL_FROM_NAME", SITE_NAME));
+define("MAIL_ENCRYPTION", strtolower((string) env_value("MAIL_ENCRYPTION", "tls")));
 
 try {
     $dsn =

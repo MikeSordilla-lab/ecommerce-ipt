@@ -1,0 +1,12 @@
+# Gmail SMTP / PHPMailer placeholder config
+# Copy these SetEnv lines into your local or production .htaccess/virtual host.
+# Replace placeholders with your real Gmail address and Google App Password.
+# Do not commit or share a file containing the real app password.
+
+SetEnv MAIL_HOST smtp.gmail.com
+SetEnv MAIL_PORT 587
+SetEnv MAIL_USERNAME yourgmail@gmail.com
+SetEnv MAIL_PASSWORD your_16_digit_google_app_password_without_spaces
+SetEnv MAIL_FROM_ADDRESS yourgmail@gmail.com
+SetEnv MAIL_FROM_NAME "Your PC Shop"
+SetEnv MAIL_ENCRYPTION tls

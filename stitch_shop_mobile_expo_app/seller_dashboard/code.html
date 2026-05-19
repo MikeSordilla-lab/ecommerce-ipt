@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seller Dashboard</title>
+<!-- Google Fonts: Hanken Grotesk -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "magenta-light": "#ffd7ef",
+                        "surface": "#f8f9ff",
+                        "primary-fixed": "#e3dfff",
+                        "success-text": "#108c3d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#400013",
+                        "tertiary-fixed-dim": "#ffb2bd",
+                        "on-background": "#0b1c31",
+                        "tertiary-fixed": "#ffd9dd",
+                        "border": "#e5edf5",
+                        "secondary": "#4d6079",
+                        "surface-container-highest": "#d4e3ff",
+                        "warning": "#9b6829",
+                        "surface-tint": "#5036fa",
+                        "inverse-primary": "#c5c0ff",
+                        "primary-container": "#533afd",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d4e3ff",
+                        "on-surface-variant": "#474556",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#51647d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#ddd9ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#cee1ff",
+                        "success": "#15be53",
+                        "label": "#273951",
+                        "on-secondary-fixed": "#071c32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#130067",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#b5c8e5",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "on-secondary-fixed-variant": "#364860",
+                        "on-tertiary": "#ffffff",
+                        "magenta": "#f96bee",
+                        "outline-variant": "#c8c4da",
+                        "background": "#ffffff",
+                        "outline": "#777588",
+                        "surface-dim": "#cadbf8",
+                        "on-tertiary-container": "#ffd2d7",
+                        "on-surface": "#0b1c31",
+                        "on-primary-fixed-variant": "#3600e1",
+                        "primary": "#3904e7",
+                        "secondary-fixed": "#d3e4ff",
+                        "inverse-surface": "#213147",
+                        "tertiary-container": "#c2004b",
+                        "tertiary": "#960038",
+                        "surface-container-low": "#eff3ff",
+                        "brand-dark": "#1c1e54",
+                        "on-tertiary-fixed-variant": "#900036"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "micro": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "tabular-nums": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.26px", "fontWeight": "300" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.64px", "fontWeight": "300" }],
+                        "tabular-nums": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.36px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "0px", "fontWeight": "300" }],
+                        "headline-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.96px", "fontWeight": "300" }],
+                        "label-md": ["14px", { "lineHeight": "14px", "letterSpacing": "0px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "22px", "letterSpacing": "0px", "fontWeight": "300" }],
+                        "headline-sm": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.22px", "fontWeight": "300" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.surface');
+            -webkit-font-smoothing: antialiased;
+        }
+        .chromatic-shadow {
+            box-shadow: 0px 15px 35px rgba(23, 23, 23, 0.08);
+        }
+        .chromatic-shadow-active {
+            box-shadow: 0px 30px 45px -30px rgba(50, 50, 93, 0.25), 0px 18px 36px -18px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="pb-[80px]"> <!-- Padding for BottomNavBar -->
+<!-- TopAppBar from JSON -->
+<header class="bg-background dark:bg-on-background rounded-b-lg border-b border-border dark:border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile py-md w-full sticky top-0 z-40">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="account_circle">account_circle</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold">
+            Shop
+        </div>
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container-low transition-colors active:scale-95 transition-transform p-sm rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main>
+<!-- Stripe-inspired Indigo Header Background -->
+<section class="bg-brand-dark pt-xl pb-[100px] px-margin-mobile md:px-margin-desktop relative">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row md:justify-between md:items-end gap-lg">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-surface-container-lowest">Seller Overview</h1>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mt-micro">Manage your store performance and recent activity.</p>
+</div>
+<div>
+<button class="bg-primary-container text-on-primary font-label-md text-label-md px-lg py-md rounded-DEFAULT hover:opacity-90 transition-opacity active:scale-95 flex items-center gap-sm shadow-[0_4px_14px_0_rgba(83,58,253,0.39)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add New Product
+                    </button>
+</div>
+</div>
+</section>
+<!-- Stats Cards (Overlapping) -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-6xl mx-auto -mt-[60px] relative z-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT chromatic-shadow p-md border border-border flex flex-col justify-between hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-lg">
+<div class="p-sm bg-surface-container-low rounded-DEFAULT">
+<span class="material-symbols-outlined text-primary-container">inventory_2</span>
+</div>
+<span class="font-tabular-nums text-tabular-nums text-success-text bg-success/10 px-sm py-micro rounded-DEFAULT border border-success/20">+12%</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-label mb-micro">Total Products</p>
+<p class="font-headline-md text-headline-md text-on-surface">1,248</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT chromatic-shadow p-md border border-border flex flex-col justify-between hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-lg">
+<div class="p-sm bg-surface-container-low rounded-DEFAULT">
+<span class="material-symbols-outlined text-primary-container">local_shipping</span>
+</div>
+<span class="font-tabular-nums text-tabular-nums text-success-text bg-success/10 px-sm py-micro rounded-DEFAULT border border-success/20">+8.5%</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-label mb-micro">Total Orders</p>
+<p class="font-headline-md text-headline-md text-on-surface">8,592</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT chromatic-shadow p-md border border-border flex flex-col justify-between hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-lg">
+<div class="p-sm bg-surface-container-low rounded-DEFAULT">
+<span class="material-symbols-outlined text-warning">pending_actions</span>
+</div>
+<span class="font-tabular-nums text-tabular-nums text-label bg-surface-container px-sm py-micro rounded-DEFAULT border border-border">Requires Action</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-label mb-micro">Pending Orders</p>
+<p class="font-headline-md text-headline-md text-on-surface">43</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Sales List -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-6xl mx-auto mt-xl">
+<div class="bg-surface-container-lowest rounded-DEFAULT chromatic-shadow border border-border overflow-hidden">
+<div class="p-md border-b border-border flex justify-between items-center bg-surface-bright">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Recent Sales</h2>
+<button class="font-label-sm text-label-sm text-primary-container hover:underline">View All</button>
+</div>
+<div class="flex flex-col">
+<!-- Sale Item 1 -->
+<div class="p-md border-b border-border flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-DEFAULT bg-surface-container-low overflow-hidden">
+<img alt="Smart Watch" class="w-full h-full object-cover" data-alt="A sleek, modern smart watch with a white band and black face, sitting on a pristine white surface, lit with bright, high-key studio lighting that creates a clean, corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJa4DWUQEanhNcPKDUcnYM0CVqEay6sBQOjObVsdx22-E_QGYcU6cRvpVJITsorXBljbnspkyedaqEAqHYEGX7mGsAE-BP7Fm_TPBjgQZZPWfNMvX-qaKpR6kQRndKQYgxV0lG5gQlHkvU2cPFAvbxZVoN_TXv77zjeXhpl1f5-D6o7nKsUzurh0r-b7MDIfvdZogXNwOoGV4u3oAzFkD0HpKZbVVDhPU6HWoWC2CYrgdytSxn1yNJlPHm_JVr1FxFqmtNiqQjh_Nt"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface group-hover:text-primary-container transition-colors">Aura Smart Watch Series 5</p>
+<p class="font-label-sm text-label-sm text-secondary">Ord #8892 • 2 mins ago</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-tabular-nums text-tabular-nums text-on-surface font-bold">$299.00</p>
+<span class="inline-block mt-1 bg-success/20 text-success-text border border-success/40 font-label-sm text-[10px] px-2 py-0.5 rounded-DEFAULT">Completed</span>
+</div>
+</div>
+<!-- Sale Item 2 -->
+<div class="p-md border-b border-border flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-DEFAULT bg-surface-container-low overflow-hidden">
+<img alt="Headphones" class="w-full h-full object-cover" data-alt="High-end wireless noise-canceling headphones in matte black, placed elegantly against a soft, light-mode background with subtle blue-tinted shadows, conveying aerodynamic clarity and lightweight authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACoOBLBwPfnHk9XRSVE0C6VHJyyxJL5BtrRiKH-6NYy2GVbYhFGk2rPCjhkdgoep-ZKsUVkOjbIeSeQJjwMI-Uv-hxzp4LE4JFK9N7Q1xw63zcqpfPgfY1Wu0wEJnCL48amq34B-skivvJqeCeL1mvcW_GdsLoQML9ncIwZ-aZBCZBzuMVOEQsoQsom4zDV2vfW9cvWjs7ozYK8pTo6yRoT7CknAksBkXEKJ0HLLv9NTCCpEqEjhG3--5ximAnhXTop2QxvvTjW3zo"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface group-hover:text-primary-container transition-colors">Nimbus Pro Wireless Audio</p>
+<p class="font-label-sm text-label-sm text-secondary">Ord #8891 • 15 mins ago</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-tabular-nums text-tabular-nums text-on-surface font-bold">$145.50</p>
+<span class="inline-block mt-1 bg-warning/20 text-warning border border-warning/40 font-label-sm text-[10px] px-2 py-0.5 rounded-DEFAULT">Pending</span>
+</div>
+</div>
+<!-- Sale Item 3 -->
+<div class="p-md flex items-center justify-between hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-DEFAULT bg-surface-container-low overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">devices_other</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface group-hover:text-primary-container transition-colors">Ergo Mechanical Keyboard</p>
+<p class="font-label-sm text-label-sm text-secondary">Ord #8890 • 1 hour ago</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-tabular-nums text-tabular-nums text-on-surface font-bold">$189.99</p>
+<span class="inline-block mt-1 bg-success/20 text-success-text border border-success/40 font-label-sm text-[10px] px-2 py-0.5 rounded-DEFAULT">Completed</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar from JSON (Profile is Active for Seller context) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-background dark:bg-on-background px-md pb-safe fixed bottom-0 w-full z-50 h-[56px] border-t border-border dark:border-outline-variant shadow-[0_-2px_10px_rgba(23,23,23,0.05)]">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity flex-1">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-sm text-label-sm mt-1">Shop</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity flex-1">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-sm text-label-sm mt-1">Cart</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity flex-1">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</button>
+<!-- Active Tab: Profile (Representing Seller Dashboard) -->
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed border-t-2 border-primary dark:border-primary-fixed pt-1 hover:text-primary-container dark:hover:text-primary-fixed-dim active:opacity-80 transition-opacity flex-1">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

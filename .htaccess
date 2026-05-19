@@ -1,0 +1,12 @@
+SetEnv APP_ENV local
+SetEnv APP_DEBUG true
+SetEnv SITE_URL http://localhost/ecommerce-ipt
+
+
+SetEnv MAIL_HOST smtp.gmail.com
+SetEnv MAIL_PORT 587
+SetEnv MAIL_USERNAME sordillamike1@gmail.com
+SetEnv MAIL_PASSWORD lcvwmzjbuqtajshs
+SetEnv MAIL_FROM_ADDRESS sordillamike1@gmail.com
+SetEnv MAIL_FROM_NAME "Your PC Shop"
+SetEnv MAIL_ENCRYPTION tls

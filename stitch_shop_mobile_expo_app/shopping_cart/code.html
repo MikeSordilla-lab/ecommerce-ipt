@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Shopping Cart</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "magenta-light": "#ffd7ef",
+                        "surface": "#f8f9ff",
+                        "primary-fixed": "#e3dfff",
+                        "success-text": "#108c3d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#400013",
+                        "tertiary-fixed-dim": "#ffb2bd",
+                        "on-background": "#0b1c31",
+                        "tertiary-fixed": "#ffd9dd",
+                        "border": "#e5edf5",
+                        "secondary": "#4d6079",
+                        "surface-container-highest": "#d4e3ff",
+                        "warning": "#9b6829",
+                        "surface-tint": "#5036fa",
+                        "inverse-primary": "#c5c0ff",
+                        "primary-container": "#533afd",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d4e3ff",
+                        "on-surface-variant": "#474556",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#51647d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#ddd9ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#cee1ff",
+                        "success": "#15be53",
+                        "label": "#273951",
+                        "on-secondary-fixed": "#071c32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#130067",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#b5c8e5",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "on-secondary-fixed-variant": "#364860",
+                        "on-tertiary": "#ffffff",
+                        "magenta": "#f96bee",
+                        "outline-variant": "#c8c4da",
+                        "background": "#ffffff",
+                        "outline": "#777588",
+                        "surface-dim": "#cadbf8",
+                        "on-tertiary-container": "#ffd2d7",
+                        "on-surface": "#0b1c31",
+                        "on-primary-fixed-variant": "#3600e1",
+                        "primary": "#3904e7",
+                        "secondary-fixed": "#d3e4ff",
+                        "inverse-surface": "#213147",
+                        "tertiary-container": "#c2004b",
+                        "tertiary": "#960038",
+                        "surface-container-low": "#eff3ff",
+                        "brand-dark": "#1c1e54",
+                        "on-tertiary-fixed-variant": "#900036"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "micro": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "tabular-nums": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.26px", "fontWeight": "300"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.64px", "fontWeight": "300"}],
+                        "tabular-nums": ["12px", {"lineHeight": "16px", "letterSpacing": "-0.36px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "26px", "letterSpacing": "0px", "fontWeight": "300"}],
+                        "headline-lg": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.96px", "fontWeight": "300"}],
+                        "label-md": ["14px", {"lineHeight": "14px", "letterSpacing": "0px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "22px", "letterSpacing": "0px", "fontWeight": "300"}],
+                        "headline-sm": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.22px", "fontWeight": "300"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base typography reset to ensure Hanken Grotesk is used everywhere */
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+        }
+        /* Custom scrollbar hiding for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        /* Safe area padding for mobile bottom */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col pb-[80px]">
+<!-- TopAppBar Shared Component -->
+<header class="bg-background border-b border-border shadow-sm rounded-b-lg flex justify-between items-center px-margin-mobile py-md w-full sticky top-0 z-40">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden shrink-0">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANqxwQxi6i6OZsVOxYdO5JUkMIlVagZyKS2zgsqUA4eNEtD6L2Sj2ydcKlGFlx-PLO7_AuS4p6JC2xUUAcS0XRXsIb5MRYto9tGCqmRlEFYj9xopRLwrC21lPjpO0Arf0smVkp2suxmUh1fyDOrFGuHmqw39b8NiIv2shffUcCI39hC9QzpeEuJW9lFmGqeb8pZ-mFBMKI73tQXbirisVSAQUHZaXcOZw4LvhXRnrOvSTolcFfAHJfIKQwSNzEz4BTWxlfFqvNddLm"/>
+</div>
+<span class="font-headline-md text-headline-md text-primary font-bold">Shop</span>
+</div>
+<button class="text-primary hover:bg-surface-container-low transition-colors p-sm rounded-full active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Cart Canvas -->
+<main class="flex-1 px-margin-mobile py-xl flex flex-col gap-xl max-w-2xl mx-auto w-full">
+<!-- Page Title -->
+<section>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-label">Your Cart</h1>
+<p class="font-body-md text-body-md text-secondary mt-micro">2 items ready for checkout</p>
+</section>
+<!-- Cart Items List -->
+<section class="flex flex-col gap-md">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest border border-border rounded-lg p-md flex items-start gap-md relative shadow-sm group">
+<div class="w-24 h-24 bg-surface-container rounded shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover mix-blend-multiply" data-alt="A sleek, modern pair of premium wireless over-ear headphones resting on a minimalist pristine white pedestal. The lighting is high-key and studio quality, casting soft, subtle blue-tinted shadows that create a sense of chromatic depth. The aesthetic is highly technical, aerodynamic, and corporate modern. The overall mood is sophisticated and engineered, utilizing a color palette dominated by pure whites and deep navy accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE2I5IAGk-Quvc3XxmkVCsvSLuhvLLGGWVq6tzS01vjjf_WNVeL9Ql6mapsJUCtV4P_VQX9Z-w0REXHkdLHhFYvcy8zkvWwDrQR9SIzVPhefWP8PAvwFVzdki-Qgm5GiSMrwVwuaTQPtqoJfRbh8SiSqdivvS5g0pmQ6pOG8LEFn-mXpkPI7LvhEmXbAjlepNs78DwqrdlV4nhiEZtSKylhRRqNhf4Ic_pGYnIZVTebi9VNhi7M0TbTknTRaQ1R__kD2mefCF2sd3O"/>
+</div>
+<div class="flex-1 flex flex-col justify-between min-h-[96px]">
+<div class="pr-lg">
+<h3 class="font-body-md text-body-md text-label font-medium leading-tight">AeroFlow Noise-Cancelling Headphones</h3>
+<p class="font-label-sm text-label-sm text-secondary mt-micro">Midnight Navy</p>
+</div>
+<div class="flex justify-between items-end mt-auto pt-sm">
+<span class="font-tabular-nums text-tabular-nums text-primary-container font-medium text-lg">$299.00</span>
+<!-- Stepper -->
+<div class="flex items-center gap-sm bg-surface rounded DEFAULT border border-border px-sm py-micro shadow-sm">
+<button aria-label="Decrease quantity" class="text-secondary hover:text-primary transition-colors flex items-center justify-center active:scale-95">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="font-tabular-nums text-tabular-nums text-label w-4 text-center">1</span>
+<button aria-label="Increase quantity" class="text-secondary hover:text-primary transition-colors flex items-center justify-center active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Remove Action -->
+<button aria-label="Remove item" class="absolute top-md right-md text-outline-variant hover:text-error transition-colors p-micro">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest border border-border rounded-lg p-md flex items-start gap-md relative shadow-sm group">
+<div class="w-24 h-24 bg-surface-container rounded shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover mix-blend-multiply" data-alt="An ergonomic, high-performance wireless computer mouse designed with sweeping, aerodynamic curves. It sits isolated against a pure white, brilliant background illuminated by high-key studio lighting. The lighting emphasizes the smooth matte finish of the mouse and casts a delicate, multi-layered shadow with a faint blue tint to enhance the three-dimensional depth. The style is strictly corporate modern and technologically advanced, conveying precision and authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQxoUy3eitsjldffLdoTgrsxRsu9jjKlOMwPWl93sF73eoQ5m92S_Mb1k7NeeylfcOUI-h_nExIz4ssPNlcWwbs5aAfQhxtH-E1MwEJLUoWEpK1Fj9G_0cW_NAjyErkhviQ0a7AokvarSKidGvZdpJAKf_U3J7yPbJLDzbu39E8tZHle2IJeGoZKu4OGKPa5NCM6sDExdzt-_xqh-nb_qFDDXCg_cn6dNy6_IYwC2NOxGF4ngQUpvCNg4x_CT5YIyseljyknJwg5mt"/>
+</div>
+<div class="flex-1 flex flex-col justify-between min-h-[96px]">
+<div class="pr-lg">
+<h3 class="font-body-md text-body-md text-label font-medium leading-tight">Precision Ergonomic Mouse</h3>
+<p class="font-label-sm text-label-sm text-secondary mt-micro">Matte Graphite</p>
+</div>
+<div class="flex justify-between items-end mt-auto pt-sm">
+<span class="font-tabular-nums text-tabular-nums text-primary-container font-medium text-lg">$85.00</span>
+<!-- Stepper -->
+<div class="flex items-center gap-sm bg-surface rounded DEFAULT border border-border px-sm py-micro shadow-sm">
+<button aria-label="Decrease quantity" class="text-secondary hover:text-primary transition-colors flex items-center justify-center active:scale-95">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="font-tabular-nums text-tabular-nums text-label w-4 text-center">2</span>
+<button aria-label="Increase quantity" class="text-secondary hover:text-primary transition-colors flex items-center justify-center active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Remove Action -->
+<button aria-label="Remove item" class="absolute top-md right-md text-outline-variant hover:text-error transition-colors p-micro">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</section>
+<!-- Order Summary -->
+<section class="bg-surface-container-lowest border border-border rounded-lg p-md mt-sm shadow-sm relative overflow-hidden">
+<!-- Decorative subtle gradient accent top -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-container to-inverse-primary opacity-20"></div>
+<h2 class="font-headline-sm text-headline-sm text-label mb-lg">Order Summary</h2>
+<div class="flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-secondary">Subtotal</span>
+<span class="font-tabular-nums text-tabular-nums text-label">$469.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-secondary">Estimated Shipping</span>
+<span class="font-tabular-nums text-tabular-nums text-success-text flex items-center gap-micro">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                        Free
+                    </span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-secondary">Estimated Tax</span>
+<span class="font-tabular-nums text-tabular-nums text-label">$39.86</span>
+</div>
+<div class="h-px w-full bg-border my-sm"></div>
+<div class="flex justify-between items-center">
+<span class="font-headline-sm text-headline-sm text-label font-medium">Total</span>
+<span class="font-headline-md text-headline-md text-primary-container font-medium tracking-tight">$508.86</span>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full mt-lg bg-primary-container text-on-primary font-body-md text-body-md py-md rounded DEFAULT shadow-[0_15px_35px_rgba(23,23,23,0.08)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
+                Proceed to Checkout
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</section>
+<!-- Trust Badges (Minimalist) -->
+<div class="flex justify-center items-center gap-lg mt-sm opacity-60">
+<span class="material-symbols-outlined text-secondary" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="material-symbols-outlined text-secondary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="material-symbols-outlined text-secondary" data-icon="credit_card" style="font-variation-settings: 'FILL' 1;">credit_card</span>
+</div>
+</main>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 w-full z-50 h-[56px] border-t border-border shadow-[0_-2px_10px_rgba(23,23,23,0.05)] bg-background flex justify-around items-center px-md pb-safe">
+<!-- Shop (Inactive) -->
+<a class="flex flex-col items-center justify-center text-secondary pt-1 hover:text-primary-container active:opacity-80 transition-opacity w-16" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-sm text-label-sm mt-micro">Shop</span>
+</a>
+<!-- Cart (Active) -->
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-1 w-16 relative" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-label-sm text-label-sm mt-micro font-medium">Cart</span>
+<!-- Badge -->
+<span class="absolute top-0 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-background"></span>
+</a>
+<!-- Orders (Inactive) -->
+<a class="flex flex-col items-center justify-center text-secondary pt-1 hover:text-primary-container active:opacity-80 transition-opacity w-16" href="#">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-label-sm text-label-sm mt-micro">Orders</span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-secondary pt-1 hover:text-primary-container active:opacity-80 transition-opacity w-16" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-micro">Profile</span>
+</a>
+</nav>
+</body></html>

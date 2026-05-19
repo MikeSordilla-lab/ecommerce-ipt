@@ -1,6 +1,15 @@
 import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { Image } from "expo-image";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { IconButton, Text, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/auth/auth-context";
@@ -18,39 +27,50 @@ const NAV_ITEMS = [
 
 type NavKey = (typeof NAV_ITEMS)[number]["key"];
 
+function getStatusColor(status: string) {
+  const s = status.toLowerCase();
+  if (s === "delivered") return colors.successText;
+  if (s === "cancelled") return colors.error;
+  if (s === "shipped") return colors.primaryContainer;
+  return colors.warning;
+}
+
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const [stats, setStats] = useState({
-    activeOrders: 0,
-    savedItems: 0,
-  });
-  const [recentOrders, setRecentOrders] = useState([]);
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    router.replace("/");
+  }, [signOut]);
+
+  const handleNav = useCallback((key: NavKey) => {
+    const routes: Record<NavKey, string> = {
+      shop: "/customer/shop",
+      cart: "/customer/cart",
+      orders: "/customer/orders",
+      profile: "/customer/profile",
+    };
+    if (key !== "profile") router.push(routes[key] as any);
+  }, []);
+
+  const [stats, setStats] = useState({ activeOrders: 0, savedItems: 0 });
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch user orders to get count
-      const ordersResponse = await apiFetch<{ orders: any[] }>("/api/mobile/orders.php");
+      const ordersResponse = await apiFetch<{ orders: any[] }>(
+        "/api/mobile/orders.php"
+      );
       const orders = ordersResponse.orders;
-      
-      // Calculate active orders (not delivered/cancelled)
       const activeOrders = orders.filter(
-        order => !['delivered', 'cancelled'].includes(order.status.toLowerCase())
+        (o) => !["delivered", "cancelled"].includes(o.status.toLowerCase())
       ).length;
-      
-      // For now, we'll set saved items to 0 as there's no wishlist API yet
-      // In a real app, this would come from a wishlist/favorites endpoint
-      setStats({
-        activeOrders,
-        savedItems: 0, // Placeholder
-      });
-      
-      // Set recent orders (last 3)
+      setStats({ activeOrders, savedItems: 0 });
       setRecentOrders(orders.slice(0, 3));
-    } catch (error) {
-      console.error("Failed to load profile stats:", error);
-      // Keep default values if API fails
+    } catch {
+      // keep defaults
     } finally {
       setLoading(false);
     }
@@ -62,124 +82,222 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      {/* ── Top App Bar ── */}
       <View style={styles.header}>
-        <TouchableRipple style={styles.avatar}>
+        <TouchableOpacity style={styles.avatarBtn} activeOpacity={0.8}>
           {user?.profile_image_url ? (
-            <Image source={{ uri: user.profile_image_url }} style={styles.headerAvatarImage} contentFit="cover" />
+            <Image
+              source={{ uri: user.profile_image_url }}
+              style={styles.headerAvatarImg}
+              contentFit="cover"
+            />
           ) : (
-            <IconButton icon="account" iconColor={colors.secondary} size={20} />
+            <IconButton
+              icon="account"
+              iconColor={colors.secondary}
+              size={18}
+              style={styles.headerAvatarIcon}
+            />
           )}
-        </TouchableRipple>
-        <Text variant="titleLarge" style={styles.headerTitle}>Shop</Text>
-        <TouchableRipple style={styles.iconBtn}>
-          <IconButton icon="magnify" iconColor={colors.primaryContainer} size={20} />
-        </TouchableRipple>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Shop</Text>
+        <TouchableOpacity style={styles.iconBtnCircle} activeOpacity={0.7}>
+          <IconButton
+            icon="magnify"
+            iconColor={colors.primaryContainer}
+            size={20}
+            style={styles.noMargin}
+          />
+        </TouchableOpacity>
       </View>
 
-       <ScrollView
-         style={styles.content}
-         contentContainerStyle={styles.contentContainer}
-         showsVerticalScrollIndicator={false}
-       >
-         {loading ? (
-           <View style={styles.loading}>
-             <IconButton icon="loader" size={32} iconColor={colors.primaryContainer} />
-             <Text variant="bodyMedium" style={styles.loadingText}>Loading profile...</Text>
-           </View>
-         ) : (
-           <>
-             <View style={styles.identityCard}>
-               <View style={styles.identityGradient} />
-               <View style={styles.identityContent}>
-                 <View style={styles.profileAvatarContainer}>
-                   {user?.profile_image_url ? (
-                     <Image
-                       source={{ uri: user.profile_image_url }}
-                       style={styles.profileAvatarImage}
-                       contentFit="cover"
-                     />
-                   ) : (
-                     <View style={styles.profileAvatarPlaceholder}>
-                       <IconButton icon="account" iconColor={colors.primaryContainer} size={36} />
-                     </View>
-                   )}
-                 </View>
-                 <Text variant="headlineSmall" style={styles.userName}>{user?.username ?? "User"}</Text>
-                 <Text variant="bodyMedium" style={styles.userEmail}>{user?.email ?? ""}</Text>
-                 <View style={styles.roleBadge}>
-                   <IconButton icon="verified-user" iconColor={colors.primary} size={16} style={styles.roleIcon} />
-                   <Text variant="labelSmall" style={styles.roleText}>
-                     {user?.role?.toUpperCase() ?? "CUSTOMER"}
-                   </Text>
-                 </View>
-               </View>
-             </View>
+      {/* ── Scrollable Content ── */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator color={colors.primaryContainer} size="large" />
+            <Text style={styles.loadingText}>Loading profile…</Text>
+          </View>
+        ) : (
+          <>
+            {/* ── Identity Card ── */}
+            <View style={styles.identityCard}>
+              {/* gradient banner */}
+              <View style={styles.identityBanner} />
 
-             <View style={styles.statsGrid}>
-               <TouchableRipple style={styles.statCard}>
-                 <View style={styles.statCardInner}>
-                   <View style={styles.statIconContainer}>
-                     <IconButton icon="inventory-2" iconColor={colors.primaryContainer} size={22} />
-                   </View>
-                   <View>
-                     <Text variant="headlineSmall" style={styles.statValue}>{stats.activeOrders}</Text>
-                     <Text variant="labelSmall" style={styles.statLabel}>Active Orders</Text>
-                   </View>
-                 </View>
-               </TouchableRipple>
-               <TouchableRipple style={styles.statCard}>
-                 <View style={styles.statCardInner}>
-                   <View style={styles.statIconContainer}>
-                     <IconButton icon="heart" iconColor={colors.primaryContainer} size={22} />
-                   </View>
-                   <View>
-                     <Text variant="headlineSmall" style={styles.statValue}>{stats.savedItems}</Text>
-                     <Text variant="labelSmall" style={styles.statLabel}>Saved Items</Text>
-                   </View>
-                 </View>
-               </TouchableRipple>
-             </View>
+              <View style={styles.identityBody}>
+                {/* avatar */}
+                <View style={styles.avatarRing}>
+                  {user?.profile_image_url ? (
+                    <Image
+                      source={{ uri: user.profile_image_url }}
+                      style={styles.profileAvatarImg}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View style={styles.profileAvatarPlaceholder}>
+                      <IconButton
+                        icon="account"
+                        iconColor={colors.primaryContainer}
+                        size={36}
+                        style={styles.noMargin}
+                      />
+                    </View>
+                  )}
+                </View>
 
-             {recentOrders.length > 0 && (
-               <View style={styles.ordersSection}>
-                 <Text variant="titleMedium" style={styles.ordersTitle}>Recent Orders</Text>
-                 <View style={styles.ordersList}>
-                   {recentOrders.map((order) => (
-                     <TouchableRipple key={order.id} style={styles.orderItem}>
-                       <View style={styles.orderItemContent}>
-                         <Text variant="bodyMedium" style={styles.orderId}>#{order.id}</Text>
-                         <Text variant="labelSmall" style={styles.orderDate}>
-                           {new Date(order.created_at).toLocaleDateString()}
-                         </Text>
-                         <Text variant="labelSmall" style={styles.orderStatus}>
-                           {order.status}
-                         </Text>
-                       </View>
-                       <IconButton icon="chevron-right" size={18} iconColor={colors.muted} />
-                     </TouchableRipple>
-                   ))}
-                 </View>
-               </View>
-             )}
+                <Text style={styles.userName}>
+                  {user?.username ?? "User"}
+                </Text>
+                <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
 
-             <View style={styles.actionsSection}>
-               <TouchableRipple style={styles.dashboardBtn} onPress={() => router.push("/customer/dashboard")}>
-                 <View style={styles.dashboardBtnInner}>
-                   <IconButton icon="view-dashboard" iconColor={colors.onPrimaryContainer} size={20} style={styles.actionIcon} />
-                   <Text variant="labelMedium" style={styles.dashboardBtnText}>Open Dashboard</Text>
-                 </View>
-               </TouchableRipple>
-               <TouchableRipple style={styles.signOutBtn} onPress={handleSignOut}>
-                 <View style={styles.signOutBtnInner}>
-                   <IconButton icon="logout" iconColor={colors.primaryContainer} size={20} style={styles.actionIcon} />
-                   <Text variant="labelMedium" style={styles.signOutBtnText}>Sign Out</Text>
-                 </View>
-               </TouchableRipple>
-             </View>
-           </>
-         )}
-       </ScrollView>
+                <View style={styles.roleBadge}>
+                  <IconButton
+                    icon="shield-check"
+                    iconColor={colors.primary}
+                    size={14}
+                    style={styles.roleIcon}
+                  />
+                  <Text style={styles.roleText}>
+                    {user?.role?.toUpperCase() ?? "CUSTOMER"}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
+            {/* ── Bento Stats Grid ── */}
+            <View style={styles.statsGrid}>
+              <TouchableRipple
+                style={styles.statCard}
+                onPress={() => router.push("/customer/orders")}
+                borderless
+              >
+                <View style={styles.statCardInner}>
+                  <View style={styles.statIconBg}>
+                    <IconButton
+                      icon="package-variant"
+                      iconColor={colors.primaryContainer}
+                      size={20}
+                      style={styles.noMargin}
+                    />
+                  </View>
+                  <Text style={styles.statValue}>{stats.activeOrders}</Text>
+                  <Text style={styles.statLabel}>Active Orders</Text>
+                </View>
+              </TouchableRipple>
+
+              <TouchableRipple
+                style={styles.statCard}
+                onPress={() => {}}
+                borderless
+              >
+                <View style={styles.statCardInner}>
+                  <View style={styles.statIconBg}>
+                    <IconButton
+                      icon="heart"
+                      iconColor={colors.primaryContainer}
+                      size={20}
+                      style={styles.noMargin}
+                    />
+                  </View>
+                  <Text style={styles.statValue}>{stats.savedItems}</Text>
+                  <Text style={styles.statLabel}>Saved Items</Text>
+                </View>
+              </TouchableRipple>
+            </View>
+
+            {/* ── Recent Orders ── */}
+            {recentOrders.length > 0 && (
+              <View style={styles.ordersCard}>
+                <View style={styles.orderCardHeader}>
+                  <Text style={styles.orderCardTitle}>Recent Orders</Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/customer/orders")}
+                  >
+                    <Text style={styles.viewAllLink}>View all</Text>
+                  </TouchableOpacity>
+                </View>
+                {recentOrders.map((order, idx) => (
+                  <View key={order.id}>
+                    {idx > 0 && <View style={styles.divider} />}
+                    <TouchableRipple style={styles.orderRow} borderless>
+                      <View style={styles.orderRowInner}>
+                        <View style={styles.orderRowLeft}>
+                          <View style={styles.orderIconBg}>
+                            <IconButton
+                              icon="receipt"
+                              iconColor={colors.primaryContainer}
+                              size={16}
+                              style={styles.noMargin}
+                            />
+                          </View>
+                          <View>
+                            <Text style={styles.orderId}>#{order.id}</Text>
+                            <Text style={styles.orderDate}>
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.orderRowRight}>
+                          <Text
+                            style={[
+                              styles.orderStatus,
+                              { color: getStatusColor(order.status) },
+                            ]}
+                          >
+                            {order.status}
+                          </Text>
+                          <Text style={styles.orderAmount}>
+                            ${Number(order.total).toFixed(2)}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableRipple>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* ── Action Buttons ── */}
+            <View style={styles.actionsSection}>
+              <TouchableRipple
+                style={styles.dashboardBtn}
+                onPress={() => router.push("/customer/shop")}
+              >
+                <View style={styles.btnInner}>
+                  <IconButton
+                    icon="view-dashboard"
+                    iconColor={colors.onPrimaryContainer}
+                    size={20}
+                    style={styles.noMargin}
+                  />
+                  <Text style={styles.dashboardBtnText}>Open Dashboard</Text>
+                </View>
+              </TouchableRipple>
+
+              <TouchableRipple style={styles.signOutBtn} onPress={handleSignOut}>
+                <View style={styles.btnInner}>
+                  <IconButton
+                    icon="logout"
+                    iconColor={colors.primaryContainer}
+                    size={20}
+                    style={styles.noMargin}
+                  />
+                  <Text style={styles.signOutBtnText}>Sign Out</Text>
+                </View>
+              </TouchableRipple>
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {/* ── Bottom Nav ── */}
       <View style={styles.bottomNav}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === "profile";
@@ -190,18 +308,16 @@ export default function ProfileScreen() {
               style={styles.navItem}
             >
               <View style={styles.navItemInner}>
-                {isActive ? (
-                  <View style={styles.activeNavIcon}>
-                    <IconButton icon={item.icon} iconColor={colors.primaryContainer} size={22} />
-                  </View>
-                ) : (
-                  <IconButton icon={item.icon} iconColor={colors.muted} size={22} />
-                )}
+                <IconButton
+                  icon={item.icon}
+                  iconColor={isActive ? colors.primaryContainer : colors.muted}
+                  size={22}
+                  style={[styles.noMargin, isActive && styles.navIconActive]}
+                />
                 <Text
-                  variant="labelSmall"
                   style={[
                     styles.navLabel,
-                    isActive ? styles.navLabelActive : { color: colors.muted },
+                    isActive ? styles.navLabelActive : styles.navLabelInactive,
                   ]}
                 >
                   {item.label}
@@ -218,8 +334,10 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
+
+  /* Header */
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -229,42 +347,72 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 2,
   },
   headerTitle: {
     color: colors.primaryContainer,
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: 18,
+    letterSpacing: -0.22,
+    flex: 1,
+    textAlign: "center",
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  avatarBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
   },
-  headerAvatarImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  headerAvatarImg: { width: 38, height: 38, borderRadius: 19 },
+  headerAvatarIcon: { margin: 0 },
+  iconBtnCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  iconBtn: {
-    borderRadius: 20,
+
+  /* Scroll */
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: MARGIN_MOBILE,
+    paddingTop: 28,
+    paddingBottom: 90,
+    gap: 20,
   },
-  content: {
+
+  /* Loading */
+  loadingBox: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 80,
+    gap: 12,
   },
-  contentContainer: {
-    padding: MARGIN_MOBILE,
-    paddingBottom: 80,
-    gap: 40,
+  loadingText: {
+    color: colors.muted,
+    fontSize: 14,
+    fontWeight: "300",
   },
+
+  /* Identity Card */
   identityCard: {
     backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
@@ -272,82 +420,77 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 1,
     shadowRadius: 35,
-    elevation: 0,
-    position: "relative",
+    elevation: 3,
   },
-  identityGradient: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 96,
+  identityBanner: {
+    height: 72,
     backgroundColor: colors.surfaceContainerHigh,
-    opacity: 0.5,
+    opacity: 0.6,
   },
-  identityContent: {
+  identityBody: {
     alignItems: "center",
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingBottom: 24,
     paddingHorizontal: 16,
-    position: "relative",
-    zIndex: 1,
+    marginTop: -44,
   },
-  profileAvatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
+  avatarRing: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 4,
     borderColor: colors.surfaceContainerLowest,
     overflow: "hidden",
-    marginBottom: 16,
+    backgroundColor: colors.surfaceContainerHigh,
     shadowColor: colors.shadowElevated,
-    shadowOffset: { width: 0, height: 30 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
-    shadowRadius: 45,
+    shadowRadius: 16,
+    elevation: 6,
+    marginBottom: 14,
   },
-  profileAvatarImage: {
-    width: "100%",
-    height: "100%",
-  },
+  profileAvatarImg: { width: "100%", height: "100%" },
   profileAvatarPlaceholder: {
-    width: "100%",
-    height: "100%",
+    flex: 1,
     backgroundColor: colors.surfaceContainer,
     justifyContent: "center",
     alignItems: "center",
   },
   userName: {
     color: colors.onSurface,
+    fontSize: 22,
     fontWeight: "300",
+    letterSpacing: -0.22,
     textAlign: "center",
     marginBottom: 4,
   },
   userEmail: {
     color: colors.secondary,
+    fontSize: 14,
     fontWeight: "300",
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   roleBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surfaceContainer,
+    backgroundColor: colors.surfaceContainerLow,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 9999,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  roleIcon: {
-    margin: 0,
-    marginLeft: -4,
-  },
+  roleIcon: { margin: 0, marginLeft: -4 },
   roleText: {
     color: colors.label,
+    fontSize: 11,
+    fontWeight: "400",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
-    letterSpacing: 1,
     marginRight: 4,
   },
+
+  /* Stats Grid */
   statsGrid: {
     flexDirection: "row",
     gap: 16,
@@ -355,127 +498,162 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 16,
+    overflow: "hidden",
     shadowColor: colors.shadowAmbient,
-    shadowOffset: { width: 0, height: 15 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
-    shadowRadius: 35,
+    shadowRadius: 20,
+    elevation: 2,
   },
   statCardInner: {
-    flexDirection: "column",
+    padding: 16,
     gap: 8,
   },
-  statIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surfaceContainer,
+  statIconBg: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surfaceContainerHigh,
     justifyContent: "center",
     alignItems: "center",
   },
   statValue: {
     color: colors.onSurface,
+    fontSize: 22,
     fontWeight: "300",
+    letterSpacing: -0.22,
+    lineHeight: 28,
   },
   statLabel: {
     color: colors.secondary,
-  },
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  loadingText: {
-    color: colors.muted,
-  },
-  ordersSection: {
-    marginTop: 24,
-  },
-  ordersTitle: {
-    color: colors.label,
+    fontSize: 12,
     fontWeight: "400",
-    fontSize: 16,
-    marginBottom: 12,
+    lineHeight: 16,
   },
-  ordersList: {
-    gap: 8,
+
+  /* Orders Card */
+  ordersCard: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
   },
-  orderItem: {
+  orderCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  orderCardTitle: {
+    color: colors.label,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  viewAllLink: {
+    color: colors.primaryContainer,
+    fontSize: 13,
+    fontWeight: "400",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: 16,
+  },
+  orderRow: { overflow: "hidden" },
+  orderRowInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  orderItemContent: {
-    flex: 1,
+  orderRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  orderIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceContainerHigh,
+    justifyContent: "center",
+    alignItems: "center",
   },
   orderId: {
     color: colors.onSurface,
+    fontSize: 13,
     fontWeight: "500",
   },
   orderDate: {
     color: colors.muted,
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: "300",
+    marginTop: 2,
   },
+  orderRowRight: { alignItems: "flex-end" },
   orderStatus: {
-    color: colors.successText,
     fontSize: 12,
     fontWeight: "500",
+    textTransform: "capitalize",
   },
-  actionsSection: {
-    flexDirection: "column",
-    gap: 16,
-    marginTop: "auto",
+  orderAmount: {
+    color: colors.label,
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 2,
   },
+
+  /* Actions */
+  actionsSection: { gap: 12 },
   dashboardBtn: {
     backgroundColor: colors.primaryContainer,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "transparent",
+    borderRadius: 10,
+    overflow: "hidden",
     shadowColor: colors.shadowAmbient,
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 1,
     shadowRadius: 35,
-  },
-  dashboardBtnInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  dashboardBtnText: {
-    color: colors.onPrimaryContainer,
-  },
-  actionIcon: {
-    margin: 0,
+    elevation: 4,
   },
   signOutBtn: {
     backgroundColor: "transparent",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: "hidden",
   },
-  signOutBtnInner: {
+  btnInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    gap: 8,
+    gap: 6,
+  },
+  dashboardBtnText: {
+    color: colors.onPrimaryContainer,
+    fontSize: 14,
+    fontWeight: "500",
   },
   signOutBtnText: {
     color: colors.primaryContainer,
+    fontSize: 14,
+    fontWeight: "400",
   },
+
+  /* Bottom Nav */
   bottomNav: {
     position: "absolute",
     bottom: 0,
@@ -485,12 +663,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    height: 56,
+    height: 60,
     paddingBottom: Platform.OS === "android" ? 0 : 8,
     shadowColor: colors.shadowSoft,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 1,
     shadowRadius: 10,
+    elevation: 8,
   },
   navItem: {
     flex: 1,
@@ -498,21 +677,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 4,
   },
-  navItemInner: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeNavIcon: {
+  navItemInner: { alignItems: "center", justifyContent: "center" },
+  navIconActive: {
     borderTopWidth: 2,
     borderTopColor: colors.primaryContainer,
-    paddingTop: 2,
-    borderRadius: 0,
   },
   navLabel: {
+    fontSize: 11,
+    fontWeight: "400",
     marginTop: -4,
   },
   navLabelActive: {
     color: colors.primaryContainer,
-    fontWeight: "500",
+    fontWeight: "600",
   },
+  navLabelInactive: { color: colors.muted },
+  noMargin: { margin: 0 },
 });

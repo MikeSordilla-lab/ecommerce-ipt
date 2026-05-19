@@ -1,15 +1,102 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Image } from "expo-image";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { IconButton, Text, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { CartItem } from "@/api/types";
 import { colors } from "@/theme/colors";
-import { BadgeChip, Button, DividerLine, Notice, PrimaryButton, QuantityStepper } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
+
+const NAV_ITEMS = [
+  { key: "shop", label: "Shop", icon: "storefront" },
+  { key: "cart", label: "Cart", icon: "shopping-cart" },
+  { key: "orders", label: "Orders", icon: "package" },
+  { key: "profile", label: "Profile", icon: "account" },
+] as const;
+
+type NavKey = (typeof NAV_ITEMS)[number]["key"];
+
+function QuantityStepper({
+  value,
+  onDecrease,
+  onIncrease,
+  min = 1,
+  max = 99,
+}: {
+  value: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  min?: number;
+  max?: number;
+}) {
+  return (
+    <View style={stepper.wrap}>
+      <TouchableOpacity
+        style={[stepper.btn, value <= min && stepper.btnDisabled]}
+        onPress={onDecrease}
+        disabled={value <= min}
+        activeOpacity={0.8}
+      >
+        <Text style={stepper.symbol}>−</Text>
+      </TouchableOpacity>
+      <Text style={stepper.value}>{value}</Text>
+      <TouchableOpacity
+        style={[stepper.btn, value >= max && stepper.btnDisabled]}
+        onPress={onIncrease}
+        disabled={value >= max}
+        activeOpacity={0.8}
+      >
+        <Text style={stepper.symbol}>+</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const stepper = StyleSheet.create({
+  wrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  btn: {
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.surfaceContainerLowest,
+  },
+  btnDisabled: { opacity: 0.35 },
+  symbol: { fontSize: 18, color: colors.primaryContainer, fontWeight: "400" },
+  value: {
+    width: 32,
+    textAlign: "center",
+    color: colors.onSurface,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});
+
+function handleNavRoute(key: NavKey) {
+  if (key === "shop") router.push("/customer/shop");
+  else if (key === "orders") router.push("/customer/orders");
+  else if (key === "profile") router.push("/customer/profile");
+}
 
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -19,15 +106,17 @@ export default function CartScreen() {
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
+  const [promoMessageType, setPromoMessageType] = useState<"success" | "error">("error");
   const [promoDiscount, setPromoDiscount] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<{ items: CartItem[]; subtotal: number }>("/api/mobile/cart.php");
+      const data = await apiFetch<{ items: CartItem[]; subtotal: number }>(
+        "/api/mobile/cart.php"
+      );
       setItems(data.items);
       setSubtotal(data.subtotal);
-      // Reset promo code on cart reload
       setPromoCode("");
       setPromoDiscount(0);
       setPromoMessage("");
@@ -38,43 +127,42 @@ export default function CartScreen() {
     }
   }, []);
 
-  const applyPromoCode = useCallback(async () => {
-    if (!promoCode.trim()) return;
-    
-    setPromoLoading(true);
-    setPromoMessage("");
-    try {
-      // For now, we'll simulate a promo code validation
-      // In a real app, this would call an API endpoint
-      const validCodes = ["SAVE10", "WELCOME20", "FREESHIP"];
-      const discountCodes = {
-        "SAVE10": 10, // 10% off
-        "WELCOME20": 20, // 20% off
-        "FREESHIP": 0 // Free shipping (we'd handle this differently)
-      };
-      
-      if (validCodes.includes(promoCode.toUpperCase())) {
-        const discountPercent = discountCodes[promoCode.toUpperCase()];
-        setPromoDiscount(discountPercent);
-        setPromoMessage(`Applied ${promoCode.toUpperCase()}! ${discountPercent}% off`);
-      } else {
-        setPromoMessage("Invalid promo code");
-      }
-    } catch (error) {
-      setPromoMessage("Could not apply promo code");
-    } finally {
-      setPromoLoading(false);
-    }
-  }, [promoCode]);
-
   useFocusEffect(
     useCallback(() => {
       load().catch((error) => {
         setMessage(error instanceof Error ? error.message : "Could not load cart");
         setLoading(false);
       });
-    }, [load]),
+    }, [load])
   );
+
+  const applyPromoCode = useCallback(async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoMessage("");
+    try {
+      const discountCodes: Record<string, number> = {
+        SAVE10: 10,
+        WELCOME20: 20,
+        FREESHIP: 0,
+      };
+      const key = promoCode.toUpperCase();
+      if (key in discountCodes) {
+        const pct = discountCodes[key];
+        setPromoDiscount(pct);
+        setPromoMessage(`Applied ${key}! ${pct > 0 ? `${pct}% off` : "Free shipping"}`);
+        setPromoMessageType("success");
+      } else {
+        setPromoMessage("Invalid promo code");
+        setPromoMessageType("error");
+      }
+    } catch {
+      setPromoMessage("Could not apply promo code");
+      setPromoMessageType("error");
+    } finally {
+      setPromoLoading(false);
+    }
+  }, [promoCode]);
 
   async function updateQuantity(item: CartItem, quantity: number) {
     await apiFetch("/api/mobile/cart.php", {
@@ -84,7 +172,7 @@ export default function CartScreen() {
     await load();
   }
 
-  async function remove(item: CartItem) {
+  async function removeItem(item: CartItem) {
     await apiFetch("/api/mobile/cart.php", {
       method: "DELETE",
       body: jsonBody({ cart_item_id: item.cart_item_id }),
@@ -92,12 +180,18 @@ export default function CartScreen() {
     await load();
   }
 
+  const discountAmt = subtotal * (promoDiscount / 100);
+  const taxable = subtotal - discountAmt;
+  const tax = taxable * 0.085;
+  const total = taxable + tax;
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <IconButton icon="loader" size={32} iconColor={colors.primaryContainer} />
-          <Text variant="bodyMedium" style={styles.loadingText}>Loading</Text>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+        <View style={styles.loadingBox}>
+          <ActivityIndicator color={colors.primaryContainer} size="large" />
+          <Text style={styles.loadingText}>Loading cart…</Text>
         </View>
       </SafeAreaView>
     );
@@ -105,213 +199,276 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.topBar}>
-        <TouchableRipple style={styles.avatar}>
-          <IconButton icon="account" iconColor={colors.secondary} size={20} />
-        </TouchableRipple>
-        <Text variant="titleLarge" style={styles.topBarTitle}>Your Cart</Text>
-        <TouchableRipple style={styles.iconBtn}>
-          <IconButton icon="magnify" iconColor={colors.primaryContainer} size={20} />
-        </TouchableRipple>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      {/* ── Top Bar ── */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.push("/customer/shop")}
+          activeOpacity={0.8}
+        >
+          <IconButton icon="arrow-left" iconColor={colors.primaryContainer} size={20} style={styles.noMargin} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Your Cart</Text>
+        <View style={styles.cartBadgeWrap}>
+          {items.length > 0 && (
+            <View style={styles.cartCountBadge}>
+              <Text style={styles.cartCountText}>{items.length}</Text>
+            </View>
+          )}
+        </View>
       </View>
 
+      {/* ── Error Banner ── */}
+      {message ? (
+        <View style={styles.errorBanner}>
+          <IconButton icon="alert-circle" iconColor={colors.error} size={16} style={styles.noMargin} />
+          <Text style={styles.errorText}>{message}</Text>
+        </View>
+      ) : null}
+
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {message ? (
-          <Notice
-            message={message}
-            tone={message.includes("Added") ? "success" : "danger"}
-            icon={message.includes("Added") ? "check-circle" : "alert-circle"}
-          />
-        ) : null}
-
-         {items.length === 0 ? (
-           <View style={styles.emptyState}>
-             <IconButton icon="cart-outline" size={64} iconColor={colors.outline} />
-             <Text variant="titleLarge" style={styles.emptyTitle}>Your Cart</Text>
-             <Text variant="bodyMedium" style={styles.emptySubtitle}>Add items to your cart to get started</Text>
-             <View style={styles.emptyCartItems}>
-               <Text variant="bodyMedium" style={styles.emptyText}>Your cart is empty</Text>
-             </View>
-             <PrimaryButton
-               title="Start Shopping"
-               onPress={() => router.push("/customer/shop")}
-               icon="storefront"
-               style={styles.continueBtn}
-             />
-           </View>
+        {items.length === 0 ? (
+          /* ── Empty State ── */
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconBg}>
+              <IconButton icon="cart-outline" size={52} iconColor={colors.outlineVariant} style={styles.noMargin} />
+            </View>
+            <Text style={styles.emptyTitle}>Your cart is empty</Text>
+            <Text style={styles.emptySubtitle}>
+              Add items from the shop to get started
+            </Text>
+            <TouchableOpacity
+              style={styles.shopNowBtn}
+              onPress={() => router.push("/customer/shop")}
+              activeOpacity={0.85}
+            >
+              <IconButton icon="storefront" iconColor={colors.onPrimaryContainer} size={18} style={styles.noMargin} />
+              <Text style={styles.shopNowText}>Start Shopping</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <>
-            <Text variant="bodyMedium" style={styles.itemCount}>{items.length} items ready for checkout</Text>
+            {/* ── Item Count ── */}
+            <Text style={styles.itemCountText}>
+              {items.length} {items.length === 1 ? "item" : "items"} ready for checkout
+            </Text>
 
-             <View style={styles.itemsList}>
-               {items.map((item) => (
-                 <View key={item.cart_item_id} style={styles.cartItem}>
-                   <View style={styles.itemImageContainer}>
-                     {item.image_url ? (
-                       <Image source={{ uri: item.image_url }} style={styles.itemImage} contentFit="cover" />
-                     ) : (
-                       <View style={styles.imagePlaceholder}>
-                         <IconButton icon="image" size={24} iconColor={colors.outline} />
-                       </View>
-                     )}
-                   </View>
-                   <View style={styles.itemDetails}>
-                     <View style={styles.itemHeader}>
-                       <Text variant="bodyMedium" style={styles.itemName} numberOfLines={2}>
-                         {item.name}
-                       </Text>
-                       <TouchableRipple
-                         onPress={() => remove(item)}
-                         style={styles.removeBtn}
-                       >
-                         <IconButton icon="close" size={18} iconColor={colors.outlineVariant} />
-                       </TouchableRipple>
-                     </View>
-                     <Text variant="labelSmall" style={styles.itemVariant}>Qty: {item.quantity}</Text>
-                     <View style={styles.itemFooter}>
-                       <Text variant="titleMedium" style={styles.itemPrice}>
-                         ${Number(item.subtotal).toFixed(2)}
-                       </Text>
-                       <QuantityStepper
-                         value={item.quantity}
-                         onDecrease={() => updateQuantity(item, item.quantity - 1)}
-                         onIncrease={() => updateQuantity(item, item.quantity + 1)}
-                         min={1}
-                         max={item.stock}
-                       />
-                     </View>
-                   </View>
-                 </View>
-               ))}
-             </View>
+            {/* ── Cart Items ── */}
+            <View style={styles.itemsCard}>
+              {items.map((item, idx) => (
+                <View key={item.cart_item_id}>
+                  {idx > 0 && <View style={styles.itemDivider} />}
+                  <View style={styles.cartItem}>
+                    {/* Image */}
+                    <View style={styles.itemImgWrap}>
+                      {item.image_url ? (
+                        <Image
+                          source={{ uri: item.image_url }}
+                          style={styles.itemImg}
+                          contentFit="cover"
+                        />
+                      ) : (
+                        <View style={styles.imgPlaceholder}>
+                          <IconButton icon="image" size={24} iconColor={colors.outlineVariant} style={styles.noMargin} />
+                        </View>
+                      )}
+                    </View>
 
-             {/* Promo Code Section */}
-             <View style={styles.promoSection}>
-               <TextInput
-                 placeholder="Enter promo code"
-                 value={promoCode}
-                 onChangeText={setPromoCode}
-                 style={styles.promoInput}
-                 placeholderTextColor={colors.muted}
-                 autoCapitalize="none"
-               />
-               <Button
-                 title="Apply"
-                 mode="contained"
-                 onPress={applyPromoCode}
-                 disabled={!promoCode.trim() || promoLoading}
-                 style={styles.promoButton}
-               />
-               {promoMessage ? (
-                 <Text variant="bodyMedium" style={[
-                   styles.promoMessage,
-                   promoMessage.includes("Applied") ? styles.promoSuccess : styles.promoError
-                 ]}>
-                   {promoMessage}
-                 </Text>
-               ) : null}
-             </View>
+                    {/* Details */}
+                    <View style={styles.itemDetails}>
+                      <View style={styles.itemTop}>
+                        <Text style={styles.itemName} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => removeItem(item)}
+                          style={styles.removeBtn}
+                          activeOpacity={0.7}
+                        >
+                          <IconButton icon="close" size={16} iconColor={colors.outlineVariant} style={styles.noMargin} />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.itemBottom}>
+                        <Text style={styles.itemPrice}>
+                          ${Number(item.subtotal).toFixed(2)}
+                        </Text>
+                        <QuantityStepper
+                          value={item.quantity}
+                          onDecrease={() => updateQuantity(item, item.quantity - 1)}
+                          onIncrease={() => updateQuantity(item, item.quantity + 1)}
+                          min={1}
+                          max={item.stock}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
 
-             <View style={styles.orderSummary}>
-              <View style={styles.summaryTopAccent} />
-              <Text variant="titleMedium" style={styles.summaryTitle}>Order Summary</Text>
+            {/* ── Promo Code ── */}
+            <View style={styles.promoCard}>
+              <Text style={styles.promoTitle}>Promo Code</Text>
+              <View style={styles.promoRow}>
+                <TextInput
+                  placeholder="Enter code…"
+                  value={promoCode}
+                  onChangeText={setPromoCode}
+                  style={styles.promoInput}
+                  placeholderTextColor={colors.muted}
+                  autoCapitalize="characters"
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.promoApplyBtn,
+                    (!promoCode.trim() || promoLoading) && styles.promoApplyBtnDisabled,
+                  ]}
+                  onPress={applyPromoCode}
+                  disabled={!promoCode.trim() || promoLoading}
+                  activeOpacity={0.85}
+                >
+                  {promoLoading ? (
+                    <ActivityIndicator color={colors.onPrimaryContainer} size="small" />
+                  ) : (
+                    <Text style={styles.promoApplyText}>Apply</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+              {promoMessage ? (
+                <Text
+                  style={[
+                    styles.promoMsg,
+                    promoMessageType === "success"
+                      ? styles.promoMsgSuccess
+                      : styles.promoMsgError,
+                  ]}
+                >
+                  {promoMessage}
+                </Text>
+              ) : null}
+            </View>
+
+            {/* ── Order Summary ── */}
+            <View style={styles.summaryCard}>
+              {/* accent top line */}
+              <View style={styles.summaryAccent} />
+              <Text style={styles.summaryTitle}>Order Summary</Text>
 
               <View style={styles.summaryRow}>
-                <Text variant="bodyMedium" style={styles.summaryLabel}>Subtotal</Text>
-                <Text variant="labelMedium" style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+                <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
               </View>
+
               {promoDiscount > 0 && (
                 <View style={styles.summaryRow}>
-                  <Text variant="bodyMedium" style={styles.summaryLabel}>Discount ({promoDiscount}%)</Text>
-                  <Text variant="labelMedium" style={styles.summaryValue}>
-                    -${(subtotal * (promoDiscount / 100)).toFixed(2)}
+                  <Text style={styles.summaryLabel}>Discount ({promoDiscount}%)</Text>
+                  <Text style={[styles.summaryValue, { color: colors.successText }]}>
+                    −${discountAmt.toFixed(2)}
                   </Text>
                 </View>
               )}
+
               <View style={styles.summaryRow}>
-                <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Shipping</Text>
-                <View style={styles.freeShipping}>
-                  <IconButton icon="local-shipping" size={14} iconColor={colors.successText} style={styles.freeIcon} />
-                  <Text variant="labelMedium" style={styles.freeText}>Free</Text>
+                <Text style={styles.summaryLabel}>Estimated Shipping</Text>
+                <View style={styles.freeRow}>
+                  <IconButton icon="truck-fast" size={14} iconColor={colors.successText} style={styles.noMargin} />
+                  <Text style={styles.freeText}>Free</Text>
                 </View>
               </View>
-              <View style={styles.summaryRow}>
-                <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Tax</Text>
-                <Text variant="labelMedium" style={styles.summaryValue}>
-                  ${((subtotal - (subtotal * (promoDiscount / 100))) * 0.085).toFixed(2)}
-                </Text>
-              </View>
-
-              <DividerLine />
 
               <View style={styles.summaryRow}>
-                <Text variant="titleMedium" style={styles.totalLabel}>Total</Text>
-                <Text variant="headlineSmall" style={styles.totalValue}>
-                  ${((subtotal - (subtotal * (promoDiscount / 100))) * 1.085).toFixed(2)}
-                </Text>
+                <Text style={styles.summaryLabel}>Estimated Tax (8.5%)</Text>
+                <Text style={styles.summaryValue}>${tax.toFixed(2)}</Text>
               </View>
 
-              <PrimaryButton
-                title="Proceed to Checkout"
-                onPress={() => router.push("/customer/checkout")}
-                icon="arrow-forward"
-                fullWidth
+              <View style={styles.totalDivider} />
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+              </View>
+
+              {/* Checkout button */}
+              <TouchableOpacity
                 style={styles.checkoutBtn}
-              />
+                onPress={() => router.push("/customer/checkout")}
+                activeOpacity={0.88}
+              >
+                <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+                <IconButton icon="arrow-right" iconColor={colors.onPrimaryContainer} size={18} style={styles.noMargin} />
+              </TouchableOpacity>
 
-              <View style={styles.trustBadges}>
-                <IconButton icon="lock" size={18} iconColor={colors.muted} style={styles.trustIcon} />
-                <IconButton icon="shield-check" size={18} iconColor={colors.muted} style={styles.trustIcon} />
-                <IconButton icon="credit-card" size={18} iconColor={colors.muted} style={styles.trustIcon} />
+              {/* Trust badges */}
+              <View style={styles.trustRow}>
+                <IconButton icon="lock" size={16} iconColor={colors.outlineVariant} style={styles.noMargin} />
+                <Text style={styles.trustText}>Secure checkout</Text>
+                <IconButton icon="shield-check" size={16} iconColor={colors.outlineVariant} style={styles.noMargin} />
+                <Text style={styles.trustText}>Buyer protected</Text>
               </View>
             </View>
           </>
         )}
       </ScrollView>
 
+      {/* ── Bottom Nav ── */}
       <View style={styles.bottomNav}>
-        <TouchableRipple style={styles.navItem}>
-          <View style={styles.navItemInner}>
-            <IconButton icon="storefront" iconColor={colors.muted} size={22} />
-            <Text variant="labelSmall" style={styles.navLabel}>Shop</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple style={styles.navItem}>
-          <View style={styles.navItemInner}>
-            <View style={styles.activeNavIcon}>
-              <IconButton icon="shopping-cart" iconColor={colors.primaryContainer} size={22} />
-              <View style={styles.cartBadge} />
-            </View>
-            <Text variant="labelSmall" style={[styles.navLabel, styles.navLabelActive]}>Cart</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple style={styles.navItem}>
-          <View style={styles.navItemInner}>
-            <IconButton icon="package" iconColor={colors.muted} size={22} />
-            <Text variant="labelSmall" style={styles.navLabel}>Orders</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple style={styles.navItem}>
-          <View style={styles.navItemInner}>
-            <IconButton icon="account" iconColor={colors.muted} size={22} />
-            <Text variant="labelSmall" style={styles.navLabel}>Profile</Text>
-          </View>
-        </TouchableRipple>
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.key === "cart";
+          return (
+            <TouchableRipple
+              key={item.key}
+              onPress={() => {
+                if (item.key !== "cart") handleNavRoute(item.key);
+              }}
+              style={styles.navItem}
+            >
+              <View style={styles.navItemInner}>
+                {item.key === "cart" && items.length > 0 ? (
+                  <View style={styles.navCartWrap}>
+                    <IconButton
+                      icon={item.icon}
+                      iconColor={colors.primaryContainer}
+                      size={22}
+                      style={[styles.noMargin, styles.navIconActive]}
+                    />
+                    <View style={styles.navDot} />
+                  </View>
+                ) : (
+                  <IconButton
+                    icon={item.icon}
+                    iconColor={isActive ? colors.primaryContainer : colors.muted}
+                    size={22}
+                    style={[styles.noMargin, isActive && styles.navIconActive]}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.navLabel,
+                    isActive ? styles.navLabelActive : styles.navLabelInactive,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </View>
+            </TouchableRipple>
+          );
+        })}
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  topBar: {
+  container: { flex: 1, backgroundColor: colors.surface },
+
+  /* Header */
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -320,228 +477,249 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  topBarTitle: {
+  headerTitle: {
     color: colors.primaryContainer,
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: 18,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surfaceContainer,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconBtn: {
-    borderRadius: 20,
-  },
-  content: {
+    letterSpacing: -0.22,
     flex: 1,
-  },
-  contentContainer: {
-    padding: MARGIN_MOBILE,
-    paddingBottom: 100,
-    gap: 16,
-  },
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  loadingText: {
-    color: colors.muted,
-  },
-  itemCount: {
-    color: colors.muted,
-    fontWeight: "300",
-  },
-  itemsList: {
-    gap: 16,
-  },
-  cartItem: {
-    flexDirection: "row",
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 12,
-    gap: 12,
-  },
-  itemImageContainer: {
-    width: 96,
-    height: 96,
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  itemImage: {
-    width: "100%",
-    height: "100%",
-  },
-  imagePlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  itemDetails: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  itemHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  itemName: {
-    color: colors.label,
-    fontWeight: "400",
-    flex: 1,
-    lineHeight: 20,
-  },
-  removeBtn: {
-    margin: -8,
-  },
-  itemVariant: {
-    color: colors.muted,
-    marginTop: 2,
-  },
-  itemFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  itemPrice: {
-    color: colors.primaryContainer,
-    fontWeight: "500",
-  },
-  promoSection: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 16,
-    marginTop: 8,
-    gap: 12,
-  },
-  promoInput: {
-    color: colors.onSurface,
-    fontWeight: "400",
-  },
-  promoButton: {
-    marginTop: 4,
-  },
-  promoMessage: {
-    marginTop: 4,
     textAlign: "center",
   },
-  promoSuccess: {
-    color: colors.successText,
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  promoError: {
-    color: colors.error,
+  cartBadgeWrap: {
+    width: 38,
+    height: 38,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  orderSummary: {
-    backgroundColor: colors.surfaceContainerLowest,
+  cartCountBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primaryContainer,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 5,
+  },
+  cartCountText: { color: colors.onPrimaryContainer, fontSize: 11, fontWeight: "600" },
+
+  /* Error */
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: MARGIN_MOBILE,
+    marginTop: 8,
+    padding: 10,
     borderRadius: 8,
+    backgroundColor: colors.errorContainer,
+    gap: 6,
+  },
+  errorText: { color: colors.error, fontSize: 13, fontWeight: "400" },
+
+  /* Scroll */
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: MARGIN_MOBILE,
+    paddingTop: 20,
+    paddingBottom: 90,
+    gap: 16,
+  },
+
+  /* Loading */
+  loadingBox: { flex: 1, justifyContent: "center", alignItems: "center", gap: 12 },
+  loadingText: { color: colors.muted, fontSize: 14, fontWeight: "300" },
+
+  /* Empty state */
+  emptyState: { alignItems: "center", paddingTop: 48, gap: 10 },
+  emptyIconBg: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.surfaceContainerHigh,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  emptyTitle: { color: colors.label, fontSize: 18, fontWeight: "400" },
+  emptySubtitle: {
+    color: colors.muted,
+    fontSize: 14,
+    fontWeight: "300",
+    textAlign: "center",
+    paddingHorizontal: 24,
+  },
+  shopNowBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryContainer,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    gap: 6,
+    marginTop: 8,
+  },
+  shopNowText: { color: colors.onPrimaryContainer, fontSize: 14, fontWeight: "500" },
+
+  /* Item count */
+  itemCountText: { color: colors.muted, fontSize: 13, fontWeight: "300" },
+
+  /* Items card */
+  itemsCard: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+  itemDivider: { height: 1, backgroundColor: colors.border, marginHorizontal: 12 },
+  cartItem: {
+    flexDirection: "row",
+    padding: 14,
+    gap: 12,
+  },
+  itemImgWrap: {
+    width: 90,
+    height: 90,
+    borderRadius: 8,
+    backgroundColor: colors.surfaceContainerHigh,
+    overflow: "hidden",
+  },
+  itemImg: { width: "100%", height: "100%" },
+  imgPlaceholder: { flex: 1, justifyContent: "center", alignItems: "center" },
+  itemDetails: { flex: 1, justifyContent: "space-between" },
+  itemTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  itemName: { color: colors.label, fontSize: 14, fontWeight: "400", flex: 1, lineHeight: 20 },
+  removeBtn: { marginLeft: 4 },
+  itemBottom: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 },
+  itemPrice: { color: colors.primaryContainer, fontSize: 16, fontWeight: "600" },
+
+  /* Promo */
+  promoCard: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 16,
-    marginTop: 8,
-    overflow: "hidden",
+    gap: 10,
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
   },
-  summaryTopAccent: {
+  promoTitle: { color: colors.label, fontSize: 14, fontWeight: "500" },
+  promoRow: { flexDirection: "row", gap: 8 },
+  promoInput: {
+    flex: 1,
+    backgroundColor: colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: colors.onSurface,
+    fontSize: 13,
+    fontWeight: "300",
+    letterSpacing: 1,
+  },
+  promoApplyBtn: {
+    backgroundColor: colors.primaryContainer,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  promoApplyBtnDisabled: { opacity: 0.45 },
+  promoApplyText: { color: colors.onPrimaryContainer, fontSize: 13, fontWeight: "500" },
+  promoMsg: { fontSize: 12, fontWeight: "400" },
+  promoMsgSuccess: { color: colors.successText },
+  promoMsgError: { color: colors.error },
+
+  /* Summary */
+  summaryCard: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+    overflow: "hidden",
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+  summaryAccent: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 2,
+    height: 3,
     backgroundColor: colors.primaryContainer,
-    opacity: 0.2,
+    opacity: 0.4,
   },
   summaryTitle: {
     color: colors.label,
-    fontWeight: "400",
-    marginBottom: 16,
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 14,
+    marginTop: 6,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  summaryLabel: {
-    color: colors.muted,
-    fontWeight: "300",
-  },
-  summaryValue: {
-    color: colors.label,
-    fontVariant: ["tabular-nums"],
-  },
-  freeShipping: {
+  summaryLabel: { color: colors.muted, fontSize: 13, fontWeight: "300" },
+  summaryValue: { color: colors.label, fontSize: 13, fontWeight: "400" },
+  freeRow: { flexDirection: "row", alignItems: "center" },
+  freeText: { color: colors.successText, fontSize: 13, fontWeight: "500" },
+  totalDivider: { height: 1, backgroundColor: colors.border, marginVertical: 12 },
+  totalLabel: { color: colors.onSurface, fontSize: 16, fontWeight: "500" },
+  totalValue: { color: colors.primaryContainer, fontSize: 22, fontWeight: "600", letterSpacing: -0.22 },
+  checkoutBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
-  },
-  freeIcon: {
-    margin: 0,
-    marginLeft: -8,
-  },
-  freeText: {
-    color: colors.successText,
-  },
-  totalLabel: {
-    color: colors.label,
-    fontWeight: "400",
-  },
-  totalValue: {
-    color: colors.primaryContainer,
-    fontWeight: "500",
-    letterSpacing: -0.22,
-  },
-  checkoutBtn: {
+    justifyContent: "center",
+    backgroundColor: colors.primaryContainer,
+    borderRadius: 10,
+    paddingVertical: 14,
+    gap: 6,
     marginTop: 16,
   },
-  trustBadges: {
+  checkoutText: { color: colors.onPrimaryContainer, fontSize: 15, fontWeight: "600" },
+  trustRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
+    marginTop: 14,
     opacity: 0.6,
+    gap: 4,
   },
-  trustIcon: {
-    margin: 0,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 40,
-    gap: 8,
-  },
-  emptyTitle: {
-    color: colors.label,
-    fontWeight: "300",
-  },
-  emptySubtitle: {
-    color: colors.muted,
-    fontWeight: "300",
-  },
-  emptyCartItems: {
-    marginTop: 24,
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: colors.muted,
-  },
-  continueBtn: {
-    marginTop: 8,
-  },
+  trustText: { color: colors.muted, fontSize: 11, fontWeight: "300" },
+
+  /* Bottom Nav */
   bottomNav: {
     position: "absolute",
     bottom: 0,
@@ -551,45 +729,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    height: 56,
+    height: 60,
     paddingBottom: Platform.OS === "android" ? 0 : 8,
     shadowColor: colors.shadowSoft,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 1,
     shadowRadius: 10,
+    elevation: 8,
   },
-  navItem: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  navItemInner: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeNavIcon: {
-    position: "relative",
-    borderTopWidth: 2,
-    borderTopColor: colors.primaryContainer,
-    paddingTop: 2,
-    borderRadius: 0,
-  },
-  cartBadge: {
+  navItem: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 4 },
+  navItemInner: { alignItems: "center", justifyContent: "center" },
+  navCartWrap: { position: "relative" },
+  navDot: {
     position: "absolute",
     top: 4,
-    right: -4,
+    right: -2,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.error,
+    backgroundColor: colors.danger,
+    borderWidth: 1.5,
+    borderColor: colors.background,
   },
-  navLabel: {
-    color: colors.muted,
-    marginTop: -4,
-  },
-  navLabelActive: {
-    color: colors.primaryContainer,
-    fontWeight: "500",
-  },
+  navIconActive: { borderTopWidth: 2, borderTopColor: colors.primaryContainer },
+  navLabel: { fontSize: 11, fontWeight: "400", marginTop: -4 },
+  navLabelActive: { color: colors.primaryContainer, fontWeight: "600" },
+  navLabelInactive: { color: colors.muted },
+  noMargin: { margin: 0 },
 });

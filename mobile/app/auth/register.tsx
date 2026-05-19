@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { IconButton, Surface, Text, TextInput, TouchableRipple } from "react-native-paper";
 import { useAuth } from "@/auth/auth-context";
 import { colors } from "@/theme/colors";
@@ -36,24 +36,19 @@ export default function RegisterScreen() {
     }
   }
 
-  function goBack() {
-    router.back();
-  }
-
   function navigateToLogin() {
     router.push("/auth/login");
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableRipple onPress={goBack} style={styles.backButton}>
-          <IconButton icon="arrow-left" iconColor={colors.onSurface} size={24} />
-        </TouchableRipple>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.titleSection}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.content}>
+            <View style={styles.titleSection}>
           <Text variant="headlineLarge" style={styles.headline}>
             Create Account
           </Text>
@@ -240,7 +235,9 @@ export default function RegisterScreen() {
             </Text>
           </TouchableRipple>
         </View>
-      </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -250,18 +247,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: MARGIN_MOBILE,
-    paddingVertical: GAP_MD,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: GAP_LG * 2,
   },
   content: {
     flex: 1,

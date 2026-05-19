@@ -1,24 +1,24 @@
 import { router } from "expo-router";
 import { Image } from "expo-image";
 import { useCallback, useEffect, useState } from "react";
-import { Animated, Platform, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import {
-  Appbar,
-  Button,
-  Chip,
-  IconButton,
-  Text,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   TextInput,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { IconButton, Text, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Category, Product } from "@/api/types";
 import { colors } from "@/theme/colors";
-import { BadgeChip, PrimaryButton } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
+
 const NAV_ITEMS = [
   { key: "shop", label: "Shop", icon: "storefront" },
   { key: "cart", label: "Cart", icon: "shopping-cart" },
@@ -28,13 +28,47 @@ const NAV_ITEMS = [
 
 type NavKey = (typeof NAV_ITEMS)[number]["key"];
 
+function StockBadge({ stock }: { stock: number }) {
+  if (stock === 0) {
+    return (
+      <View style={[badge.pill, { backgroundColor: colors.dangerSoft }]}>
+        <Text style={[badge.text, { color: colors.danger }]}>Out of Stock</Text>
+      </View>
+    );
+  }
+  if (stock < 10) {
+    return (
+      <View style={[badge.pill, { backgroundColor: colors.warningSoft }]}>
+        <Text style={[badge.text, { color: colors.warning }]}>Low Stock</Text>
+      </View>
+    );
+  }
+  return (
+    <View style={[badge.pill, { backgroundColor: colors.successSoft }]}>
+      <Text style={[badge.text, { color: colors.successText }]}>In Stock</Text>
+    </View>
+  );
+}
+
+const badge = StyleSheet.create({
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 9999,
+  },
+  text: {
+    fontSize: 11,
+    fontWeight: "500",
+  },
+});
+
 export default function ShopScreen() {
-  const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [toast, setToast] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [navKey, setNavKey] = useState<NavKey>("shop");
 
@@ -44,33 +78,36 @@ export default function ShopScreen() {
       const catQuery = activeCategory ? `&category_id=${activeCategory}` : "";
       const searchQuery = search ? `&search=${encodeURIComponent(search)}` : "";
       const data = await apiFetch<{ products: Product[]; categories: Category[] }>(
-        `/api/mobile/products.php?${searchQuery}${catQuery}`,
+        `/api/mobile/products.php?${searchQuery}${catQuery}`
       );
       setProducts(data.products);
       if (data.categories.length > 0 && categories.length === 0) {
         setCategories(data.categories);
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not load products");
+      showToast(error instanceof Error ? error.message : "Could not load products", "error");
     } finally {
       setLoading(false);
     }
   }, [activeCategory, search]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
+
+  function showToast(msg: string, type: "success" | "error") {
+    setToast(msg);
+    setToastType(type);
+    setTimeout(() => setToast(""), 3000);
+  }
 
   async function addToCart(productId: number) {
-    setMessage("");
     try {
       await apiFetch("/api/mobile/cart.php", {
         method: "POST",
         body: jsonBody({ product_id: productId, quantity: 1 }),
       });
-      setMessage("Added to cart");
+      showToast("Added to cart ✓", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not add to cart");
+      showToast(error instanceof Error ? error.message : "Could not add to cart", "error");
     }
   }
 
@@ -82,158 +119,169 @@ export default function ShopScreen() {
     else if (key === "profile") router.push("/customer/profile");
   }
 
-  function StockBadge({ stock }: { stock: number }) {
-    if (stock === 0) {
-      return <BadgeChip tone="danger">Out of Stock</BadgeChip>;
-    }
-    if (stock < 10) {
-      return <BadgeChip tone="warning">Low Stock</BadgeChip>;
-    }
-    return <BadgeChip tone="success">In Stock</BadgeChip>;
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Appbar.Header style={styles.header} elevated={false}>
-        <TouchableRipple style={styles.avatar}>
-          <IconButton icon="account" iconColor={colors.secondary} size={20} />
-        </TouchableRipple>
-        <Appbar.Content
-          title="Shop"
-          titleStyle={styles.headerTitle}
-        />
-        <TouchableRipple style={styles.iconBtn}>
-          <IconButton icon="magnify" iconColor={colors.primaryContainer} size={20} />
-        </TouchableRipple>
-      </Appbar.Header>
-
-       <View style={styles.searchRow}>
-         <View style={styles.searchBarContainer}>
-           <IconButton icon="magnify" iconColor={colors.muted} size={20} style={styles.searchIcon} />
-           <View style={styles.searchInputContainer}>
-             <TextInput
-               placeholder="Search products..."
-               value={search}
-               onChangeText={setSearch}
-               style={styles.searchInput}
-               placeholderTextColor={colors.muted}
-               autoCapitalize="none"
-               returnKeyType="search"
-               onSubmitEditing={load}
-             />
-           </View>
-         </View>
-         <TouchableRipple style={styles.filterBtn}>
-           <View style={styles.filterBtnInner}>
-             <Text variant="labelMedium" style={styles.filterBtnText}>Filter</Text>
-             <IconButton icon="tune-variant" size={16} iconColor={colors.label} style={styles.filterIcon} />
-           </View>
-         </TouchableRipple>
-       </View>
-
-      <View style={styles.categoryScroll}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryRow}
-        >
-          <Chip
-            selected={activeCategory === null}
-            onPress={() => setActiveCategory(null)}
-            style={[styles.chip, activeCategory === null && styles.chipSelected]}
-            textStyle={[styles.chipText, activeCategory === null && styles.chipTextSelected]}
-            showSelectedCheck={false}
-            mode={activeCategory === null ? "flat" : "outlined"}
-          >
-            All
-          </Chip>
-          {categories.map((cat) => (
-            <Chip
-              key={cat.id}
-              selected={activeCategory === cat.id}
-              onPress={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-              style={[styles.chip, activeCategory === cat.id && styles.chipSelected]}
-              textStyle={[styles.chipText, activeCategory === cat.id && styles.chipTextSelected]}
-              showSelectedCheck={false}
-              mode={activeCategory === cat.id ? "flat" : "outlined"}
-            >
-              {cat.name}
-            </Chip>
-          ))}
-        </ScrollView>
+      {/* ── Top App Bar ── */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.avatarBtn} activeOpacity={0.8}>
+          <IconButton icon="account" iconColor={colors.secondary} size={18} style={styles.noMargin} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Shop</Text>
+        <TouchableOpacity style={styles.iconBtnCircle} activeOpacity={0.7}>
+          <IconButton icon="magnify" iconColor={colors.primaryContainer} size={20} style={styles.noMargin} />
+        </TouchableOpacity>
       </View>
 
-      {message ? (
-        <View style={[
-          styles.notice,
-          message.includes("Added") ? styles.noticeSuccess : styles.noticeMuted
-        ]}>
-          <Text variant="bodyMedium" style={message.includes("Added") ? styles.successText : styles.mutedText}>
-            {message}
+      {/* ── Search Row ── */}
+      <View style={styles.searchRow}>
+        <View style={styles.searchBarWrap}>
+          <IconButton icon="magnify" iconColor={colors.muted} size={18} style={styles.noMargin} />
+          <TextInput
+            placeholder="Search products…"
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+            placeholderTextColor={colors.muted}
+            autoCapitalize="none"
+            returnKeyType="search"
+            onSubmitEditing={load}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch("")}>
+              <IconButton icon="close-circle" iconColor={colors.muted} size={16} style={styles.noMargin} />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.8}>
+          <IconButton icon="tune-variant" iconColor={colors.label} size={18} style={styles.noMargin} />
+          <Text style={styles.filterBtnText}>Filter</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Category Chips ── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryRow}
+        style={styles.categoryScroll}
+      >
+        {[{ id: null, name: "All" }, ...categories].map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <TouchableOpacity
+              key={cat.id ?? "all"}
+              onPress={() => setActiveCategory(cat.id)}
+              style={[styles.chip, isActive && styles.chipActive]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── Toast ── */}
+      {toast ? (
+        <View style={[styles.toast, toastType === "success" ? styles.toastSuccess : styles.toastError]}>
+          <IconButton
+            icon={toastType === "success" ? "check-circle" : "alert-circle"}
+            iconColor={toastType === "success" ? colors.successText : colors.error}
+            size={16}
+            style={styles.noMargin}
+          />
+          <Text style={[styles.toastText, { color: toastType === "success" ? colors.successText : colors.error }]}>
+            {toast}
           </Text>
         </View>
       ) : null}
 
+      {/* ── Product List ── */}
       <ScrollView
         style={styles.productList}
         contentContainerStyle={styles.productListContent}
         showsVerticalScrollIndicator={false}
       >
-        {products.length === 0 && !loading ? (
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator color={colors.primaryContainer} size="large" />
+            <Text style={styles.loadingText}>Loading products…</Text>
+          </View>
+        ) : products.length === 0 ? (
           <View style={styles.emptyState}>
-            <IconButton icon="package-variant" size={48} iconColor={colors.outline} />
-            <Text variant="bodyLarge" style={styles.emptyText}>No products found</Text>
+            <IconButton icon="package-variant-closed" size={56} iconColor={colors.outlineVariant} style={styles.noMargin} />
+            <Text style={styles.emptyTitle}>No products found</Text>
+            <Text style={styles.emptySubtitle}>Try adjusting your search or filters</Text>
           </View>
         ) : (
           products.map((product) => (
-            <View key={product.id} style={styles.productCard}>
-              <View style={styles.productImageContainer}>
-                {product.image_url ? (
-                  <Image
-                    source={{ uri: product.image_url }}
-                    style={styles.productImage}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <IconButton icon="image" size={32} iconColor={colors.outline} />
+            <TouchableRipple
+              key={product.id}
+              style={styles.productCard}
+              onPress={() => {}}
+              borderless
+            >
+              <View>
+                {/* Image */}
+                <View style={styles.productImageWrap}>
+                  {product.image_url ? (
+                    <Image
+                      source={{ uri: product.image_url }}
+                      style={styles.productImage}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View style={styles.imagePlaceholder}>
+                      <IconButton icon="image" size={36} iconColor={colors.outlineVariant} style={styles.noMargin} />
+                    </View>
+                  )}
+                  <View style={styles.stockBadgeWrap}>
+                    <StockBadge stock={product.stock} />
                   </View>
-                )}
-                <View style={styles.stockBadgeContainer}>
-                  <StockBadge stock={product.stock} />
+                </View>
+
+                {/* Info */}
+                <View style={styles.productInfo}>
+                  <View style={styles.productHeader}>
+                    <Text style={styles.productName} numberOfLines={1}>
+                      {product.name}
+                    </Text>
+                    <Text style={styles.productPrice}>
+                      ${Number(product.price).toFixed(2)}
+                    </Text>
+                  </View>
+
+                  {product.description ? (
+                    <Text style={styles.productDesc} numberOfLines={2}>
+                      {product.description}
+                    </Text>
+                  ) : null}
+
+                  <TouchableOpacity
+                    style={[
+                      styles.addToCartBtn,
+                      product.stock === 0 && styles.addToCartBtnDisabled,
+                    ]}
+                    onPress={() => addToCart(product.id)}
+                    disabled={product.stock === 0}
+                    activeOpacity={0.85}
+                  >
+                    <IconButton icon="cart-plus" iconColor={colors.onPrimaryContainer} size={18} style={styles.noMargin} />
+                    <Text style={styles.addToCartText}>
+                      {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.productInfo}>
-                <View style={styles.productHeader}>
-                  <Text variant="titleMedium" style={styles.productName} numberOfLines={1}>
-                    {product.name}
-                  </Text>
-                  <Text variant="titleMedium" style={styles.productPrice}>
-                    ${Number(product.price).toFixed(2)}
-                  </Text>
-                </View>
-                <Text
-                  variant="bodyMedium"
-                  numberOfLines={2}
-                  style={styles.productDescription}
-                >
-                  {product.description}
-                </Text>
-                <PrimaryButton
-                  title="Add to Cart"
-                  icon="cart-plus"
-                  onPress={() => addToCart(product.id)}
-                  fullWidth
-                  style={styles.addToCartBtn}
-                />
-              </View>
-            </View>
+            </TouchableRipple>
           ))
         )}
       </ScrollView>
 
+      {/* ── Bottom Nav ── */}
       <View style={styles.bottomNav}>
         {NAV_ITEMS.map((item) => {
           const isActive = navKey === item.key;
@@ -248,14 +296,12 @@ export default function ShopScreen() {
                   icon={item.icon}
                   iconColor={isActive ? colors.primaryContainer : colors.muted}
                   size={22}
-                  style={isActive ? styles.navIconActive : undefined}
+                  style={[styles.noMargin, isActive && styles.navIconActive]}
                 />
                 <Text
-                  variant="labelSmall"
                   style={[
                     styles.navLabel,
-                    { color: isActive ? colors.primaryContainer : colors.muted },
-                    isActive && styles.navLabelActive,
+                    isActive ? styles.navLabelActive : styles.navLabelInactive,
                   ]}
                 >
                   {item.label}
@@ -270,27 +316,36 @@ export default function ShopScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  container: { flex: 1, backgroundColor: colors.surface },
+
+  /* Header */
   header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: MARGIN_MOBILE,
+    paddingVertical: 12,
     backgroundColor: colors.background,
-    elevation: 0,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 2,
   },
   headerTitle: {
     color: colors.primaryContainer,
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: 18,
     letterSpacing: -0.22,
+    flex: 1,
+    textAlign: "center",
   },
-  avatar: {
-    marginLeft: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  avatarBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
     borderColor: colors.border,
@@ -298,147 +353,169 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  iconBtn: {
-    borderRadius: 20,
-    marginRight: 4,
+  iconBtnCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
   },
+
+  /* Search */
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: MARGIN_MOBILE,
-    paddingVertical: 12,
+    paddingVertical: 10,
     gap: 8,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  searchBarContainer: {
+  searchBarWrap: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 4,
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingLeft: 4,
-  },
-  searchIcon: {
-    margin: 0,
-  },
-  searchInputContainer: {
-    flex: 1,
-    paddingVertical: 8,
+    paddingHorizontal: 4,
+    height: 40,
   },
   searchInput: {
-    color: colors.muted,
+    flex: 1,
+    color: colors.onSurface,
+    fontSize: 14,
     fontWeight: "300",
+    paddingVertical: 0,
   },
   filterBtn: {
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceContainerLowest,
-    overflow: "hidden",
-  },
-  filterBtnInner: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    height: 40,
     gap: 2,
   },
   filterBtnText: {
     color: colors.label,
+    fontSize: 13,
+    fontWeight: "400",
   },
-  filterIcon: {
-    margin: 0,
-  },
+
+  /* Categories */
   categoryScroll: {
-    paddingBottom: 8,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   categoryRow: {
     paddingHorizontal: MARGIN_MOBILE,
+    paddingVertical: 10,
     gap: 8,
     flexDirection: "row",
   },
   chip: {
-    backgroundColor: "#f7fafc",
-    borderRadius: 4,
-    height: 32,
-    borderColor: "transparent",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceContainerLow,
   },
-  chipSelected: {
+  chipActive: {
     backgroundColor: colors.primaryContainer,
+    borderColor: colors.primaryContainer,
   },
   chipText: {
     color: colors.muted,
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: "400",
   },
-  chipTextSelected: {
+  chipTextActive: {
     color: colors.onPrimaryContainer,
+    fontWeight: "500",
   },
-  notice: {
+
+  /* Toast */
+  toast: {
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: MARGIN_MOBILE,
+    marginTop: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 4,
-    marginBottom: 8,
+    borderRadius: 8,
+    gap: 6,
   },
-  noticeMuted: {
-    backgroundColor: colors.surfaceContainerLow,
+  toastSuccess: {
+    backgroundColor: colors.successSoft,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(21,190,83,0.35)",
   },
-  noticeSuccess: {
-    backgroundColor: "rgba(21, 190, 83, 0.16)",
+  toastError: {
+    backgroundColor: colors.errorContainer,
     borderWidth: 1,
-    borderColor: "rgba(21, 190, 83, 0.4)",
+    borderColor: colors.error,
   },
-  mutedText: {
-    color: colors.muted,
-  },
-  successText: {
-    color: colors.successText,
-  },
-  productList: {
-    flex: 1,
-  },
+  toastText: { fontSize: 13, fontWeight: "400" },
+
+  /* Products */
+  productList: { flex: 1 },
   productListContent: {
     paddingHorizontal: MARGIN_MOBILE,
-    paddingBottom: 80,
+    paddingTop: 16,
+    paddingBottom: 90,
     gap: 16,
   },
+  loadingBox: {
+    paddingTop: 60,
+    alignItems: "center",
+    gap: 12,
+  },
+  loadingText: { color: colors.muted, fontSize: 14, fontWeight: "300" },
+  emptyState: {
+    paddingTop: 60,
+    alignItems: "center",
+    gap: 8,
+  },
+  emptyTitle: { color: colors.label, fontSize: 16, fontWeight: "400" },
+  emptySubtitle: { color: colors.muted, fontSize: 13, fontWeight: "300" },
   productCard: {
     backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
     shadowColor: colors.shadowAmbient,
-    shadowOffset: { width: 0, height: 15 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
-    shadowRadius: 35,
-    elevation: 0,
+    shadowRadius: 20,
+    elevation: 2,
   },
-  productImageContainer: {
+  productImageWrap: {
     height: 180,
-    backgroundColor: colors.surfaceContainer,
+    backgroundColor: colors.surfaceContainerHigh,
     position: "relative",
   },
-  productImage: {
-    width: "100%",
-    height: "100%",
-  },
+  productImage: { width: "100%", height: "100%" },
   imagePlaceholder: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  stockBadgeContainer: {
+  stockBadgeWrap: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 10,
   },
   productInfo: {
     padding: 16,
-    gap: 12,
+    gap: 10,
   },
   productHeader: {
     flexDirection: "row",
@@ -448,32 +525,42 @@ const styles = StyleSheet.create({
   },
   productName: {
     color: colors.onSurface,
-    fontWeight: "300",
-    letterSpacing: -0.22,
+    fontSize: 15,
+    fontWeight: "400",
     flex: 1,
+    letterSpacing: -0.15,
   },
   productPrice: {
     color: colors.primaryContainer,
-    fontWeight: "500",
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "600",
   },
-  productDescription: {
+  productDesc: {
     color: colors.onSurfaceVariant,
+    fontSize: 13,
     fontWeight: "300",
-    lineHeight: 22,
+    lineHeight: 20,
   },
   addToCartBtn: {
-    marginTop: 4,
-  },
-  emptyState: {
-    paddingVertical: 60,
+    flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    justifyContent: "center",
+    backgroundColor: colors.primaryContainer,
+    borderRadius: 8,
+    paddingVertical: 10,
+    gap: 6,
+    marginTop: 2,
   },
-  emptyText: {
-    color: colors.muted,
-    fontWeight: "300",
+  addToCartBtnDisabled: {
+    backgroundColor: colors.outlineVariant,
   },
+  addToCartText: {
+    color: colors.onPrimaryContainer,
+    fontSize: 13,
+    fontWeight: "500",
+  },
+
+  /* Bottom Nav */
   bottomNav: {
     position: "absolute",
     bottom: 0,
@@ -483,12 +570,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    height: 56,
+    height: 60,
     paddingBottom: Platform.OS === "android" ? 0 : 8,
     shadowColor: colors.shadowSoft,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 1,
     shadowRadius: 10,
+    elevation: 8,
   },
   navItem: {
     flex: 1,
@@ -496,19 +584,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 4,
   },
-  navItemInner: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  navItemInner: { alignItems: "center", justifyContent: "center" },
   navIconActive: {
     borderTopWidth: 2,
     borderTopColor: colors.primaryContainer,
-    paddingTop: 2,
   },
-  navLabel: {
-    marginTop: -4,
-  },
-  navLabelActive: {
-    fontWeight: "500",
-  },
+  navLabel: { fontSize: 11, fontWeight: "400", marginTop: -4 },
+  navLabelActive: { color: colors.primaryContainer, fontWeight: "600" },
+  navLabelInactive: { color: colors.muted },
+  noMargin: { margin: 0 },
 });

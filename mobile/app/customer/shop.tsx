@@ -221,7 +221,12 @@ export default function ShopScreen() {
             <TouchableRipple
               key={product.id}
               style={styles.productCard}
-              onPress={() => {}}
+              onPress={() =>
+                router.push({
+                  pathname: "/customer/product",
+                  params: { id: String(product.id) },
+                })
+              }
               borderless
             >
               <View>

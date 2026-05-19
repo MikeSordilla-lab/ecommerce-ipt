@@ -18,10 +18,15 @@ export class ApiError extends Error {
 
 const configuredBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-export const API_BASE_URL =
-  configuredBaseUrl && configuredBaseUrl.trim().length > 0
-    ? configuredBaseUrl.replace(/\/$/, "")
-    : "http://localhost/ecommerce-ipt";
+function normalizeApiBaseUrl(value: string | undefined): string {
+  return value?.trim().replace(/\/+$/, "") ?? "";
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(configuredBaseUrl);
+
+export const API_CONFIGURATION_ERROR = API_BASE_URL
+  ? ""
+  : "Missing EXPO_PUBLIC_API_BASE_URL. Set it to your API host before running or building the app.";
 
 let authToken: string | null = null;
 
@@ -33,6 +38,10 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  if (API_CONFIGURATION_ERROR) {
+    throw new ApiError(API_CONFIGURATION_ERROR, 0);
+  }
+
   const headers = new Headers(options.headers);
   const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 

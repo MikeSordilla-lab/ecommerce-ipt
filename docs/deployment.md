@@ -19,7 +19,7 @@ The app reads configuration from environment variables in `includes/config.php`.
 | `APP_ENV` | `local` | Use `production` on deployed servers. |
 | `APP_DEBUG` | `true` outside production | Shows database connection errors when enabled. Set to `false` in production. |
 | `SITE_NAME` | `Shop` | Name shown in page titles and navbar. |
-| `SITE_URL` | Auto-detected from the request, or `http://localhost/ecommerce-ipt` in CLI | Full public base URL with no trailing slash. Set explicitly if your host sits behind a proxy or uses an unusual document root. |
+| `SITE_URL` | Auto-detected from the request, or `http://localhost/ecommerce-ipt` in CLI | Full public base URL with no trailing slash. Set explicitly in production. For phone testing, do not leave this pinned to `localhost`; either leave it unset or use your LAN URL. |
 | `DB_HOST` | `localhost` | Database host. |
 | `DB_PORT` | `3307` on localhost, `3306` on other hosts | Database port. Set explicitly if your database uses a custom port. |
 | `DB_NAME` | `ecommerce_ipt` | Database name. |
@@ -72,6 +72,10 @@ The app reads configuration from environment variables in `includes/config.php`.
 
    - `http://localhost/ecommerce-ipt`
 
+   For Expo Go on a physical phone, also test the LAN URL from the phone browser:
+
+   - `http://YOUR-LAN-IP/ecommerce-ipt/api/mobile/health.php`
+
 7. Test the seeded admin account:
 
    - Username: `admin`
@@ -123,6 +127,10 @@ The app reads configuration from environment variables in `includes/config.php`.
 
    - `APP_ENV=production`
    - `APP_DEBUG=false`
+
+9. Verify the mobile API health endpoint before packaging or publishing the app:
+
+   - `https://your-domain.com/ecommerce-ipt/api/mobile/health.php`
 
 ## Apache environment variable examples
 
@@ -314,6 +322,8 @@ Check:
 Check:
 
 - `SITE_URL` is correct.
+- The mobile app was built with `EXPO_PUBLIC_API_BASE_URL` set to the same public or LAN base URL.
+- `/api/mobile/health.php` is reachable from the device or emulator.
 - User is logged in with the correct role.
 - CSRF token is present.
 - Browser console/network tab for HTTP status and response body.

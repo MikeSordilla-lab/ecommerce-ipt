@@ -8,6 +8,7 @@ import {
   Chip,
   IconButton,
   Text,
+  TextInput,
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
@@ -78,7 +79,7 @@ export default function ShopScreen() {
     if (key === "shop") return;
     if (key === "cart") router.push("/customer/cart");
     else if (key === "orders") router.push("/customer/orders");
-    else if (key === "profile") router.push("/customer/profile" as any);
+    else if (key === "profile") router.push("/customer/profile");
   }
 
   function StockBadge({ stock }: { stock: number }) {
@@ -108,26 +109,29 @@ export default function ShopScreen() {
         </TouchableRipple>
       </Appbar.Header>
 
-      <View style={styles.searchRow}>
-        <View style={styles.searchBarContainer}>
-          <IconButton icon="magnify" iconColor={colors.muted} size={20} style={styles.searchIcon} />
-          <View style={styles.searchInputContainer}>
-            <Text
-              variant="bodyLarge"
-              style={styles.searchInput}
-              onPress={() => {}}
-            >
-              {search || "Search products..."}
-            </Text>
-          </View>
-        </View>
-        <TouchableRipple style={styles.filterBtn}>
-          <View style={styles.filterBtnInner}>
-            <Text variant="labelMedium" style={styles.filterBtnText}>Filter</Text>
-            <IconButton icon="tune-variant" size={16} iconColor={colors.label} style={styles.filterIcon} />
-          </View>
-        </TouchableRipple>
-      </View>
+       <View style={styles.searchRow}>
+         <View style={styles.searchBarContainer}>
+           <IconButton icon="magnify" iconColor={colors.muted} size={20} style={styles.searchIcon} />
+           <View style={styles.searchInputContainer}>
+             <TextInput
+               placeholder="Search products..."
+               value={search}
+               onChangeText={setSearch}
+               style={styles.searchInput}
+               placeholderTextColor={colors.muted}
+               autoCapitalize="none"
+               returnKeyType="search"
+               onSubmitEditing={load}
+             />
+           </View>
+         </View>
+         <TouchableRipple style={styles.filterBtn}>
+           <View style={styles.filterBtnInner}>
+             <Text variant="labelMedium" style={styles.filterBtnText}>Filter</Text>
+             <IconButton icon="tune-variant" size={16} iconColor={colors.label} style={styles.filterIcon} />
+           </View>
+         </TouchableRipple>
+       </View>
 
       <View style={styles.categoryScroll}>
         <ScrollView

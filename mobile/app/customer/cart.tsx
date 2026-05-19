@@ -16,14 +16,56 @@ export default function CartScreen() {
   const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoMessage, setPromoMessage] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const data = await apiFetch<{ items: CartItem[]; subtotal: number }>("/api/mobile/cart.php");
-    setItems(data.items);
-    setSubtotal(data.subtotal);
-    setLoading(false);
+    try {
+      const data = await apiFetch<{ items: CartItem[]; subtotal: number }>("/api/mobile/cart.php");
+      setItems(data.items);
+      setSubtotal(data.subtotal);
+      // Reset promo code on cart reload
+      setPromoCode("");
+      setPromoDiscount(0);
+      setPromoMessage("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not load cart");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  const applyPromoCode = useCallback(async () => {
+    if (!promoCode.trim()) return;
+    
+    setPromoLoading(true);
+    setPromoMessage("");
+    try {
+      // For now, we'll simulate a promo code validation
+      // In a real app, this would call an API endpoint
+      const validCodes = ["SAVE10", "WELCOME20", "FREESHIP"];
+      const discountCodes = {
+        "SAVE10": 10, // 10% off
+        "WELCOME20": 20, // 20% off
+        "FREESHIP": 0 // Free shipping (we'd handle this differently)
+      };
+      
+      if (validCodes.includes(promoCode.toUpperCase())) {
+        const discountPercent = discountCodes[promoCode.toUpperCase()];
+        setPromoDiscount(discountPercent);
+        setPromoMessage(`Applied ${promoCode.toUpperCase()}! ${discountPercent}% off`);
+      } else {
+        setPromoMessage("Invalid promo code");
+      }
+    } catch (error) {
+      setPromoMessage("Could not apply promo code");
+    } finally {
+      setPromoLoading(false);
+    }
+  }, [promoCode]);
 
   useFocusEffect(
     useCallback(() => {
@@ -86,68 +128,95 @@ export default function CartScreen() {
           />
         ) : null}
 
-        {items.length === 0 ? (
-          <View style={styles.emptyState}>
-            <IconButton icon="cart-outline" size={64} iconColor={colors.outline} />
-            <Text variant="titleLarge" style={styles.emptyTitle}>Your Cart</Text>
-            <Text variant="bodyMedium" style={styles.emptySubtitle}>2 items ready for checkout</Text>
-            <View style={styles.emptyCartItems}>
-              <Text variant="bodyMedium" style={styles.emptyText}>Your cart is empty</Text>
-            </View>
-            <PrimaryButton
-              title="Start Shopping"
-              onPress={() => router.push("/customer/shop")}
-              icon="storefront"
-              style={styles.continueBtn}
-            />
-          </View>
+         {items.length === 0 ? (
+           <View style={styles.emptyState}>
+             <IconButton icon="cart-outline" size={64} iconColor={colors.outline} />
+             <Text variant="titleLarge" style={styles.emptyTitle}>Your Cart</Text>
+             <Text variant="bodyMedium" style={styles.emptySubtitle}>Add items to your cart to get started</Text>
+             <View style={styles.emptyCartItems}>
+               <Text variant="bodyMedium" style={styles.emptyText}>Your cart is empty</Text>
+             </View>
+             <PrimaryButton
+               title="Start Shopping"
+               onPress={() => router.push("/customer/shop")}
+               icon="storefront"
+               style={styles.continueBtn}
+             />
+           </View>
         ) : (
           <>
             <Text variant="bodyMedium" style={styles.itemCount}>{items.length} items ready for checkout</Text>
 
-            <View style={styles.itemsList}>
-              {items.map((item) => (
-                <View key={item.cart_item_id} style={styles.cartItem}>
-                  <View style={styles.itemImageContainer}>
-                    {item.image_url ? (
-                      <Image source={{ uri: item.image_url }} style={styles.itemImage} contentFit="cover" />
-                    ) : (
-                      <View style={styles.imagePlaceholder}>
-                        <IconButton icon="image" size={24} iconColor={colors.outline} />
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.itemDetails}>
-                    <View style={styles.itemHeader}>
-                      <Text variant="bodyMedium" style={styles.itemName} numberOfLines={2}>
-                        {item.name}
-                      </Text>
-                      <TouchableRipple
-                        onPress={() => remove(item)}
-                        style={styles.removeBtn}
-                      >
-                        <IconButton icon="close" size={18} iconColor={colors.outlineVariant} />
-                      </TouchableRipple>
-                    </View>
-                    <Text variant="labelSmall" style={styles.itemVariant}>Qty: {item.quantity}</Text>
-                    <View style={styles.itemFooter}>
-                      <Text variant="titleMedium" style={styles.itemPrice}>
-                        ${Number(item.subtotal).toFixed(2)}
-                      </Text>
-                      <QuantityStepper
-                        value={item.quantity}
-                        onDecrease={() => updateQuantity(item, item.quantity - 1)}
-                        onIncrease={() => updateQuantity(item, item.quantity + 1)}
-                        min={1}
-                        max={item.stock}
-                      />
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+             <View style={styles.itemsList}>
+               {items.map((item) => (
+                 <View key={item.cart_item_id} style={styles.cartItem}>
+                   <View style={styles.itemImageContainer}>
+                     {item.image_url ? (
+                       <Image source={{ uri: item.image_url }} style={styles.itemImage} contentFit="cover" />
+                     ) : (
+                       <View style={styles.imagePlaceholder}>
+                         <IconButton icon="image" size={24} iconColor={colors.outline} />
+                       </View>
+                     )}
+                   </View>
+                   <View style={styles.itemDetails}>
+                     <View style={styles.itemHeader}>
+                       <Text variant="bodyMedium" style={styles.itemName} numberOfLines={2}>
+                         {item.name}
+                       </Text>
+                       <TouchableRipple
+                         onPress={() => remove(item)}
+                         style={styles.removeBtn}
+                       >
+                         <IconButton icon="close" size={18} iconColor={colors.outlineVariant} />
+                       </TouchableRipple>
+                     </View>
+                     <Text variant="labelSmall" style={styles.itemVariant}>Qty: {item.quantity}</Text>
+                     <View style={styles.itemFooter}>
+                       <Text variant="titleMedium" style={styles.itemPrice}>
+                         ${Number(item.subtotal).toFixed(2)}
+                       </Text>
+                       <QuantityStepper
+                         value={item.quantity}
+                         onDecrease={() => updateQuantity(item, item.quantity - 1)}
+                         onIncrease={() => updateQuantity(item, item.quantity + 1)}
+                         min={1}
+                         max={item.stock}
+                       />
+                     </View>
+                   </View>
+                 </View>
+               ))}
+             </View>
 
-            <View style={styles.orderSummary}>
+             {/* Promo Code Section */}
+             <View style={styles.promoSection}>
+               <TextInput
+                 placeholder="Enter promo code"
+                 value={promoCode}
+                 onChangeText={setPromoCode}
+                 style={styles.promoInput}
+                 placeholderTextColor={colors.muted}
+                 autoCapitalize="none"
+               />
+               <Button
+                 title="Apply"
+                 mode="contained"
+                 onPress={applyPromoCode}
+                 disabled={!promoCode.trim() || promoLoading}
+                 style={styles.promoButton}
+               />
+               {promoMessage ? (
+                 <Text variant="bodyMedium" style={[
+                   styles.promoMessage,
+                   promoMessage.includes("Applied") ? styles.promoSuccess : styles.promoError
+                 ]}>
+                   {promoMessage}
+                 </Text>
+               ) : null}
+             </View>
+
+             <View style={styles.orderSummary}>
               <View style={styles.summaryTopAccent} />
               <Text variant="titleMedium" style={styles.summaryTitle}>Order Summary</Text>
 
@@ -155,6 +224,14 @@ export default function CartScreen() {
                 <Text variant="bodyMedium" style={styles.summaryLabel}>Subtotal</Text>
                 <Text variant="labelMedium" style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
               </View>
+              {promoDiscount > 0 && (
+                <View style={styles.summaryRow}>
+                  <Text variant="bodyMedium" style={styles.summaryLabel}>Discount ({promoDiscount}%)</Text>
+                  <Text variant="labelMedium" style={styles.summaryValue}>
+                    -${(subtotal * (promoDiscount / 100)).toFixed(2)}
+                  </Text>
+                </View>
+              )}
               <View style={styles.summaryRow}>
                 <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Shipping</Text>
                 <View style={styles.freeShipping}>
@@ -164,7 +241,9 @@ export default function CartScreen() {
               </View>
               <View style={styles.summaryRow}>
                 <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Tax</Text>
-                <Text variant="labelMedium" style={styles.summaryValue}>${(subtotal * 0.085).toFixed(2)}</Text>
+                <Text variant="labelMedium" style={styles.summaryValue}>
+                  ${((subtotal - (subtotal * (promoDiscount / 100))) * 0.085).toFixed(2)}
+                </Text>
               </View>
 
               <DividerLine />
@@ -172,7 +251,7 @@ export default function CartScreen() {
               <View style={styles.summaryRow}>
                 <Text variant="titleMedium" style={styles.totalLabel}>Total</Text>
                 <Text variant="headlineSmall" style={styles.totalValue}>
-                  ${(subtotal * 1.085).toFixed(2)}
+                  ${((subtotal - (subtotal * (promoDiscount / 100))) * 1.085).toFixed(2)}
                 </Text>
               </View>
 
@@ -341,6 +420,32 @@ const styles = StyleSheet.create({
   itemPrice: {
     color: colors.primaryContainer,
     fontWeight: "500",
+  },
+  promoSection: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+    marginTop: 8,
+    gap: 12,
+  },
+  promoInput: {
+    color: colors.onSurface,
+    fontWeight: "400",
+  },
+  promoButton: {
+    marginTop: 4,
+  },
+  promoMessage: {
+    marginTop: 4,
+    textAlign: "center",
+  },
+  promoSuccess: {
+    color: colors.successText,
+  },
+  promoError: {
+    color: colors.error,
   },
   orderSummary: {
     backgroundColor: colors.surfaceContainerLowest,

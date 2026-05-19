@@ -1,9 +1,8 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { View } from "react-native";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { User } from "@/api/types";
-import { Button, Card, Loading, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Muted, Notice, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function AdminUsersScreen() {
   const [users, setUsers] = useState<User[]>([]);
@@ -39,20 +38,23 @@ export default function AdminUsersScreen() {
 
   return (
     <Screen>
-      <Title>Users</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Users" subtitle="Approve sellers, adjust roles, and remove stale accounts." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       {users.map((user) => (
         <Card key={user.id}>
           <Subtitle>{user.username}</Subtitle>
           <Muted>{user.email}</Muted>
-          <Muted>{user.role} · {user.is_approved ? "Approved" : "Pending"}</Muted>
+          <ChipRow>
+            <StatusChip tone="info">{user.role}</StatusChip>
+            <StatusChip tone={user.is_approved ? "success" : "danger"}>{user.is_approved ? "Approved" : "Pending"}</StatusChip>
+          </ChipRow>
           {user.role === "seller" && !user.is_approved ? (
             <Button title="Approve Seller" onPress={() => action({ user_id: user.id, approve: true })} />
           ) : null}
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <ActionRow>
             <Button title="Customer" variant="secondary" onPress={() => action({ user_id: user.id, role: "customer" })} />
             <Button title="Seller" variant="secondary" onPress={() => action({ user_id: user.id, role: "seller" })} />
-          </View>
+          </ActionRow>
           <Button title="Delete" variant="danger" onPress={() => remove(user.id)} />
         </Card>
       ))}

@@ -3,7 +3,22 @@ import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Category, Product } from "@/api/types";
-import { Button, Card, Field, Loading, Money, Muted, ProductImage, Screen, Subtitle, Title } from "@/components/ui";
+import {
+  ActionRow,
+  Button,
+  Card,
+  ChipRow,
+  Field,
+  Hero,
+  Loading,
+  Money,
+  Muted,
+  Notice,
+  ProductImage,
+  Screen,
+  StatusChip,
+  Subtitle,
+} from "@/components/ui";
 
 export default function ShopScreen() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +62,7 @@ export default function ShopScreen() {
 
   return (
     <Screen>
-      <Title>Shop</Title>
+      <Hero title="Shop" subtitle="Browse products, check stock, and add items to your cart." />
       <View style={{ flexDirection: "row", gap: 8 }}>
         <View style={{ flex: 1 }}>
           <Field label="Search" value={search} onChangeText={setSearch} />
@@ -56,25 +71,35 @@ export default function ShopScreen() {
           <Button title="Go" onPress={() => load()} />
         </View>
       </View>
-      <Muted>{categories.length} categories available</Muted>
-      {message ? <Muted>{message}</Muted> : null}
-      <Button title="Cart" variant="secondary" onPress={() => router.push("/customer/cart")} />
-      <Button title="Orders" variant="secondary" onPress={() => router.push("/customer/orders")} />
+      <ChipRow>
+        <StatusChip tone="info">{categories.length} categories</StatusChip>
+        <StatusChip tone="neutral">{products.length} products</StatusChip>
+      </ChipRow>
+      {message ? <Notice tone={message === "Added to cart" ? "success" : "muted"} message={message} /> : null}
+      <ActionRow>
+        <Button title="Cart" variant="secondary" onPress={() => router.push("/customer/cart")} />
+        <Button title="Orders" variant="secondary" onPress={() => router.push("/customer/orders")} />
+      </ActionRow>
       {products.map((product) => (
         <Card key={product.id}>
           <ProductImage uri={product.image_url} />
           <Subtitle>{product.name}</Subtitle>
-          <Muted>{product.category_name || "Product"}</Muted>
+          <ChipRow>
+            <StatusChip>{product.category_name || "Product"}</StatusChip>
+            <StatusChip tone={product.stock > 0 ? "success" : "danger"}>
+              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+            </StatusChip>
+          </ChipRow>
           <Money value={product.price} />
-          <Muted>{product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}</Muted>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          {product.description ? <Muted>{product.description}</Muted> : null}
+          <ActionRow>
             <View style={{ flex: 1 }}>
               <Button title="View" variant="secondary" onPress={() => router.push(`/customer/product?id=${product.id}`)} />
             </View>
             <View style={{ flex: 1 }}>
               <Button title="Add" disabled={product.stock <= 0} onPress={() => addToCart(product.id)} />
             </View>
-          </View>
+          </ActionRow>
         </Card>
       ))}
     </Screen>

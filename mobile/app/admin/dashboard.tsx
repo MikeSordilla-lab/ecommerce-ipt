@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch } from "@/api/client";
 import type { Order } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Notice, Screen, StatCard, StatusChip, Subtitle } from "@/components/ui";
 import { useAuth } from "@/auth/auth-context";
 
 type AdminDashboard = {
@@ -27,26 +27,30 @@ export default function AdminDashboardScreen() {
 
   return (
     <Screen>
-      <Title>Admin Dashboard</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Admin Dashboard" subtitle="Review platform health, approvals, products, and orders." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       {data ? (
         <>
-          <Card>
-            <Subtitle>Stats</Subtitle>
-            <Muted>Users: {data.stats.users}</Muted>
-            <Muted>Products: {data.stats.products}</Muted>
-            <Muted>Orders: {data.stats.orders}</Muted>
-            <Muted>Pending sellers: {data.stats.pending_sellers}</Muted>
-          </Card>
-          <Button title="Users" onPress={() => router.push("/admin/users")} />
-          <Button title="Products" variant="secondary" onPress={() => router.push("/admin/products")} />
-          <Button title="Orders" variant="secondary" onPress={() => router.push("/admin/orders")} />
-          <Button title="Sign Out" variant="secondary" onPress={signOut} />
+          <ActionRow>
+            <StatCard label="Users" value={data.stats.users} />
+            <StatCard label="Products" value={data.stats.products} />
+            <StatCard label="Orders" value={data.stats.orders} />
+            <StatCard label="Pending sellers" value={data.stats.pending_sellers} />
+          </ActionRow>
+          <ActionRow>
+            <Button title="Users" onPress={() => router.push("/admin/users")} />
+            <Button title="Products" variant="secondary" onPress={() => router.push("/admin/products")} />
+            <Button title="Orders" variant="secondary" onPress={() => router.push("/admin/orders")} />
+            <Button title="Sign Out" variant="secondary" onPress={signOut} />
+          </ActionRow>
           {data.recent_orders.map((order) => (
             <Card key={order.id}>
               <Subtitle>Order #{order.id}</Subtitle>
               <Money value={order.total} />
-              <Muted>{order.username} · {order.status}</Muted>
+              <ChipRow>
+                <StatusChip>{order.username}</StatusChip>
+                <StatusChip tone={order.status === "delivered" ? "success" : "info"}>{order.status}</StatusChip>
+              </ChipRow>
             </Card>
           ))}
         </>

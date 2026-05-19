@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Product } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, ProductImage, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Muted, Notice, ProductImage, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,17 +37,23 @@ export default function ProductScreen() {
       {product ? (
         <>
           <ProductImage uri={product.image_url} />
-          <Title>{product.name}</Title>
+          <Hero title={product.name} subtitle={product.category_name || "Product details"} />
           <Card>
             <Money value={product.price} />
+            <ChipRow>
+              <StatusChip tone={product.stock > 0 ? "success" : "danger"}>
+                {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+              </StatusChip>
+            </ChipRow>
             <Muted>{product.description || "No description"}</Muted>
-            <Muted>{product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}</Muted>
             <Subtitle>Seller</Subtitle>
             <Muted>{product.seller_name || "Unknown"}</Muted>
           </Card>
-          {message ? <Muted>{message}</Muted> : null}
-          <Button title="Add to Cart" disabled={product.stock <= 0} onPress={addToCart} />
-          <Button title="View Cart" variant="secondary" onPress={() => router.push("/customer/cart")} />
+          {message ? <Notice tone={message === "Added to cart" ? "success" : "muted"} message={message} /> : null}
+          <ActionRow>
+            <Button title="Add to Cart" disabled={product.stock <= 0} onPress={addToCart} />
+            <Button title="View Cart" variant="secondary" onPress={() => router.push("/customer/cart")} />
+          </ActionRow>
         </>
       ) : (
         <Muted>{message}</Muted>

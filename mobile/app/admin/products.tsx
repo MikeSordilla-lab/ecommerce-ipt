@@ -1,9 +1,8 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { View } from "react-native";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Product } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, ProductImage, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Notice, ProductImage, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function AdminProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,18 +44,21 @@ export default function AdminProductsScreen() {
 
   return (
     <Screen>
-      <Title>Products</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Products" subtitle="Moderate catalog visibility and product records." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       {products.map((product) => (
         <Card key={product.id}>
           <ProductImage uri={product.image_url} />
           <Subtitle>{product.name}</Subtitle>
           <Money value={product.price} />
-          <Muted>{product.seller_name || "No seller"} · {product.is_active ? "Active" : "Inactive"}</Muted>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <ChipRow>
+            <StatusChip>{product.seller_name || "No seller"}</StatusChip>
+            <StatusChip tone={product.is_active ? "success" : "danger"}>{product.is_active ? "Active" : "Inactive"}</StatusChip>
+          </ChipRow>
+          <ActionRow>
             <Button title={product.is_active ? "Deactivate" : "Activate"} variant="secondary" onPress={() => setActive(product.id, !product.is_active)} />
             <Button title="Delete" variant="danger" onPress={() => remove(product.id)} />
-          </View>
+          </ActionRow>
         </Card>
       ))}
     </Screen>

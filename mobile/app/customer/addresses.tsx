@@ -2,7 +2,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Address } from "@/api/types";
-import { Button, Card, Field, Loading, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { Button, Card, Field, Hero, Loading, Muted, Notice, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function AddressesScreen() {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -52,13 +52,14 @@ export default function AddressesScreen() {
 
   return (
     <Screen>
-      <Title>Addresses</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Addresses" subtitle="Keep delivery details ready for faster checkout." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       {addresses.map((item) => (
         <Card key={item.id}>
           <Subtitle>{item.full_name}</Subtitle>
           <Muted>{item.phone}</Muted>
           <Muted>{item.address}</Muted>
+          {item.is_default ? <StatusChip tone="success">Default</StatusChip> : null}
           <Button title={item.is_default ? "Default" : "Set Default"} disabled={item.is_default} onPress={() => setDefault(item.id)} />
         </Card>
       ))}

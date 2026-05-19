@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch } from "@/api/client";
 import type { Order } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Notice, Screen, StatCard, StatusChip, Subtitle } from "@/components/ui";
 import { useAuth } from "@/auth/auth-context";
 
 type SellerDashboard = {
@@ -29,24 +29,27 @@ export default function SellerDashboardScreen() {
 
   return (
     <Screen>
-      <Title>Seller Dashboard</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Seller Dashboard" subtitle="Monitor products, pending orders, and recent activity." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       {data ? (
         <>
-          <Card>
-            <Subtitle>Stats</Subtitle>
-            <Muted>Products: {data.stats.products}</Muted>
-            <Muted>Total orders: {data.stats.total_orders}</Muted>
-            <Muted>Pending orders: {data.stats.pending_orders}</Muted>
-          </Card>
-          <Button title="My Products" onPress={() => router.push("/seller/products")} />
-          <Button title="Orders" variant="secondary" onPress={() => router.push("/seller/orders")} />
-          <Button title="Sign Out" variant="secondary" onPress={signOut} />
+          <ActionRow>
+            <StatCard label="Products" value={data.stats.products} />
+            <StatCard label="Orders" value={data.stats.total_orders} />
+            <StatCard label="Pending" value={data.stats.pending_orders} />
+          </ActionRow>
+          <ActionRow>
+            <Button title="My Products" onPress={() => router.push("/seller/products")} />
+            <Button title="Orders" variant="secondary" onPress={() => router.push("/seller/orders")} />
+            <Button title="Sign Out" variant="secondary" onPress={signOut} />
+          </ActionRow>
           {data.recent_orders.map((order) => (
             <Card key={order.id}>
               <Subtitle>Order #{order.id}</Subtitle>
               <Money value={order.total} />
-              <Muted>{order.status}</Muted>
+              <ChipRow>
+                <StatusChip tone={order.status === "delivered" ? "success" : "info"}>{order.status}</StatusChip>
+              </ChipRow>
             </Card>
           ))}
         </>

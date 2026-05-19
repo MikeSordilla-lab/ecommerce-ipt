@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Product } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, ProductImage, Screen, Subtitle, Title } from "@/components/ui";
+import { Button, Card, ChipRow, Hero, Loading, Money, Notice, ProductImage, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function SellerProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,15 +38,18 @@ export default function SellerProductsScreen() {
 
   return (
     <Screen>
-      <Title>My Products</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="My Products" subtitle="Create, edit, and deactivate seller inventory." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       <Button title="Add Product" onPress={() => router.push("/seller/product-form")} />
       {products.map((product) => (
         <Card key={product.id}>
           <ProductImage uri={product.image_url} />
           <Subtitle>{product.name}</Subtitle>
           <Money value={product.price} />
-          <Muted>{product.stock} stock · {product.is_active ? "Active" : "Inactive"}</Muted>
+          <ChipRow>
+            <StatusChip tone={product.is_active ? "success" : "danger"}>{product.is_active ? "Active" : "Inactive"}</StatusChip>
+            <StatusChip tone="info">{product.stock} stock</StatusChip>
+          </ChipRow>
           <Button title="Edit" variant="secondary" onPress={() => router.push(`/seller/product-form?id=${product.id}`)} />
           <Button title="Delete/Deactivate" variant="danger" onPress={() => remove(product.id)} />
         </Card>

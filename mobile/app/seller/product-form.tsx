@@ -2,11 +2,9 @@ import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { View } from "react-native";
 import { apiFetch } from "@/api/client";
 import type { Category, Product } from "@/api/types";
-import { Button, Card, Field, Loading, Muted, ProductImage, Screen, Title } from "@/components/ui";
-import { colors } from "@/theme/colors";
+import { Button, Card, Field, Hero, Loading, Notice, PickerShell, ProductImage, Screen } from "@/components/ui";
 
 export default function SellerProductFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -91,18 +89,18 @@ export default function SellerProductFormScreen() {
 
   return (
     <Screen>
-      <Title>{product ? "Edit Product" : "Add Product"}</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title={product ? "Edit Product" : "Add Product"} subtitle="Keep product details precise and ready for customer browsing." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       <Card>
         <ProductImage uri={image?.uri || currentImageUrl} />
         <Button title="Choose Image" variant="secondary" onPress={pickImage} />
-        <View style={{ borderColor: colors.border, borderRadius: 8, borderWidth: 1 }}>
+        <PickerShell>
           <Picker selectedValue={categoryId} onValueChange={setCategoryId}>
             {categories.map((category) => (
               <Picker.Item key={category.id} label={category.name} value={String(category.id)} />
             ))}
           </Picker>
-        </View>
+        </PickerShell>
         <Field label="Name" value={name} onChangeText={setName} />
         <Field label="Description" value={description} onChangeText={setDescription} multiline />
         <Field label="Price" value={price} onChangeText={setPrice} keyboardType="numeric" />

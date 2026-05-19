@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Address, CartItem } from "@/api/types";
-import { Button, Card, Field, Loading, Money, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { Button, Card, DividerLine, Field, Hero, Loading, Money, Muted, Notice, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function CheckoutScreen() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -62,8 +62,8 @@ export default function CheckoutScreen() {
 
   return (
     <Screen>
-      <Title>Checkout</Title>
-      {message ? <Muted>{message}</Muted> : null}
+      <Hero title="Checkout" subtitle="Cash on Delivery with saved or new shipping details." />
+      {message ? <Notice tone="danger" message={message} /> : null}
       <Card>
         <Subtitle>Order Summary</Subtitle>
         {items.map((item) => (
@@ -71,8 +71,9 @@ export default function CheckoutScreen() {
             {item.name} x{item.quantity}
           </Muted>
         ))}
+        <DividerLine />
         <Money value={subtotal} />
-        <Muted>Payment: Cash on Delivery</Muted>
+        <StatusChip tone="info">Payment: Cash on Delivery</StatusChip>
       </Card>
       {addresses.length > 0 ? (
         <Card>

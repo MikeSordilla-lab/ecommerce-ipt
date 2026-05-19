@@ -1,5 +1,5 @@
 import { Redirect, router } from "expo-router";
-import { Button, Card, Loading, Muted, Screen, Subtitle, Title } from "@/components/ui";
+import { Button, Caption, Card, Hero, Loading, Muted, Screen, StatusChip, Subtitle } from "@/components/ui";
 import { API_BASE_URL } from "@/api/client";
 import { useAuth } from "@/auth/auth-context";
 
@@ -23,12 +23,12 @@ export default function Home() {
 
   return (
     <Screen>
-      <Title>Shop Mobile</Title>
+      <Hero title="Shop Mobile" subtitle="A compact command center for customers, sellers, and admins." />
       <Card>
         <Subtitle>{user.username}</Subtitle>
         <Muted>{user.email}</Muted>
-        <Muted>Role: {user.role}</Muted>
-        <Muted>API: {API_BASE_URL}</Muted>
+        <StatusChip tone="info">Role: {user.role}</StatusChip>
+        <Caption>API: {API_BASE_URL}</Caption>
       </Card>
       <Button title="Open Dashboard" onPress={() => router.push(dashboard)} />
       <Button title="Sign Out" variant="secondary" onPress={signOut} />

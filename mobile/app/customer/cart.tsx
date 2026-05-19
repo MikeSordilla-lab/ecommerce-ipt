@@ -1,9 +1,8 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { View } from "react-native";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { CartItem } from "@/api/types";
-import { Button, Card, Loading, Money, Muted, ProductImage, Screen, Subtitle, Title } from "@/components/ui";
+import { ActionRow, Button, Card, DividerLine, Hero, Loading, Money, Notice, Panel, ProductImage, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -50,26 +49,27 @@ export default function CartScreen() {
 
   return (
     <Screen>
-      <Title>Cart</Title>
-      {message ? <Muted>{message}</Muted> : null}
-      {items.length === 0 ? <Muted>Your cart is empty.</Muted> : null}
+      <Hero title="Cart" subtitle="Review quantities before checkout." />
+      {message ? <Notice tone="danger" message={message} /> : null}
+      {items.length === 0 ? <Notice message="Your cart is empty." /> : null}
       {items.map((item) => (
         <Card key={item.cart_item_id}>
           <ProductImage uri={item.image_url} />
           <Subtitle>{item.name}</Subtitle>
           <Money value={item.subtotal} />
-          <Muted>Quantity: {item.quantity}</Muted>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <StatusChip tone="info">Quantity: {item.quantity}</StatusChip>
+          <ActionRow>
             <Button title="-" variant="secondary" disabled={item.quantity <= 1} onPress={() => updateQuantity(item, item.quantity - 1)} />
             <Button title="+" variant="secondary" disabled={item.quantity >= item.stock} onPress={() => updateQuantity(item, item.quantity + 1)} />
             <Button title="Remove" variant="danger" onPress={() => remove(item)} />
-          </View>
+          </ActionRow>
         </Card>
       ))}
-      <Card>
+      <Panel>
         <Subtitle>Total</Subtitle>
+        <DividerLine />
         <Money value={subtotal} />
-      </Card>
+      </Panel>
       <Button title="Checkout" disabled={items.length === 0} onPress={() => router.push("/customer/checkout")} />
       <Button title="Continue Shopping" variant="secondary" onPress={() => router.push("/customer/shop")} />
     </Screen>

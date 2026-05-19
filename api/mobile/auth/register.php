@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . "/../bootstrap.php";
+require_once __DIR__ . "/../../../includes/ValidationHelper.php";
+require_once __DIR__ . "/../../../includes/MailHelper.php";
 
 mobile_method(["POST"]);
 
@@ -17,8 +19,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     mobile_error("A valid email is required", 422);
 }
 
-if (strlen($password) < 8) {
-    mobile_error("Password must be at least 8 characters", 422);
+$passwordErrors = validate_password_strength($password);
+if (!empty($passwordErrors)) {
+    mobile_error("Please check your password", 422, ["errors" => $passwordErrors]);
 }
 
 if (!in_array($role, ["customer", "seller"], true)) {
@@ -37,23 +40,18 @@ try {
     $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role, is_approved) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([$username, $email, password_hash($password, PASSWORD_DEFAULT), $role, $isApproved]);
     $userId = (int) $pdo->lastInsertId();
+    $token = create_email_verification($pdo, $userId);
+    $emailSent = send_verification_email($email, $username, $token);
 
     if ($role === "seller") {
-        mobile_success(["user_id" => $userId, "role" => $role], "Seller account created and pending approval");
+        mobile_success(["user_id" => $userId, "role" => $role, "email_sent" => $emailSent], "Seller account created. Verify your email, then wait for admin approval.");
     }
 
-    $token = mobile_create_token($pdo, $userId);
     mobile_success([
-        "token" => $token,
-        "user" => [
-            "id" => $userId,
-            "username" => $username,
-            "email" => $email,
-            "role" => $role,
-            "is_approved" => true,
-            "profile_image_url" => null,
-        ],
-    ], "Registered");
+        "user_id" => $userId,
+        "role" => $role,
+        "email_sent" => $emailSent,
+    ], "Registered. Please verify your email before logging in.");
 } catch (PDOException $e) {
     mobile_error("Database error", 500);
 }

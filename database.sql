@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS wishlists;
 DROP TABLE IF EXISTS mobile_tokens;
 DROP TABLE IF EXISTS addresses;
 DROP TABLE IF EXISTS products;
@@ -19,6 +20,9 @@ CREATE TABLE users (
     role ENUM('admin', 'seller', 'customer') NOT NULL DEFAULT 'customer',
     profile_image VARCHAR(255),
     is_approved BOOLEAN NOT NULL DEFAULT 1,
+    email_verified_at DATETIME NULL,
+    verification_token_hash CHAR(64) NULL,
+    verification_token_expires_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -72,6 +76,17 @@ CREATE TABLE cart_items (
     UNIQUE KEY unique_cart_item (user_id, product_id)
 );
 
+-- Create wishlists table
+CREATE TABLE wishlists (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_wishlist_item (user_id, product_id)
+);
+
 -- Create mobile auth tokens table for Expo Go sessions
 CREATE TABLE mobile_tokens (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,23 +132,31 @@ CREATE INDEX idx_products_seller ON products(seller_id);
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_wishlists_user ON wishlists(user_id);
+CREATE INDEX idx_wishlists_product ON wishlists(product_id);
+CREATE INDEX idx_users_verification_token ON users(verification_token_hash);
 
 -- Seed data: Admin account (password: admin123)
-INSERT INTO users (username, email, password_hash, role, is_approved) VALUES
-('admin', 'admin123@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
+INSERT INTO users (username, email, password_hash, role, is_approved, email_verified_at) VALUES
+('admin', 'admin123@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1, NOW());
 
--- Seed data: Sample categories
+-- Seed data: PC shop categories
 INSERT INTO categories (name) VALUES 
-('Electronics'),
-('Clothing'),
-('Home & Garden'),
-('Books'),
-('Sports');
+('Processors'),
+('Graphics Cards'),
+('Memory'),
+('Storage'),
+('Motherboards'),
+('Power Supplies'),
+('Cases'),
+('Cooling'),
+('Monitors'),
+('Peripherals');
 
--- Seed data: Sample products (5 products, one per category)
+-- Seed data: Sample PC products
 INSERT INTO products (category_id, seller_id, name, description, price, stock, image_path) VALUES
-(1, 1, 'Wireless Bluetooth Headphones', 'High-quality over-ear headphones with 20-hour battery life and active noise cancellation.', 79.99, 50, '/uploads/products/headphones.jpg'),
-(2, 1, 'Classic Cotton T-Shirt', 'Soft premium cotton t-shirt available in multiple colors. Comfortable for everyday wear.', 24.99, 100, '/uploads/products/tshirt.jpg'),
-(3, 1, 'Indoor Plant Pot Set', 'Set of 3 ceramic plant pots with drainage holes. Perfect for indoor herbs and small plants.', 34.99, 30, '/uploads/products/pots.jpg'),
-(4, 1, 'JavaScript: The Good Parts', 'Essential reading for any JavaScript developer. Learn the best parts of the language.', 19.99, 75, '/uploads/products/book.jpg'),
-(5, 1, 'Adjustable Dumbbell Set', 'Space-saving adjustable dumbbells from 5-25 lbs. Perfect for home workouts.', 149.99, 20, '/uploads/products/dumbbells.jpg');
+(1, 1, 'Intel Core i5-13400F', 'Mainstream Intel CPU with strong multi-core performance for gaming and productivity.', 189.99, 15, '/uploads/products/Products/Intel Core i5-13400F.jpg'),
+(2, 1, 'Graphics Card RTX 4060', 'Efficient 1080p gaming graphics card with current-generation NVIDIA features.', 299.99, 10, '/uploads/products/Products/Graphics Card RTX 4060.jpg'),
+(3, 1, 'Kingston Fury Beast 32GB DDR5', 'Fast 32GB DDR5 memory kit for modern desktop platforms.', 119.99, 15, '/uploads/products/Products/Kingston Fury Beast 32GB DDR5.jpg'),
+(4, 1, 'Samsung 970 EVO 1TB SSD', 'Reliable Samsung NVMe SSD for games, applications, and project files.', 89.99, 18, '/uploads/products/Products/Samsung 970 EVO 1TB SSD.jpg'),
+(9, 1, 'Gaming Monitor 144Hz', 'Responsive gaming monitor with smooth 144Hz refresh for competitive play.', 179.99, 13, '/uploads/products/Products/Gaming Monitor 144Hz.jpg');

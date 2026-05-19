@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initLoadingStates();
   initCSRFInjection();
   initProductCardAddToCart();
+  initWishlistForms();
   initResponsiveTables();
 });
 
@@ -19,6 +20,52 @@ function initLoadingStates() {
         submitBtn.setAttribute("data-original-text", originalText);
         submitBtn.innerHTML = "Loading...";
       }
+    });
+  });
+}
+
+function initWishlistForms() {
+  document.querySelectorAll(".wishlist-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var button = form.querySelector('[type="submit"]');
+      if (button) {
+        button.disabled = true;
+      }
+
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        credentials: "same-origin",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data.success) {
+            showError("Wishlist Error", data.message || "Please try again.");
+            return;
+          }
+
+          var icon = button ? button.querySelector("i") : null;
+          if (icon) {
+            icon.classList.toggle("bi-heart-fill", data.wishlisted);
+            icon.classList.toggle("bi-heart", !data.wishlisted);
+          }
+          showSuccess("Wishlist Updated", data.message || "Wishlist updated.");
+        })
+        .catch(function () {
+          showError("Wishlist Error", "Please try again.");
+        })
+        .finally(function () {
+          if (button) {
+            button.disabled = false;
+          }
+        });
     });
   });
 }

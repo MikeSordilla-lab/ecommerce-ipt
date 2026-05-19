@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/modules/ProductBrowsingModule.php';
+require_once __DIR__ . '/../../includes/modules/WishlistModule.php';
 
 require_role('customer');
 
@@ -45,12 +46,15 @@ try {
     $cart_stmt = $pdo->prepare('SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?');
     $cart_stmt->execute([$_SESSION['user_id']]);
     $cart_count = $cart_stmt->fetchColumn();
+    $wishlist = new WishlistModule();
+    $wishlisted_ids = $wishlist->getProductIds($pdo, (int) $_SESSION['user_id']);
 
 } catch (PDOException $e) {
     $products = [];
     $categories = [];
     $total_pages = 0;
     $cart_count = 0;
+    $wishlisted_ids = [];
 }
 
 generate_csrf();
@@ -167,6 +171,14 @@ require_once __DIR__ . '/../../includes/header.php';
                             <div class="product-card-actions">
                                 <span class="product-price"><?= format_currency($product['price']) ?></span>
                                 <div class="d-flex gap-2">
+                                    <?php $is_wishlisted = in_array((int) $product['id'], $wishlisted_ids, true); ?>
+                                    <form method="POST" action="<?= SITE_URL ?>/api/wishlist_toggle.php" class="wishlist-form">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger no-loading" aria-label="<?= $is_wishlisted ? 'Remove from wishlist' : 'Add to wishlist' ?>" title="<?= $is_wishlisted ? 'Remove from wishlist' : 'Add to wishlist' ?>">
+                                            <i class="bi <?= $is_wishlisted ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                                        </button>
+                                    </form>
                                     <form method="POST" action="<?= SITE_URL ?>/api/cart_add.php" class="add-to-cart-form">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">

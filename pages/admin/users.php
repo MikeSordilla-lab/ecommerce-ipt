@@ -59,6 +59,7 @@ require_once __DIR__ . "/../../includes/header.php";
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
+                                <th>Email</th>
                                 <th>Registered</th>
                                 <th>Actions</th>
                             </tr>
@@ -94,6 +95,13 @@ require_once __DIR__ . "/../../includes/header.php";
                                             <span class="badge badge-warning">Pending</span>
                                         <?php else: ?>
                                             <span class="badge badge-success">Approved</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($user["email_verified_at"])): ?>
+                                            <span class="badge badge-success">Verified</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Unverified</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?= date(

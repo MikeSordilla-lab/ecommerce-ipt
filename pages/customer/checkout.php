@@ -71,6 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         redirect(SITE_URL . "/pages/customer/checkout.php");
     }
 
+    $phone = normalize_ph_mobile($phone) ?? $phone;
+
     $shipping_address = [
         "full_name" => $full_name,
         "phone" => $phone,
@@ -190,10 +192,11 @@ generate_csrf();
                             </div>
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">Phone</label>
-                                <input type="text" class="form-control" id="phone" name="phone"
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="09171234567 or +639171234567"
                                        value="<?= sanitize(
                                            $_POST["phone"] ?? "",
                                        ) ?>" required>
+                                <div class="form-text">Use a Philippine mobile number.</div>
                             </div>
                             <div class="col-12">
                                 <label for="address" class="form-label">Address</label>

@@ -32,6 +32,13 @@ The app reads configuration from environment variables in `includes/config.php`.
 | `SESSION_COOKIE_SAMESITE` | `Strict` | Session SameSite policy. |
 | `SESSION_COOKIE_LIFETIME` | `0` | Session cookie lifetime in seconds. |
 | `SESSION_COOKIE_PATH` | `/` | Session cookie path. |
+| `MAIL_HOST` | empty | SMTP host used by PHPMailer for verification emails. |
+| `MAIL_PORT` | `587` | SMTP port. |
+| `MAIL_USERNAME` | empty | SMTP username. |
+| `MAIL_PASSWORD` | empty | SMTP password. |
+| `MAIL_FROM_ADDRESS` | `no-reply@example.com` | Sender email address. |
+| `MAIL_FROM_NAME` | `SITE_NAME` | Sender display name. |
+| `MAIL_ENCRYPTION` | `tls` | Use `tls`, `ssl`, or empty for no encryption. |
 
 ## Local XAMPP deployment
 
@@ -133,6 +140,13 @@ SetEnv DB_NAME your_database_name
 SetEnv DB_USER your_database_user
 SetEnv DB_PASS your_secure_password
 SetEnv SESSION_COOKIE_SECURE true
+SetEnv MAIL_HOST smtp.example.com
+SetEnv MAIL_PORT 587
+SetEnv MAIL_USERNAME your_smtp_username
+SetEnv MAIL_PASSWORD your_smtp_password
+SetEnv MAIL_FROM_ADDRESS no-reply@your-domain.com
+SetEnv MAIL_FROM_NAME Shop
+SetEnv MAIL_ENCRYPTION tls
 ```
 
 ### Windows/XAMPP Apache virtual host example

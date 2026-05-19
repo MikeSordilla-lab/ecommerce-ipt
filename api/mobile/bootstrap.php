@@ -121,7 +121,7 @@ function mobile_user(PDO $pdo): array
     }
 
     $stmt = $pdo->prepare(
-        "SELECT u.id, u.username, u.email, u.role, u.profile_image, u.is_approved, u.created_at
+        "SELECT u.id, u.username, u.email, u.role, u.profile_image, u.is_approved, u.email_verified_at, u.created_at
          FROM mobile_tokens mt
          JOIN users u ON u.id = mt.user_id
          WHERE mt.token_hash = ? AND mt.expires_at > NOW()"
@@ -131,6 +131,10 @@ function mobile_user(PDO $pdo): array
 
     if (!$user) {
         mobile_error("Invalid or expired token", 401);
+    }
+
+    if (empty($user["email_verified_at"])) {
+        mobile_error("Please verify your email address", 403);
     }
 
     $_SESSION["user_id"] = (int) $user["id"];

@@ -90,6 +90,14 @@ if ($is_logged_in) {
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link <?= $current_page ===
+                                "wishlist.php"
+                                    ? "active"
+                                    : "" ?>" href="<?= SITE_URL ?>/pages/customer/wishlist.php">
+                                    <i class="bi bi-heart"></i> Wishlist
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link <?= $current_page ===
                                 "orders.php"
                                     ? "active"
                                     : "" ?>" href="<?= SITE_URL ?>/pages/customer/orders.php">

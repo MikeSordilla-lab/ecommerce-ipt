@@ -135,6 +135,14 @@ define(
 );
 define("UPLOAD_URL", env_value("UPLOAD_URL", "/uploads/products/"));
 
+define("MAIL_HOST", env_value("MAIL_HOST", ""));
+define("MAIL_PORT", (int) env_value("MAIL_PORT", 587));
+define("MAIL_USERNAME", env_value("MAIL_USERNAME", ""));
+define("MAIL_PASSWORD", env_value("MAIL_PASSWORD", ""));
+define("MAIL_FROM_ADDRESS", env_value("MAIL_FROM_ADDRESS", "no-reply@example.com"));
+define("MAIL_FROM_NAME", env_value("MAIL_FROM_NAME", SITE_NAME));
+define("MAIL_ENCRYPTION", strtolower((string) env_value("MAIL_ENCRYPTION", "tls")));
+
 try {
     $dsn =
         "mysql:host=" .

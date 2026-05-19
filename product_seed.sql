@@ -3,8 +3,8 @@
 
 START TRANSACTION;
 
-INSERT INTO users (username, email, password_hash, role, is_approved)
-SELECT 'seed_seller', 'seed_seller@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'seller', 1
+INSERT INTO users (username, email, password_hash, role, is_approved, email_verified_at)
+SELECT 'seed_seller', 'seed_seller@shop.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'seller', 1, NOW()
 WHERE NOT EXISTS (
     SELECT 1 FROM users WHERE email = 'seed_seller@shop.com'
 );

@@ -12,12 +12,16 @@ if ($username === "" || $password === "") {
 }
 
 try {
-    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role, profile_image, is_approved, created_at FROM users WHERE username = ?");
+    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role, profile_image, is_approved, email_verified_at, created_at FROM users WHERE username = ?");
     $stmt->execute([$username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user || !password_verify($password, $user["password_hash"])) {
         mobile_error("Invalid username or password", 401);
+    }
+
+    if (empty($user["email_verified_at"])) {
+        mobile_error("Please verify your email address before logging in", 403);
     }
 
     if ($user["role"] === "seller" && (int) $user["is_approved"] !== 1) {

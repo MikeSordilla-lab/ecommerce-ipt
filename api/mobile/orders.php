@@ -50,6 +50,8 @@ try {
         mobile_error("Could not place order", 422, ["errors" => $errors]);
     }
 
+    $shippingAddress["phone"] = normalize_ph_mobile($shippingAddress["phone"] ?? "") ?? ($shippingAddress["phone"] ?? "");
+
     $orderItems = array_map(fn($item) => [
         "product_id" => (int) $item["product_id"],
         "name" => $item["name"],

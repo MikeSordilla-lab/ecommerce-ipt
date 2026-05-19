@@ -3,6 +3,8 @@ $page_title = "Product Details";
 require_once __DIR__ . "/../../includes/config.php";
 require_once __DIR__ . "/../../includes/functions.php";
 require_once __DIR__ . "/../../includes/auth.php";
+require_once __DIR__ . "/../../includes/modules/CartModule.php";
+require_once __DIR__ . "/../../includes/modules/WishlistModule.php";
 
 require_role("customer");
 
@@ -34,34 +36,19 @@ try {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $quantity = max(1, min((int) ($_POST["quantity"] ?? 1), $product["stock"]));
+    if (!validate_csrf($_POST["csrf_token"] ?? "")) {
+        set_flash("error", "Error", "Invalid CSRF token.");
+        redirect($_SERVER["REQUEST_URI"]);
+    }
+
+    $quantity = max(1, min((int) ($_POST["quantity"] ?? 1), (int) $product["stock"]));
 
     if ($quantity > 0 && $product["stock"] > 0) {
         try {
-            $stmt = $pdo->prepare('
-                INSERT INTO cart_items (user_id, product_id, quantity)
-                VALUES (?, ?, ?)
-                ON DUPLICATE KEY UPDATE quantity = quantity + ?
-            ');
-            $stmt->execute([
-                $_SESSION["user_id"],
-                $product_id,
-                $quantity,
-                $quantity,
-            ]);
-
-            $cart_count = $pdo->prepare(
-                "SELECT SUM(quantity) FROM cart_items WHERE user_id = ?",
-            );
-            $cart_count->execute([$_SESSION["user_id"]]);
-            $count = $cart_count->fetchColumn() ?: 0;
-
-            set_flash(
-                "success",
-                "Added to Cart",
-                "\"{$product["name"]}\" has been added to your cart.",
-            );
-            redirect(SITE_URL . "/pages/customer/cart.php");
+            $cart = new CartModule();
+            $result = $cart->addItem($pdo, (int) $_SESSION["user_id"], $product_id, $quantity);
+            set_flash($result["success"] ? "success" : "error", $result["success"] ? "Added to Cart" : "Could not add item", $result["message"]);
+            redirect($result["success"] ? SITE_URL . "/pages/customer/cart.php" : $_SERVER["REQUEST_URI"]);
         } catch (PDOException $e) {
             set_flash("error", "Error", "Could not add to cart.");
         }
@@ -74,7 +61,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
+$wishlist = new WishlistModule();
+$wishlisted_ids = $wishlist->getProductIds($pdo, (int) $_SESSION["user_id"]);
+$is_wishlisted = in_array($product_id, $wishlisted_ids, true);
+
 require_once __DIR__ . "/../../includes/header.php";
+generate_csrf();
 ?>
 
 <div class="container">
@@ -136,6 +128,7 @@ require_once __DIR__ . "/../../includes/header.php";
 
             <?php if ($product["stock"] > 0): ?>
                 <form method="POST" class="row g-3">
+                    <?= csrf_field() ?>
                     <div class="col-auto">
                         <label for="quantity" class="form-label">Quantity</label>
                         <input type="number" class="form-control" id="quantity" name="quantity"
@@ -153,7 +146,15 @@ require_once __DIR__ . "/../../includes/header.php";
                 <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
             <?php endif; ?>
 
-            <div class="mt-4">
+            <div class="mt-4 d-flex gap-2">
+                <form method="POST" action="<?= SITE_URL ?>/api/wishlist_toggle.php" class="wishlist-form">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="product_id" value="<?= (int) $product_id ?>">
+                    <button type="submit" class="btn btn-outline-danger no-loading">
+                        <i class="bi <?= $is_wishlisted ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                        <?= $is_wishlisted ? 'Saved' : 'Add to Wishlist' ?>
+                    </button>
+                </form>
                 <a href="<?= SITE_URL ?>/pages/customer/shop.php" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Shop
                 </a>

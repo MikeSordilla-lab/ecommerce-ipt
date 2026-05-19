@@ -41,6 +41,9 @@ class OrderPlacementModule
             $stmtStock = $pdo->prepare(
                 "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?",
             );
+            $stmtDeactivateOutOfStock = $pdo->prepare(
+                "UPDATE products SET is_active = 0 WHERE id = ? AND stock <= 0",
+            );
 
             foreach ($cartItems as $item) {
                 $stmtItem->execute([
@@ -62,6 +65,8 @@ class OrderPlacementModule
                             ($item["name"] ?? $item["product_id"]),
                     );
                 }
+
+                $stmtDeactivateOutOfStock->execute([$item["product_id"]]);
             }
 
             $stmtCart = $pdo->prepare(

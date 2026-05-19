@@ -10,16 +10,21 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerBackTitle: "Back",
-            headerStyle: { backgroundColor: colors.surface },
+            headerStyle: { backgroundColor: colors.background },
             headerShadowVisible: false,
-            headerTintColor: colors.primary,
-            headerTitleStyle: { color: colors.text, fontWeight: "300" },
+            headerTintColor: colors.primaryContainer,
+            headerTitleStyle: {
+              color: colors.text,
+              fontWeight: "300" as const,
+              fontSize: 18,
+            },
             contentStyle: { backgroundColor: colors.background },
+            headerShown: false,
           }}
         >
           <Stack.Screen name="index" options={{ title: "Shop Mobile" }} />
-          <Stack.Screen name="auth/login" options={{ title: "Sign In" }} />
-          <Stack.Screen name="auth/register" options={{ title: "Register" }} />
+          <Stack.Screen name="auth/login" options={{ title: "Sign In", headerShown: true }} />
+          <Stack.Screen name="auth/register" options={{ title: "Register", headerShown: true }} />
           <Stack.Screen name="customer/shop" options={{ title: "Shop" }} />
           <Stack.Screen name="customer/product" options={{ title: "Product" }} />
           <Stack.Screen name="customer/cart" options={{ title: "Cart" }} />

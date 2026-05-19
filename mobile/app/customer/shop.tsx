@@ -1,19 +1,12 @@
 import { router } from "expo-router";
+import { Image } from "expo-image";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Animated,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Animated, Platform, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import {
   Appbar,
-  Card as PaperCard,
+  Button,
   Chip,
   IconButton,
-  Searchbar,
   Text,
   TouchableRipple,
   useTheme,
@@ -22,10 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Category, Product } from "@/api/types";
 import { colors } from "@/theme/colors";
+import { BadgeChip, PrimaryButton } from "@/components/ui";
 
+const MARGIN_MOBILE = 20;
 const NAV_ITEMS = [
   { key: "shop", label: "Shop", icon: "storefront" },
-  { key: "cart", label: "Cart", icon: "cart" },
+  { key: "cart", label: "Cart", icon: "shopping-cart" },
   { key: "orders", label: "Orders", icon: "package" },
   { key: "profile", label: "Profile", icon: "account" },
 ] as const;
@@ -88,57 +83,47 @@ export default function ShopScreen() {
 
   function StockBadge({ stock }: { stock: number }) {
     if (stock === 0) {
-      return (
-        <View style={[styles.badge, { backgroundColor: colors.dangerSoft, borderColor: colors.magentaSoft }]}>
-          <Text style={[styles.badgeText, { color: colors.danger }]}>Out of Stock</Text>
-        </View>
-      );
+      return <BadgeChip tone="danger">Out of Stock</BadgeChip>;
     }
     if (stock < 10) {
-      return (
-        <View style={[styles.badge, { backgroundColor: "rgba(155, 104, 41, 0.1)", borderColor: "rgba(155, 104, 41, 0.3)" }]}>
-          <Text style={[styles.badgeText, { color: colors.warning }]}>Low Stock</Text>
-        </View>
-      );
+      return <BadgeChip tone="warning">Low Stock</BadgeChip>;
     }
-    return (
-      <View style={[styles.badge, { backgroundColor: colors.successSoft, borderColor: "rgba(21, 190, 83, 0.35)" }]}>
-        <Text style={[styles.badgeText, { color: colors.successText }]}>In Stock</Text>
-      </View>
-    );
+    return <BadgeChip tone="success">In Stock</BadgeChip>;
   }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Appbar.Header style={[styles.header, { backgroundColor: colors.background }]} elevated={false}>
-        <View style={styles.avatar}>
-          <IconButton icon="account" iconColor={colors.muted} size={20} />
-        </View>
+      <Appbar.Header style={styles.header} elevated={false}>
+        <TouchableRipple style={styles.avatar}>
+          <IconButton icon="account" iconColor={colors.secondary} size={20} />
+        </TouchableRipple>
         <Appbar.Content
           title="Shop"
-          titleStyle={[styles.headerTitle, { color: colors.primary }]}
+          titleStyle={styles.headerTitle}
         />
-        <Appbar.Action icon="magnify" iconColor={colors.primary} onPress={() => {}} />
+        <TouchableRipple style={styles.iconBtn}>
+          <IconButton icon="magnify" iconColor={colors.primaryContainer} size={20} />
+        </TouchableRipple>
       </Appbar.Header>
 
       <View style={styles.searchRow}>
-        <Searchbar
-          placeholder="Search products..."
-          value={search}
-          onChangeText={setSearch}
-          onSubmitEditing={load}
-          style={[styles.searchBar, { backgroundColor: colors.surface }]}
-          inputStyle={styles.searchInput}
-          iconColor={colors.muted}
-        />
-        <TouchableRipple
-          onPress={() => {}}
-          style={[styles.filterBtn, { backgroundColor: colors.surface }]}
-        >
+        <View style={styles.searchBarContainer}>
+          <IconButton icon="magnify" iconColor={colors.muted} size={20} style={styles.searchIcon} />
+          <View style={styles.searchInputContainer}>
+            <Text
+              variant="bodyLarge"
+              style={styles.searchInput}
+              onPress={() => {}}
+            >
+              {search || "Search products..."}
+            </Text>
+          </View>
+        </View>
+        <TouchableRipple style={styles.filterBtn}>
           <View style={styles.filterBtnInner}>
-            <Text style={styles.filterBtnText}>Filter</Text>
+            <Text variant="labelMedium" style={styles.filterBtnText}>Filter</Text>
             <IconButton icon="tune-variant" size={16} iconColor={colors.label} style={styles.filterIcon} />
           </View>
         </TouchableRipple>
@@ -153,9 +138,10 @@ export default function ShopScreen() {
           <Chip
             selected={activeCategory === null}
             onPress={() => setActiveCategory(null)}
-            style={[styles.chip, !activeCategory && styles.chipSelected]}
-            textStyle={[styles.chipText, !activeCategory && styles.chipTextSelected]}
-            selectedColor={colors.primary}
+            style={[styles.chip, activeCategory === null && styles.chipSelected]}
+            textStyle={[styles.chipText, activeCategory === null && styles.chipTextSelected]}
+            showSelectedCheck={false}
+            mode={activeCategory === null ? "flat" : "outlined"}
           >
             All
           </Chip>
@@ -166,7 +152,8 @@ export default function ShopScreen() {
               onPress={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
               style={[styles.chip, activeCategory === cat.id && styles.chipSelected]}
               textStyle={[styles.chipText, activeCategory === cat.id && styles.chipTextSelected]}
-              selectedColor={colors.primary}
+              showSelectedCheck={false}
+              mode={activeCategory === cat.id ? "flat" : "outlined"}
             >
               {cat.name}
             </Chip>
@@ -175,8 +162,13 @@ export default function ShopScreen() {
       </View>
 
       {message ? (
-        <View style={[styles.notice, { backgroundColor: message.includes("Added") ? colors.successSoft : colors.surfaceSoft }]}>
-          <Text style={{ color: message.includes("Added") ? colors.successText : colors.muted }}>{message}</Text>
+        <View style={[
+          styles.notice,
+          message.includes("Added") ? styles.noticeSuccess : styles.noticeMuted
+        ]}>
+          <Text variant="bodyMedium" style={message.includes("Added") ? styles.successText : styles.mutedText}>
+            {message}
+          </Text>
         </View>
       ) : null}
 
@@ -187,21 +179,22 @@ export default function ShopScreen() {
       >
         {products.length === 0 && !loading ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No products found</Text>
+            <IconButton icon="package-variant" size={48} iconColor={colors.outline} />
+            <Text variant="bodyLarge" style={styles.emptyText}>No products found</Text>
           </View>
         ) : (
           products.map((product) => (
-            <PaperCard key={product.id} style={styles.productCard}>
-              <View style={[styles.productImageContainer, { backgroundColor: colors.surfaceSoft }]}>
+            <View key={product.id} style={styles.productCard}>
+              <View style={styles.productImageContainer}>
                 {product.image_url ? (
-                  <Animated.Image
+                  <Image
                     source={{ uri: product.image_url }}
                     style={styles.productImage}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                 ) : (
                   <View style={styles.imagePlaceholder}>
-                    <Text style={styles.imagePlaceholderText}>No Image</Text>
+                    <IconButton icon="image" size={32} iconColor={colors.outline} />
                   </View>
                 )}
                 <View style={styles.stockBadgeContainer}>
@@ -210,10 +203,10 @@ export default function ShopScreen() {
               </View>
               <View style={styles.productInfo}>
                 <View style={styles.productHeader}>
-                  <Text variant="titleMedium" style={styles.productName}>
+                  <Text variant="titleMedium" style={styles.productName} numberOfLines={1}>
                     {product.name}
                   </Text>
-                  <Text variant="titleMedium" style={[styles.productPrice, { color: colors.primary }]}>
+                  <Text variant="titleMedium" style={styles.productPrice}>
                     ${Number(product.price).toFixed(2)}
                   </Text>
                 </View>
@@ -224,22 +217,20 @@ export default function ShopScreen() {
                 >
                   {product.description}
                 </Text>
-                <TouchableRipple
+                <PrimaryButton
+                  title="Add to Cart"
+                  icon="cart-plus"
                   onPress={() => addToCart(product.id)}
-                  style={[styles.addToCartBtn, { backgroundColor: colors.primarySoft }]}
-                >
-                  <View style={styles.addToCartInner}>
-                    <IconButton icon="cart-plus" size={18} iconColor={colors.primaryDeep} style={styles.cartIcon} />
-                    <Text style={[styles.addToCartText, { color: colors.primaryDeep }]}>Add to Cart</Text>
-                  </View>
-                </TouchableRipple>
+                  fullWidth
+                  style={styles.addToCartBtn}
+                />
               </View>
-            </PaperCard>
+            </View>
           ))
         )}
       </ScrollView>
 
-      <View style={[styles.bottomNav, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      <View style={styles.bottomNav}>
         {NAV_ITEMS.map((item) => {
           const isActive = navKey === item.key;
           return (
@@ -251,14 +242,15 @@ export default function ShopScreen() {
               <View style={styles.navItemInner}>
                 <IconButton
                   icon={item.icon}
-                  iconColor={isActive ? colors.primary : colors.muted}
+                  iconColor={isActive ? colors.primaryContainer : colors.muted}
                   size={22}
                   style={isActive ? styles.navIconActive : undefined}
                 />
                 <Text
+                  variant="labelSmall"
                   style={[
                     styles.navLabel,
-                    { color: isActive ? colors.primary : colors.muted },
+                    { color: isActive ? colors.primaryContainer : colors.muted },
                     isActive && styles.navLabelActive,
                   ]}
                 >
@@ -281,49 +273,64 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.background,
     elevation: 0,
-    shadowOpacity: 0,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   headerTitle: {
-    fontWeight: "700",
-    fontSize: 20,
-    letterSpacing: -0.26,
+    color: colors.primaryContainer,
+    fontWeight: "600",
+    fontSize: 18,
+    letterSpacing: -0.22,
   },
   avatar: {
     marginLeft: 12,
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.surfaceSoft,
+    backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden",
+  },
+  iconBtn: {
+    borderRadius: 20,
+    marginRight: 4,
   },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: MARGIN_MOBILE,
     paddingVertical: 12,
     gap: 8,
   },
-  searchBar: {
+  searchBarContainer: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  searchInput: {
-    fontSize: 16,
-    minHeight: 0,
-  },
-  filterBtn: {
-    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.border,
+    paddingLeft: 4,
+  },
+  searchIcon: {
+    margin: 0,
+  },
+  searchInputContainer: {
+    flex: 1,
+    paddingVertical: 8,
+  },
+  searchInput: {
+    color: colors.muted,
+    fontWeight: "300",
+  },
+  filterBtn: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceContainerLowest,
     overflow: "hidden",
   },
   filterBtnInner: {
@@ -334,62 +341,81 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   filterBtnText: {
-    fontSize: 14,
     color: colors.label,
-    fontWeight: "400",
   },
   filterIcon: {
     margin: 0,
   },
   categoryScroll: {
-    paddingBottom: 16,
+    paddingBottom: 8,
   },
   categoryRow: {
-    paddingHorizontal: 20,
+    paddingHorizontal: MARGIN_MOBILE,
     gap: 8,
     flexDirection: "row",
   },
   chip: {
     backgroundColor: "#f7fafc",
-    borderRadius: 8,
+    borderRadius: 4,
     height: 32,
+    borderColor: "transparent",
   },
   chipSelected: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.primaryContainer,
   },
   chipText: {
+    color: colors.muted,
     fontSize: 14,
-    color: "#64748d",
   },
   chipTextSelected: {
-    color: colors.primary,
+    color: colors.onPrimaryContainer,
   },
   notice: {
-    marginHorizontal: 20,
+    marginHorizontal: MARGIN_MOBILE,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: 4,
     marginBottom: 8,
+  },
+  noticeMuted: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  noticeSuccess: {
+    backgroundColor: "rgba(21, 190, 83, 0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(21, 190, 83, 0.4)",
+  },
+  mutedText: {
+    color: colors.muted,
+  },
+  successText: {
+    color: colors.successText,
   },
   productList: {
     flex: 1,
   },
   productListContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: MARGIN_MOBILE,
     paddingBottom: 80,
     gap: 16,
   },
   productCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceContainerLowest,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 1,
+    shadowRadius: 35,
     elevation: 0,
-    shadowColor: "transparent",
   },
   productImageContainer: {
-    height: 192,
+    height: 180,
+    backgroundColor: colors.surfaceContainer,
     position: "relative",
   },
   productImage: {
@@ -401,76 +427,48 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  imagePlaceholderText: {
-    color: colors.muted,
-    fontSize: 14,
-  },
   stockBadgeContainer: {
     position: "absolute",
     top: 8,
     right: 8,
   },
-  badge: {
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "400",
-  },
   productInfo: {
-    padding: 14,
-    gap: 8,
+    padding: 16,
+    gap: 12,
   },
   productHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+    gap: 8,
   },
   productName: {
-    color: colors.text,
+    color: colors.onSurface,
     fontWeight: "300",
     letterSpacing: -0.22,
     flex: 1,
-    marginRight: 8,
   },
   productPrice: {
-    fontWeight: "700",
+    color: colors.primaryContainer,
+    fontWeight: "500",
     fontSize: 18,
   },
   productDescription: {
-    color: colors.muted,
+    color: colors.onSurfaceVariant,
     fontWeight: "300",
     lineHeight: 22,
   },
   addToCartBtn: {
-    marginTop: 8,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  addToCartInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 4,
-  },
-  cartIcon: {
-    margin: 0,
-  },
-  addToCartText: {
-    fontSize: 14,
-    fontWeight: "400",
+    marginTop: 4,
   },
   emptyState: {
-    paddingVertical: 40,
+    paddingVertical: 60,
     alignItems: "center",
+    gap: 8,
   },
   emptyText: {
     color: colors.muted,
-    fontSize: 16,
+    fontWeight: "300",
   },
   bottomNav: {
     position: "absolute",
@@ -478,14 +476,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: "row",
+    backgroundColor: colors.background,
     borderTopWidth: 1,
+    borderTopColor: colors.border,
     height: 56,
     paddingBottom: Platform.OS === "android" ? 0 : 8,
+    shadowColor: colors.shadowSoft,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
   },
   navItem: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 4,
   },
   navItemInner: {
     alignItems: "center",
@@ -493,11 +498,10 @@ const styles = StyleSheet.create({
   },
   navIconActive: {
     borderTopWidth: 2,
-    borderTopColor: colors.primary,
-    marginTop: -2,
+    borderTopColor: colors.primaryContainer,
+    paddingTop: 2,
   },
   navLabel: {
-    fontSize: 12,
     marginTop: -4,
   },
   navLabelActive: {

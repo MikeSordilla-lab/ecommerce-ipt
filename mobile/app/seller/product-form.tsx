@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/api/client";
 import type { Category, Product } from "@/api/types";
-import { Button, Card, Field, Hero, Loading, Notice, PickerShell, ProductImage, Screen } from "@/components/ui";
+import { Button, Card, Field, Hero, Loading, Notice, PickerShell, ProductImage, Screen, SellerBottomNav } from "@/components/ui";
 
 export default function SellerProductFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -88,7 +88,7 @@ export default function SellerProductFormScreen() {
   }
 
   return (
-    <Screen>
+    <Screen bottomNav={<SellerBottomNav activeRoute="products" />}>
       <Hero title={product ? "Edit Product" : "Add Product"} subtitle="Keep product details precise and ready for customer browsing." />
       {message ? <Notice tone="danger" message={message} /> : null}
       <Card>

@@ -23,7 +23,15 @@ const RADIUS_SM = 4;
 const RADIUS_MD = 6;
 const RADIUS_LG = 8;
 
-export function Screen({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+export function Screen({
+  children,
+  style,
+  bottomNav,
+}: {
+  children: React.ReactNode;
+  style?: ViewStyle;
+  bottomNav?: React.ReactNode;
+}) {
   return (
     <SafeAreaView style={styles.screenWrapper} edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -36,6 +44,7 @@ export function Screen({ children, style }: { children: React.ReactNode; style?:
       >
         {children}
       </ScrollView>
+      {bottomNav}
     </SafeAreaView>
   );
 }
@@ -646,6 +655,77 @@ export function CustomerBottomNav({
         );
       })}
     </View>
+  );
+}
+
+const SELLER_NAV_ITEMS = [
+  { key: "dashboard", label: "Home", icon: "view-dashboard", route: "/seller/dashboard" },
+  { key: "products", label: "Products", icon: "package-variant", route: "/seller/products" },
+  { key: "orders", label: "Orders", icon: "receipt", route: "/seller/orders" },
+  { key: "profile", label: "Profile", icon: "account", route: "/seller/profile" },
+] as const;
+
+export type SellerNavKey = (typeof SELLER_NAV_ITEMS)[number]["key"];
+
+export function SellerBottomNav({ activeRoute }: { activeRoute: SellerNavKey }) {
+  return (
+    <View style={styles.bottomNav}>
+      {SELLER_NAV_ITEMS.map((item) => renderBottomNavItem(item, activeRoute))}
+    </View>
+  );
+}
+
+const ADMIN_NAV_ITEMS = [
+  { key: "dashboard", label: "Home", icon: "view-dashboard", route: "/admin/dashboard" },
+  { key: "users", label: "Users", icon: "account-group", route: "/admin/users" },
+  { key: "products", label: "Products", icon: "package-variant", route: "/admin/products" },
+  { key: "orders", label: "Orders", icon: "receipt", route: "/admin/orders" },
+  { key: "profile", label: "Profile", icon: "account", route: "/admin/profile" },
+] as const;
+
+export type AdminNavKey = (typeof ADMIN_NAV_ITEMS)[number]["key"];
+
+export function AdminBottomNav({ activeRoute }: { activeRoute: AdminNavKey }) {
+  return (
+    <View style={styles.bottomNav}>
+      {ADMIN_NAV_ITEMS.map((item) => renderBottomNavItem(item, activeRoute))}
+    </View>
+  );
+}
+
+function renderBottomNavItem<T extends string>(
+  item: { key: T; label: string; icon: string; route: string },
+  activeRoute: T,
+) {
+  const isActive = activeRoute === item.key;
+  return (
+    <TouchableRipple
+      key={item.key}
+      onPress={() => {
+        if (!isActive) {
+          router.push(item.route as any);
+        }
+      }}
+      style={styles.navItem}
+    >
+      <View style={styles.navItemInner}>
+        <IconButton
+          icon={item.icon}
+          iconColor={isActive ? colors.primaryContainer : colors.muted}
+          size={22}
+          style={[styles.navIconNoMargin, isActive && styles.navIconActive]}
+        />
+        <Text
+          style={[
+            styles.navLabel,
+            { color: isActive ? colors.primaryContainer : colors.muted },
+            isActive && styles.navLabelActive,
+          ]}
+        >
+          {item.label}
+        </Text>
+      </View>
+    </TouchableRipple>
   );
 }
 

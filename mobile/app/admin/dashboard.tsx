@@ -2,8 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch } from "@/api/client";
 import type { Order } from "@/api/types";
-import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Notice, Screen, StatCard, StatusChip, Subtitle } from "@/components/ui";
-import { useAuth } from "@/auth/auth-context";
+import { ActionRow, AdminBottomNav, Button, Card, ChipRow, Hero, Loading, Money, Notice, Screen, StatCard, StatusChip, Subtitle } from "@/components/ui";
 
 type AdminDashboard = {
   stats: { users: number; products: number; orders: number; pending_sellers: number };
@@ -11,7 +10,6 @@ type AdminDashboard = {
 };
 
 export default function AdminDashboardScreen() {
-  const { signOut } = useAuth();
   const [data, setData] = useState<AdminDashboard | null>(null);
   const [message, setMessage] = useState("");
 
@@ -26,33 +24,36 @@ export default function AdminDashboardScreen() {
   if (!data && !message) return <Loading />;
 
   return (
-    <Screen>
-      <Hero title="Admin Dashboard" subtitle="Review platform health, approvals, products, and orders." />
+    <Screen bottomNav={<AdminBottomNav activeRoute="dashboard" />}>
+      <Hero title="Admin Dashboard" subtitle="Review platform health and fulfillment." />
       {message ? <Notice tone="danger" message={message} /> : null}
       {data ? (
         <>
           <ActionRow>
-            <StatCard label="Users" value={data.stats.users} />
-            <StatCard label="Products" value={data.stats.products} />
-            <StatCard label="Orders" value={data.stats.orders} />
-            <StatCard label="Pending sellers" value={data.stats.pending_sellers} />
+            <StatCard label="Users" value={data.stats.users} icon="account-group" />
+            <StatCard label="Products" value={data.stats.products} icon="package-variant" />
+            <StatCard label="Orders" value={data.stats.orders} icon="receipt" />
+            <StatCard label="Pending" value={data.stats.pending_sellers} icon="account-clock" />
           </ActionRow>
           <ActionRow>
-            <Button title="Users" onPress={() => router.push("/admin/users")} />
-            <Button title="Products" variant="secondary" onPress={() => router.push("/admin/products")} />
-            <Button title="Orders" variant="secondary" onPress={() => router.push("/admin/orders")} />
-            <Button title="Sign Out" variant="secondary" onPress={signOut} />
+            <Button title="Review Users" icon="account-group" onPress={() => router.push("/admin/users")} />
+            <Button title="Moderate Products" icon="package-variant" variant="secondary" onPress={() => router.push("/admin/products")} />
           </ActionRow>
-          {data.recent_orders.map((order) => (
-            <Card key={order.id}>
-              <Subtitle>Order #{order.id}</Subtitle>
-              <Money value={order.total} />
-              <ChipRow>
-                <StatusChip>{order.username}</StatusChip>
-                <StatusChip tone={order.status === "delivered" ? "success" : "info"}>{order.status}</StatusChip>
-              </ChipRow>
-            </Card>
-          ))}
+          <Subtitle>Recent Orders</Subtitle>
+          {data.recent_orders.length ? (
+            data.recent_orders.map((order) => (
+              <Card key={order.id}>
+                <Subtitle>Order #{order.id}</Subtitle>
+                <Money value={order.total} />
+                <ChipRow>
+                  <StatusChip>{order.username}</StatusChip>
+                  <StatusChip tone={order.status === "delivered" ? "success" : "info"}>{order.status}</StatusChip>
+                </ChipRow>
+              </Card>
+            ))
+          ) : (
+            <Notice tone="info" message="No recent platform orders." />
+          )}
         </>
       ) : null}
     </Screen>

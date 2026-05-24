@@ -37,10 +37,12 @@ export default function RootLayout() {
           <Stack.Screen name="seller/products" options={{ title: "My Products" }} />
           <Stack.Screen name="seller/product-form" options={{ title: "Product Form" }} />
           <Stack.Screen name="seller/orders" options={{ title: "Seller Orders" }} />
+          <Stack.Screen name="seller/profile" options={{ title: "Seller Profile" }} />
           <Stack.Screen name="admin/dashboard" options={{ title: "Admin" }} />
           <Stack.Screen name="admin/users" options={{ title: "Users" }} />
           <Stack.Screen name="admin/products" options={{ title: "Products" }} />
           <Stack.Screen name="admin/orders" options={{ title: "Orders" }} />
+          <Stack.Screen name="admin/profile" options={{ title: "Admin Profile" }} />
         </Stack>
       </AuthProvider>
     </PaperProvider>

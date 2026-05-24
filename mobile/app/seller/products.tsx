@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Product } from "@/api/types";
-import { Button, Card, ChipRow, Hero, Loading, Money, Notice, ProductImage, Screen, StatusChip, Subtitle } from "@/components/ui";
+import { ActionRow, Button, Card, ChipRow, Hero, Loading, Money, Notice, ProductImage, Screen, SellerBottomNav, StatusChip, Subtitle } from "@/components/ui";
 
 export default function SellerProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,23 +37,30 @@ export default function SellerProductsScreen() {
   }
 
   return (
-    <Screen>
-      <Hero title="My Products" subtitle="Create, edit, and deactivate seller inventory." />
+    <Screen bottomNav={<SellerBottomNav activeRoute="products" />}>
+      <Hero title="Products" subtitle="Create, edit, and manage seller inventory." />
       {message ? <Notice tone="danger" message={message} /> : null}
-      <Button title="Add Product" onPress={() => router.push("/seller/product-form")} />
-      {products.map((product) => (
-        <Card key={product.id}>
-          <ProductImage uri={product.image_url} />
-          <Subtitle>{product.name}</Subtitle>
-          <Money value={product.price} />
-          <ChipRow>
-            <StatusChip tone={product.is_active ? "success" : "danger"}>{product.is_active ? "Active" : "Inactive"}</StatusChip>
-            <StatusChip tone="info">{product.stock} stock</StatusChip>
-          </ChipRow>
-          <Button title="Edit" variant="secondary" onPress={() => router.push(`/seller/product-form?id=${product.id}`)} />
-          <Button title="Delete/Deactivate" variant="danger" onPress={() => remove(product.id)} />
-        </Card>
-      ))}
+      <Button title="Add Product" icon="plus" onPress={() => router.push("/seller/product-form")} />
+      {products.length ? (
+        products.map((product) => (
+          <Card key={product.id}>
+            <ProductImage uri={product.image_url} />
+            <Subtitle>{product.name}</Subtitle>
+            <Money value={product.price} />
+            <ChipRow>
+              <StatusChip tone={product.is_active ? "success" : "danger"}>{product.is_active ? "Active" : "Inactive"}</StatusChip>
+              <StatusChip tone="info">{product.stock} stock</StatusChip>
+              {product.category_name ? <StatusChip>{product.category_name}</StatusChip> : null}
+            </ChipRow>
+            <ActionRow>
+              <Button title="Edit" icon="pencil" variant="secondary" onPress={() => router.push(`/seller/product-form?id=${product.id}`)} />
+              <Button title="Deactivate" icon="delete-outline" variant="danger" onPress={() => remove(product.id)} />
+            </ActionRow>
+          </Card>
+        ))
+      ) : (
+        <Notice tone="info" message="No products yet. Add your first product to start selling." />
+      )}
     </Screen>
   );
 }

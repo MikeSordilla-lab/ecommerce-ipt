@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import { IconButton, Text, TextInput, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { apiFetch, jsonBody } from "@/api/client";
+import { ApiError, apiFetch, jsonBody } from "@/api/client";
 import type { Address } from "@/api/types";
 import { colors } from "@/theme/colors";
 import { CustomerBottomNav } from "@/components/ui";
@@ -16,7 +16,9 @@ export default function AddressesScreen() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("error");
 
   const load = useCallback(async () => {
     const data = await apiFetch<{ addresses: Address[] }>("/api/mobile/addresses.php");
@@ -34,22 +36,55 @@ export default function AddressesScreen() {
   );
 
   async function save() {
-    await apiFetch("/api/mobile/addresses.php", {
-      method: "POST",
-      body: jsonBody({ full_name: fullName, phone, address, is_default: addresses.length === 0 }),
-    });
-    setFullName("");
-    setPhone("");
-    setAddress("");
-    await load();
+    setSaving(true);
+    setMessage("");
+
+    try {
+      await apiFetch("/api/mobile/addresses.php", {
+        method: "POST",
+        body: jsonBody({
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          is_default: addresses.length === 0,
+        }),
+      });
+      setFullName("");
+      setPhone("");
+      setAddress("");
+      setMessageType("success");
+      setMessage("Address saved.");
+      await load();
+    } catch (error) {
+      let nextMessage = error instanceof Error ? error.message : "Could not save address";
+
+      if (error instanceof ApiError && error.data && typeof error.data === "object") {
+        const errors = (error.data as { errors?: string[] }).errors;
+        if (Array.isArray(errors) && errors.length > 0) {
+          nextMessage = errors.join(" ");
+        }
+      }
+
+      setMessageType("error");
+      setMessage(nextMessage);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function setDefault(addressId: number) {
-    await apiFetch("/api/mobile/addresses.php", {
-      method: "PATCH",
-      body: jsonBody({ address_id: addressId }),
-    });
-    await load();
+    try {
+      await apiFetch("/api/mobile/addresses.php", {
+        method: "PATCH",
+        body: jsonBody({ address_id: addressId }),
+      });
+      setMessageType("success");
+      setMessage("Default address updated.");
+      await load();
+    } catch (error) {
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "Could not update default address");
+    }
   }
 
   return (
@@ -65,9 +100,16 @@ export default function AddressesScreen() {
       </View>
 
       {message ? (
-        <View style={styles.errorBanner}>
-          <IconButton icon="alert-circle" iconColor={colors.error} size={16} style={styles.noMargin} />
-          <Text style={styles.errorText}>{message}</Text>
+        <View style={[styles.messageBanner, messageType === "success" ? styles.successBanner : styles.errorBanner]}>
+          <IconButton
+            icon={messageType === "success" ? "check-circle" : "alert-circle"}
+            iconColor={messageType === "success" ? colors.successText : colors.error}
+            size={16}
+            style={styles.noMargin}
+          />
+          <Text style={[styles.messageText, { color: messageType === "success" ? colors.successText : colors.error }]}>
+            {message}
+          </Text>
         </View>
       ) : null}
 
@@ -131,6 +173,7 @@ export default function AddressesScreen() {
               onChangeText={setPhone}
               placeholder="Enter phone number"
               keyboardType="phone-pad"
+              autoComplete="tel"
               outlineColor={colors.border}
               activeOutlineColor={colors.primaryContainer}
               textColor={colors.label}
@@ -160,13 +203,16 @@ export default function AddressesScreen() {
           </View>
 
           <TouchableRipple
-            style={styles.saveBtn}
+            style={[
+              styles.saveBtn,
+              (!fullName.trim() || !phone.trim() || !address.trim() || saving) && styles.saveBtnDisabled,
+            ]}
             onPress={save}
-            disabled={!fullName || !phone || !address}
+            disabled={!fullName.trim() || !phone.trim() || !address.trim() || saving}
           >
             <View style={styles.saveBtnInner}>
               <IconButton icon="plus" iconColor={colors.onPrimaryContainer} size={18} style={styles.noMargin} />
-              <Text style={styles.saveBtnText}>Save Address</Text>
+              <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save Address"}</Text>
             </View>
           </TouchableRipple>
         </View>
@@ -209,17 +255,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  errorBanner: {
+  messageBanner: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: MARGIN_MOBILE,
     marginTop: 8,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: colors.errorContainer,
     gap: 6,
   },
-  errorText: { color: colors.error, fontSize: 13, fontWeight: "400", flex: 1 },
+  errorBanner: {
+    backgroundColor: colors.errorContainer,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  successBanner: {
+    backgroundColor: colors.successSoft,
+    borderWidth: 1,
+    borderColor: "rgba(21,190,83,0.35)",
+  },
+  messageText: { fontSize: 13, fontWeight: "400", flex: 1 },
 
   scroll: { flex: 1 },
   scrollContent: {
@@ -294,6 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 4,
   },
+  saveBtnDisabled: { opacity: 0.6 },
   saveBtnInner: {
     flexDirection: "row",
     alignItems: "center",

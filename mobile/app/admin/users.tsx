@@ -2,7 +2,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { User } from "@/api/types";
-import { ActionRow, Button, Card, ChipRow, Hero, Loading, Muted, Notice, Screen, StatusChip, Subtitle } from "@/components/ui";
+import { ActionRow, AdminBottomNav, Button, Card, ChipRow, Hero, Loading, Muted, Notice, Screen, StatusChip, Subtitle } from "@/components/ui";
 
 export default function AdminUsersScreen() {
   const [users, setUsers] = useState<User[]>([]);
@@ -37,27 +37,31 @@ export default function AdminUsersScreen() {
   if (loading) return <Loading />;
 
   return (
-    <Screen>
+    <Screen bottomNav={<AdminBottomNav activeRoute="users" />}>
       <Hero title="Users" subtitle="Approve sellers, adjust roles, and remove stale accounts." />
       {message ? <Notice tone="danger" message={message} /> : null}
-      {users.map((user) => (
-        <Card key={user.id}>
-          <Subtitle>{user.username}</Subtitle>
-          <Muted>{user.email}</Muted>
-          <ChipRow>
-            <StatusChip tone="info">{user.role}</StatusChip>
-            <StatusChip tone={user.is_approved ? "success" : "danger"}>{user.is_approved ? "Approved" : "Pending"}</StatusChip>
-          </ChipRow>
-          {user.role === "seller" && !user.is_approved ? (
-            <Button title="Approve Seller" onPress={() => action({ user_id: user.id, approve: true })} />
-          ) : null}
-          <ActionRow>
-            <Button title="Customer" variant="secondary" onPress={() => action({ user_id: user.id, role: "customer" })} />
-            <Button title="Seller" variant="secondary" onPress={() => action({ user_id: user.id, role: "seller" })} />
-          </ActionRow>
-          <Button title="Delete" variant="danger" onPress={() => remove(user.id)} />
-        </Card>
-      ))}
+      {users.length ? (
+        users.map((user) => (
+          <Card key={user.id}>
+            <Subtitle>{user.username}</Subtitle>
+            <Muted>{user.email}</Muted>
+            <ChipRow>
+              <StatusChip tone="info">{user.role}</StatusChip>
+              <StatusChip tone={user.is_approved ? "success" : "danger"}>{user.is_approved ? "Approved" : "Pending"}</StatusChip>
+            </ChipRow>
+            {user.role === "seller" && !user.is_approved ? (
+              <Button title="Approve Seller" icon="check" onPress={() => action({ user_id: user.id, approve: true })} />
+            ) : null}
+            <ActionRow>
+              <Button title="Customer" icon="account" variant="secondary" onPress={() => action({ user_id: user.id, role: "customer" })} />
+              <Button title="Seller" icon="storefront" variant="secondary" onPress={() => action({ user_id: user.id, role: "seller" })} />
+              <Button title="Delete" icon="delete-outline" variant="danger" onPress={() => remove(user.id)} />
+            </ActionRow>
+          </Card>
+        ))
+      ) : (
+        <Notice tone="info" message="No users found." />
+      )}
     </Screen>
   );
 }

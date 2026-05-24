@@ -36,7 +36,7 @@ export function RoleProfileScreen({ roleTitle, dashboardRoute, bottomNav }: Role
 
   const handleSignOut = useCallback(async () => {
     await signOut();
-    router.replace("/");
+    router.replace("/auth/login");
   }, [signOut]);
 
   async function pickImage() {

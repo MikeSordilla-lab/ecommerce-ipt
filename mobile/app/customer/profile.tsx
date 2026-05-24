@@ -35,7 +35,7 @@ export default function ProfileScreen() {
 
   const handleSignOut = useCallback(async () => {
     await signOut();
-    router.replace("/");
+    router.replace("/auth/login");
   }, [signOut]);
 
   const [stats, setStats] = useState({ activeOrders: 0, savedItems: 0 });

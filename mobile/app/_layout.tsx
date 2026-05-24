@@ -23,7 +23,15 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" options={{ title: "Shop Mobile" }} />
-          <Stack.Screen name="auth/login" options={{ title: "Sign In", headerShown: true }} />
+          <Stack.Screen
+            name="auth/login"
+            options={{
+              title: "Sign In",
+              headerShown: true,
+              headerBackVisible: false,
+              gestureEnabled: false,
+            }}
+          />
           <Stack.Screen name="auth/register" options={{ title: "Register", headerShown: true }} />
           <Stack.Screen name="customer/shop" options={{ title: "Shop" }} />
           <Stack.Screen name="customer/product" options={{ title: "Product" }} />
@@ -41,6 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="admin/dashboard" options={{ title: "Admin" }} />
           <Stack.Screen name="admin/users" options={{ title: "Users" }} />
           <Stack.Screen name="admin/products" options={{ title: "Products" }} />
+          <Stack.Screen name="admin/product-form" options={{ title: "Edit Product" }} />
           <Stack.Screen name="admin/orders" options={{ title: "Orders" }} />
           <Stack.Screen name="admin/profile" options={{ title: "Admin Profile" }} />
         </Stack>

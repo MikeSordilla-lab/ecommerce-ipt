@@ -1,4 +1,5 @@
 import { Redirect, router } from "expo-router";
+import { useCallback } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +11,11 @@ import { API_BASE_URL, API_CONFIGURATION_ERROR } from "@/api/client";
 
 export default function Home() {
   const { user, loading, signOut } = useAuth();
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    router.replace("/auth/login");
+  }, [signOut]);
 
   if (loading) {
     return (
@@ -38,7 +44,7 @@ export default function Home() {
       <Text style={styles.username}>{user.username}</Text>
       <Caption>API: {API_CONFIGURATION_ERROR || API_BASE_URL}</Caption>
       <Button title="Open Dashboard" onPress={() => router.push(dashboard)} />
-      <Button title="Sign Out" variant="secondary" onPress={signOut} />
+      <Button title="Sign Out" variant="secondary" onPress={handleSignOut} />
     </Screen>
   );
 }

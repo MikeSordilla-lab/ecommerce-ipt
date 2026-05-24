@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Product } from "@/api/types";
@@ -58,6 +58,7 @@ export default function AdminProductsScreen() {
               {product.category_name ? <StatusChip tone="info">{product.category_name}</StatusChip> : null}
             </ChipRow>
             <ActionRow>
+              <Button title="Edit" icon="pencil" variant="secondary" onPress={() => router.push(`/admin/product-form?id=${product.id}`)} />
               <Button title={product.is_active ? "Deactivate" : "Activate"} icon={product.is_active ? "eye-off" : "eye"} variant="secondary" onPress={() => setActive(product.id, !product.is_active)} />
               <Button title="Delete" icon="delete-outline" variant="danger" onPress={() => remove(product.id)} />
             </ActionRow>

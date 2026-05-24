@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/../bootstrap.php";
 require_once __DIR__ . "/../../../includes/ImageHelper.php";
+require_once __DIR__ . "/../../../includes/ProductValidationHelper.php";
 
 mobile_method(["GET", "POST", "PATCH", "DELETE"]);
 $user = mobile_require_role($pdo, ["seller"]);
@@ -56,20 +57,7 @@ try {
     $price = (float) ($body["price"] ?? 0);
     $stock = (int) ($body["stock"] ?? 0);
     $isActive = array_key_exists("is_active", $body) ? ((string) $body["is_active"] === "1" || $body["is_active"] === true ? 1 : 0) : 1;
-    $errors = [];
-
-    if ($categoryId <= 0) {
-        $errors[] = "Category is required.";
-    }
-    if ($name === "" || strlen($name) > 200) {
-        $errors[] = "Name is required (max 200 chars).";
-    }
-    if ($price <= 0 || $price > 999999.99) {
-        $errors[] = "Price must be between 0.01 and 999999.99.";
-    }
-    if ($stock < 0) {
-        $errors[] = "Stock cannot be negative.";
-    }
+    $errors = validate_product_fields($categoryId, $name, $price, $stock);
     if (!empty($errors)) {
         mobile_error("Please check the product fields", 422, ["errors" => $errors]);
     }

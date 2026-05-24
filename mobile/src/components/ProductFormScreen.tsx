@@ -1,0 +1,147 @@
+import { Picker } from "@react-native-picker/picker";
+import * as ImagePicker from "expo-image-picker";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/api/client";
+import type { Category, Product } from "@/api/types";
+import { Button, Card, Field, Hero, Loading, Notice, PickerShell, ProductImage, Screen } from "@/components/ui";
+
+type ProductFormScreenProps = {
+  endpoint: string;
+  listRoute: "/seller/products" | "/admin/products";
+  title: string;
+  subtitle: string;
+  bottomNav: React.ReactNode;
+  createEnabled?: boolean;
+};
+
+export function ProductFormScreen({
+  endpoint,
+  listRoute,
+  title,
+  subtitle,
+  bottomNav,
+  createEnabled = false,
+}: ProductFormScreenProps) {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const productId = id ? Number(id) : null;
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const product = useMemo(() => products.find((item) => item.id === productId), [products, productId]);
+  const canSave = createEnabled || !!productId;
+
+  useEffect(() => {
+    apiFetch<{ products: Product[]; categories: Category[] }>(endpoint)
+      .then((data) => {
+        setProducts(data.products);
+        setCategories(data.categories);
+        const existing = data.products.find((item) => item.id === productId);
+        if (existing) {
+          setCategoryId(String(existing.category_id));
+          setName(existing.name);
+          setDescription(existing.description || "");
+          setPrice(String(existing.price));
+          setStock(String(existing.stock));
+          setIsActive(existing.is_active);
+          setCurrentImageUrl(existing.image_url || null);
+        } else if (data.categories[0]) {
+          setCategoryId(String(data.categories[0].id));
+        }
+      })
+      .catch((error) => setMessage(error instanceof Error ? error.message : "Could not load form"))
+      .finally(() => setLoading(false));
+  }, [endpoint, productId]);
+
+  async function pickImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  }
+
+  async function save() {
+    if (!canSave) {
+      setMessage("Select a product to edit.");
+      return;
+    }
+
+    setSaving(true);
+    setMessage("");
+    const body = new FormData();
+    if (productId) body.append("product_id", String(productId));
+    body.append("category_id", categoryId);
+    body.append("name", name);
+    body.append("description", description);
+    body.append("price", price);
+    body.append("stock", stock);
+    body.append("is_active", isActive ? "1" : "0");
+
+    if (image) {
+      body.append("image", {
+        uri: image.uri,
+        name: image.fileName || "product.jpg",
+        type: image.mimeType || "image/jpeg",
+      } as unknown as Blob);
+    }
+
+    try {
+      await apiFetch(endpoint, { method: "POST", body });
+      router.replace(listRoute);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save product");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <Screen bottomNav={bottomNav}>
+      <Hero title={product ? `Edit ${product.name}` : title} subtitle={subtitle} />
+      {message ? <Notice tone="danger" message={message} /> : null}
+      {!canSave ? <Notice tone="info" message="Open a product from the products list to edit it." /> : null}
+      <Card>
+        <ProductImage uri={image?.uri || currentImageUrl} />
+        <Button title="Choose Image" icon="image" variant="secondary" onPress={pickImage} />
+        <PickerShell>
+          <Picker selectedValue={categoryId} onValueChange={setCategoryId}>
+            {categories.map((category) => (
+              <Picker.Item key={category.id} label={category.name} value={String(category.id)} />
+            ))}
+          </Picker>
+        </PickerShell>
+        <Field label="Name" value={name} onChangeText={setName} />
+        <Field label="Description" value={description} onChangeText={setDescription} multiline />
+        <Field label="Price" value={price} onChangeText={setPrice} keyboardType="numeric" />
+        <Field label="Stock" value={stock} onChangeText={setStock} keyboardType="numeric" />
+        <Button
+          title={isActive ? "Mark Inactive" : "Mark Active"}
+          icon={isActive ? "eye-off" : "eye"}
+          variant="secondary"
+          onPress={() => setIsActive((value) => !value)}
+        />
+        <Button title={saving ? "Saving" : "Save Product"} icon="content-save" disabled={saving || !canSave} onPress={save} />
+      </Card>
+    </Screen>
+  );
+}

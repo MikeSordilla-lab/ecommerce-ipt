@@ -16,17 +16,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { CartItem } from "@/api/types";
 import { colors } from "@/theme/colors";
+import { CustomerBottomNav, ScreenWrapper } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 
-const NAV_ITEMS = [
-  { key: "shop", label: "Shop", icon: "storefront" },
-  { key: "cart", label: "Cart", icon: "shopping-cart" },
-  { key: "orders", label: "Orders", icon: "package" },
-  { key: "profile", label: "Profile", icon: "account" },
-] as const;
-
-type NavKey = (typeof NAV_ITEMS)[number]["key"];
+type NavKey = "shop" | "cart" | "orders" | "profile";
 
 function QuantityStepper({
   value,
@@ -91,12 +85,6 @@ const stepper = StyleSheet.create({
     fontWeight: "500",
   },
 });
-
-function handleNavRoute(key: NavKey) {
-  if (key === "shop") router.push("/customer/shop");
-  else if (key === "orders") router.push("/customer/orders");
-  else if (key === "profile") router.push("/customer/profile");
-}
 
 export default function CartScreen() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -416,50 +404,7 @@ export default function CartScreen() {
         )}
       </ScrollView>
 
-      {/* ── Bottom Nav ── */}
-      <View style={styles.bottomNav}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.key === "cart";
-          return (
-            <TouchableRipple
-              key={item.key}
-              onPress={() => {
-                if (item.key !== "cart") handleNavRoute(item.key);
-              }}
-              style={styles.navItem}
-            >
-              <View style={styles.navItemInner}>
-                {item.key === "cart" && items.length > 0 ? (
-                  <View style={styles.navCartWrap}>
-                    <IconButton
-                      icon={item.icon}
-                      iconColor={colors.primaryContainer}
-                      size={22}
-                      style={[styles.noMargin, styles.navIconActive]}
-                    />
-                    <View style={styles.navDot} />
-                  </View>
-                ) : (
-                  <IconButton
-                    icon={item.icon}
-                    iconColor={isActive ? colors.primaryContainer : colors.muted}
-                    size={22}
-                    style={[styles.noMargin, isActive && styles.navIconActive]}
-                  />
-                )}
-                <Text
-                  style={[
-                    styles.navLabel,
-                    isActive ? styles.navLabelActive : styles.navLabelInactive,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableRipple>
-          );
-        })}
-      </View>
+      <CustomerBottomNav activeRoute="cart" cartCount={items.length} />
     </SafeAreaView>
   );
 }
@@ -718,42 +663,5 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   trustText: { color: colors.muted, fontSize: 11, fontWeight: "300" },
-
-  /* Bottom Nav */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    height: 60,
-    paddingBottom: Platform.OS === "android" ? 0 : 8,
-    shadowColor: colors.shadowSoft,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  navItem: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 4 },
-  navItemInner: { alignItems: "center", justifyContent: "center" },
-  navCartWrap: { position: "relative" },
-  navDot: {
-    position: "absolute",
-    top: 4,
-    right: -2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.danger,
-    borderWidth: 1.5,
-    borderColor: colors.background,
-  },
-  navIconActive: { borderTopWidth: 2, borderTopColor: colors.primaryContainer },
-  navLabel: { fontSize: 11, fontWeight: "400", marginTop: -4 },
-  navLabelActive: { color: colors.primaryContainer, fontWeight: "600" },
-  navLabelInactive: { color: colors.muted },
   noMargin: { margin: 0 },
 });

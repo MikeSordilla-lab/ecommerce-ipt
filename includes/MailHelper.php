@@ -9,7 +9,12 @@ if (is_file($autoload)) {
 
 function mail_is_configured(): bool
 {
-    return defined('MAIL_HOST') && MAIL_HOST !== '' && MAIL_USERNAME !== '';
+    return defined('MAIL_HOST') && MAIL_HOST !== '' && MAIL_USERNAME !== '' && MAIL_PASSWORD !== '';
+}
+
+function mail_smtp_password(): string
+{
+    return str_replace(' ', '', (string) MAIL_PASSWORD);
 }
 
 function create_email_verification(PDO $pdo, int $userId): string
@@ -44,7 +49,7 @@ function send_verification_email(string $email, string $username, string $token)
         $mail->Port = MAIL_PORT;
         $mail->SMTPAuth = true;
         $mail->Username = MAIL_USERNAME;
-        $mail->Password = MAIL_PASSWORD;
+        $mail->Password = mail_smtp_password();
 
         if (MAIL_ENCRYPTION === 'ssl') {
             $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;

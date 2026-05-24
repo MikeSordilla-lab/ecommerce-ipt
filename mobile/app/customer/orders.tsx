@@ -14,23 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch } from "@/api/client";
 import type { Order } from "@/api/types";
 import { colors } from "@/theme/colors";
+import { CustomerBottomNav } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 
-const NAV_ITEMS = [
-  { key: "shop", label: "Shop", icon: "storefront" },
-  { key: "cart", label: "Cart", icon: "shopping-cart" },
-  { key: "orders", label: "Orders", icon: "package" },
-  { key: "profile", label: "Profile", icon: "account" },
-] as const;
-
-type NavKey = (typeof NAV_ITEMS)[number]["key"];
-
-function handleNavRoute(key: NavKey) {
-  if (key === "shop") router.push("/customer/shop");
-  else if (key === "cart") router.push("/customer/cart");
-  else if (key === "profile") router.push("/customer/profile");
-}
+type NavKey = "shop" | "cart" | "orders" | "profile";
 
 type StatusTone = "success" | "info" | "warning" | "danger";
 
@@ -280,38 +268,7 @@ export default function CustomerOrdersScreen() {
         </ScrollView>
       )}
 
-      {/* ── Bottom Nav ── */}
-      <View style={styles.bottomNav}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.key === "orders";
-          return (
-            <TouchableRipple
-              key={item.key}
-              onPress={() => {
-                if (!isActive) handleNavRoute(item.key);
-              }}
-              style={styles.navItem}
-            >
-              <View style={styles.navItemInner}>
-                <IconButton
-                  icon={item.icon}
-                  iconColor={isActive ? colors.primaryContainer : colors.muted}
-                  size={22}
-                  style={[styles.noMargin, isActive && styles.navIconActive]}
-                />
-                <Text
-                  style={[
-                    styles.navLabel,
-                    isActive ? styles.navLabelActive : styles.navLabelInactive,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableRipple>
-          );
-        })}
-      </View>
+      <CustomerBottomNav activeRoute="orders" />
     </SafeAreaView>
   );
 }
@@ -483,29 +440,5 @@ const styles = StyleSheet.create({
   paymentMethodRow: { flexDirection: "row", alignItems: "center" },
   paymentMethodText: { color: colors.muted, fontSize: 11, fontWeight: "300" },
 
-  /* Bottom Nav */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    height: 60,
-    paddingBottom: Platform.OS === "android" ? 0 : 8,
-    shadowColor: colors.shadowSoft,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  navItem: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 4 },
-  navItemInner: { alignItems: "center", justifyContent: "center" },
-  navIconActive: { borderTopWidth: 2, borderTopColor: colors.primaryContainer },
-  navLabel: { fontSize: 11, fontWeight: "400", marginTop: -4 },
-  navLabelActive: { color: colors.primaryContainer, fontWeight: "600" },
-  navLabelInactive: { color: colors.muted },
   noMargin: { margin: 0 },
 });

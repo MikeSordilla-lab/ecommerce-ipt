@@ -1,6 +1,7 @@
+import { router } from "expo-router";
 import { Image } from "expo-image";
 import React from "react";
-import { Platform, ScrollView, StyleSheet, View, ViewStyle } from "react-native";
+import { Platform, ScrollView, StatusBar, StyleSheet, View, ViewStyle } from "react-native";
 import {
   ActivityIndicator,
   Button as PaperButton,
@@ -14,6 +15,7 @@ import {
   IconButton,
   Badge,
 } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme/colors";
 
 const MARGIN_MOBILE = 20;
@@ -23,15 +25,18 @@ const RADIUS_LG = 8;
 
 export function Screen({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={styles.screen}
-      contentContainerStyle={[styles.screenContent, style]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      {children}
-    </ScrollView>
+    <SafeAreaView style={styles.screenWrapper} edges={["top"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={styles.screen}
+        contentContainerStyle={[styles.screenContent, style]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {children}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -570,6 +575,120 @@ export function QuantityStepper({
   );
 }
 
+const NAV_ITEMS = [
+  { key: "shop", label: "Shop", icon: "storefront" },
+  { key: "cart", label: "Cart", icon: "cart" },
+  { key: "orders", label: "Orders", icon: "package" },
+  { key: "profile", label: "Profile", icon: "account" },
+] as const;
+
+export type NavKey = (typeof NAV_ITEMS)[number]["key"];
+
+export function CustomerBottomNav({
+  activeRoute,
+  cartCount = 0,
+}: {
+  activeRoute: NavKey;
+  cartCount?: number;
+}) {
+  return (
+    <View style={styles.bottomNav}>
+      {NAV_ITEMS.map((item) => {
+        const isActive = activeRoute === item.key;
+        return (
+          <TouchableRipple
+            key={item.key}
+            onPress={() => {
+              if (item.key !== activeRoute) {
+                const routes: Record<string, string> = {
+                  shop: "/customer/shop",
+                  cart: "/customer/cart",
+                  orders: "/customer/orders",
+                  profile: "/customer/profile",
+                };
+                router.push(routes[item.key] as any);
+              }
+            }}
+            style={styles.navItem}
+          >
+            <View style={styles.navItemInner}>
+              {item.key === "cart" && cartCount > 0 ? (
+                <View style={styles.navCartWrap}>
+                  <IconButton
+                    icon={item.icon}
+                    iconColor={isActive ? colors.primaryContainer : colors.muted}
+                    size={22}
+                    style={[styles.navIconNoMargin, isActive && styles.navIconActive]}
+                  />
+                  <View style={styles.navDot} />
+                </View>
+              ) : (
+                <IconButton
+                  icon={item.icon}
+                  iconColor={isActive ? colors.primaryContainer : colors.muted}
+                  size={22}
+                  style={[styles.navIconNoMargin, isActive && styles.navIconActive]}
+                />
+              )}
+              <Text
+                style={[
+                  styles.navLabel,
+                  { color: isActive ? colors.primaryContainer : colors.muted },
+                  isActive && styles.navLabelActive,
+                ]}
+              >
+                {item.label}
+              </Text>
+            </View>
+          </TouchableRipple>
+        );
+      })}
+    </View>
+  );
+}
+
+export function ScreenWrapper({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  return (
+    <SafeAreaView style={[styles.screenWrapper, style]} edges={["top"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      {children}
+    </SafeAreaView>
+  );
+}
+
+export function AppBar({
+  title,
+  leftIcon = "arrow-left",
+  onLeftPress,
+  rightIcon,
+  onRightPress,
+}: {
+  title: string;
+  leftIcon?: string;
+  onLeftPress?: () => void;
+  rightIcon?: string;
+  onRightPress?: () => void;
+}) {
+  return (
+    <View style={styles.appBar}>
+      <TouchableRipple
+        style={styles.appBarBtn}
+        onPress={onLeftPress || (() => router.back())}
+      >
+        <IconButton icon={leftIcon} iconColor={colors.primaryContainer} size={20} style={styles.appBarIconNoMargin} />
+      </TouchableRipple>
+      <Text style={styles.appBarTitle}>{title}</Text>
+      <View style={styles.appBarRight}>
+        {rightIcon ? (
+          <TouchableRipple style={styles.appBarBtn} onPress={onRightPress}>
+            <IconButton icon={rightIcon} iconColor={colors.primaryContainer} size={20} style={styles.appBarIconNoMargin} />
+          </TouchableRipple>
+        ) : <View style={styles.appBarBtn} />}
+      </View>
+    </View>
+  );
+}
+
 export function OrderSummaryItem({
   label,
   value,
@@ -605,6 +724,76 @@ export function OrderSummaryItem({
 }
 
 const styles = StyleSheet.create({
+  screenWrapper: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  appBarTitle: {
+    color: colors.primaryContainer,
+    fontWeight: "700",
+    fontSize: 18,
+    letterSpacing: -0.22,
+    flex: 1,
+    textAlign: "center",
+  },
+  appBarBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  appBarRight: {
+    width: 38,
+    alignItems: "flex-end",
+  },
+  appBarIconNoMargin: { margin: 0 },
+
+  bottomNav: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    height: 60,
+    paddingBottom: Platform.OS === "android" ? 0 : 8,
+    shadowColor: colors.shadowSoft,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  navCartWrap: { position: "relative" },
+  navDot: {
+    position: "absolute",
+    top: 4,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.danger,
+    borderWidth: 1.5,
+    borderColor: colors.background,
+  },
+  navIconNoMargin: { margin: 0 },
+
   screen: {
     backgroundColor: colors.background,
     flex: 1,

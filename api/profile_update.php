@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/ValidationHelper.php';
 
 header('Content-Type: application/json');
 
@@ -97,9 +98,10 @@ try {
             exit;
         }
 
-        if (strlen($new_password) < 8) {
+        $password_errors = validate_password_strength($new_password);
+        if (!empty($password_errors)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters.']);
+            echo json_encode(['success' => false, 'message' => implode(' ', $password_errors)]);
             exit;
         }
 

@@ -39,7 +39,7 @@ class OrderPlacementModule
                 "INSERT INTO order_items (order_id, product_id, product_name, price_at_purchase, quantity) VALUES (?, ?, ?, ?, ?)",
             );
             $stmtStock = $pdo->prepare(
-                "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?",
+                "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND is_active = 1",
             );
             $stmtDeactivateOutOfStock = $pdo->prepare(
                 "UPDATE products SET is_active = 0 WHERE id = ? AND stock <= 0",
@@ -96,7 +96,7 @@ class OrderPlacementModule
         $errors = [];
 
         $stmt = $pdo->prepare(
-            "SELECT id, stock, name FROM products WHERE id = ?",
+            "SELECT id, stock, name, is_active FROM products WHERE id = ?",
         );
 
         foreach ($cartItems as $item) {
@@ -107,6 +107,11 @@ class OrderPlacementModule
                 $errors[] =
                     "Product not found: " .
                     ($item["name"] ?? $item["product_id"]);
+                continue;
+            }
+
+            if (!(bool) $product["is_active"]) {
+                $errors[] = "'{$product["name"]}' is no longer available.";
                 continue;
             }
 

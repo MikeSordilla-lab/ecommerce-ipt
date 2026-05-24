@@ -116,6 +116,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <div class="col-md-6">
                                 <label for="newPassword" class="form-label">New Password</label>
                                 <input type="password" class="form-control" id="newPassword" name="new_password" minlength="8" autocomplete="new-password" required>
+                                <div class="form-text" id="newPasswordHelp">Use at least 8 characters with at least one letter and one number.</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="confirmPassword" class="form-label">Confirm Password</label>
@@ -216,6 +217,18 @@ document.getElementById('passwordForm').addEventListener('submit', function(e) {
         document.querySelector('#passwordForm input[name="username"]').value = document.querySelector('#profileUsername').value;
         document.querySelector('#passwordForm input[name="email"]').value = document.querySelector('#profileEmail').value;
     });
+});
+
+document.getElementById('newPassword').addEventListener('input', function() {
+    var help = document.getElementById('newPasswordHelp');
+    var value = this.value;
+    var valid = value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
+
+    help.classList.toggle('text-success', valid);
+    help.classList.toggle('text-danger', value.length > 0 && !valid);
+    help.textContent = valid
+        ? 'Password strength looks good.'
+        : 'Use at least 8 characters with at least one letter and one number.';
 });
 
 document.getElementById('profileImageForm').addEventListener('submit', function(e) {

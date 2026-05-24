@@ -11,6 +11,11 @@ $user_id = $_SESSION['user_id'];
 $cart = new CartModule();
 
 try {
+    $stock_messages = $cart->reconcileStock($pdo, $user_id);
+    foreach ($stock_messages as $message) {
+        add_flash('warning', 'Cart Updated', $message);
+    }
+
     $cart_items = $cart->getCart($pdo, $user_id);
     $subtotal = $cart->getCartSubtotal($cart_items);
 } catch (PDOException $e) {

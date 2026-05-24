@@ -19,10 +19,15 @@ try {
 
     $body = mobile_body();
     $cart = new CartModule();
+    $stockMessages = $cart->reconcileStock($pdo, (int) $user["id"]);
     $cartItems = $cart->getCart($pdo, (int) $user["id"]);
 
     if (empty($cartItems)) {
         mobile_error("Your cart is empty", 422);
+    }
+
+    if (!empty($stockMessages)) {
+        mobile_error("Cart quantities changed. Please review your cart.", 422, ["errors" => $stockMessages]);
     }
 
     if (!empty($body["address_id"])) {

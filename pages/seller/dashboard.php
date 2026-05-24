@@ -177,19 +177,19 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Revenue and Orders</h3></div>
-                <div class="card-body"><canvas id="sellerRevenueChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="sellerRevenueChart"></canvas></div></div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Top Selling Products</h3></div>
-                <div class="card-body"><canvas id="sellerTopProductsChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="sellerTopProductsChart"></canvas></div></div>
             </div>
         </div>
         <div class="col-lg-12">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Lowest Stock Products</h3></div>
-                <div class="card-body"><canvas id="sellerStockChart" height="100"></canvas></div>
+                <div class="card-body"><div class="chart-box chart-box-sm"><canvas id="sellerStockChart"></canvas></div></div>
             </div>
         </div>
     </div>
@@ -244,6 +244,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var dailyRows = <?= json_encode($daily_sales, JSON_NUMERIC_CHECK) ?>;
     var topRows = <?= json_encode($top_products, JSON_NUMERIC_CHECK) ?>;
     var stockRows = <?= json_encode($stock_levels, JSON_NUMERIC_CHECK) ?>;
+    var stableChartOptions = { responsive: true, maintainAspectRatio: false, resizeDelay: 150 };
+    function chartOptions(options) {
+        return Object.assign({}, stableChartOptions, options || {});
+    }
 
     new Chart(document.getElementById('sellerRevenueChart'), {
         type: 'line',
@@ -254,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { label: 'Orders', data: dailyRows.map(row => row.order_count), borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.12)', tension: .25, yAxisID: 'y1' }
             ]
         },
-        options: { interaction: { mode: 'index', intersect: false }, scales: { y1: { position: 'right', grid: { drawOnChartArea: false } } } }
+        options: chartOptions({ interaction: { mode: 'index', intersect: false }, scales: { y1: { position: 'right', grid: { drawOnChartArea: false } } } })
     });
 
     new Chart(document.getElementById('sellerTopProductsChart'), {
@@ -262,7 +266,8 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: topRows.map(row => row.name),
             datasets: [{ label: 'Units Sold', data: topRows.map(row => row.units_sold), backgroundColor: '#533afd' }]
-        }
+        },
+        options: chartOptions()
     });
 
     new Chart(document.getElementById('sellerStockChart'), {
@@ -270,7 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: stockRows.map(row => row.name),
             datasets: [{ label: 'Stock', data: stockRows.map(row => row.stock), backgroundColor: stockRows.map(row => row.stock <= 5 ? '#ef4444' : '#22c55e') }]
-        }
+        },
+        options: chartOptions()
     });
 });
 </script>

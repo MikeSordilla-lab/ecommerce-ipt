@@ -15,17 +15,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/auth/auth-context";
 import { apiFetch } from "@/api/client";
 import { colors } from "@/theme/colors";
+import { CustomerBottomNav } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 
-const NAV_ITEMS = [
-  { key: "shop", label: "Shop", icon: "storefront" },
-  { key: "cart", label: "Cart", icon: "shopping-cart" },
-  { key: "orders", label: "Orders", icon: "package" },
-  { key: "profile", label: "Profile", icon: "account" },
-] as const;
-
-type NavKey = (typeof NAV_ITEMS)[number]["key"];
+type NavKey = "shop" | "cart" | "orders" | "profile";
 
 function getStatusColor(status: string) {
   const s = status.toLowerCase();
@@ -42,16 +36,6 @@ export default function ProfileScreen() {
     await signOut();
     router.replace("/");
   }, [signOut]);
-
-  const handleNav = useCallback((key: NavKey) => {
-    const routes: Record<NavKey, string> = {
-      shop: "/customer/shop",
-      cart: "/customer/cart",
-      orders: "/customer/orders",
-      profile: "/customer/profile",
-    };
-    if (key !== "profile") router.push(routes[key] as any);
-  }, []);
 
   const [stats, setStats] = useState({ activeOrders: 0, savedItems: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -297,36 +281,7 @@ export default function ProfileScreen() {
         )}
       </ScrollView>
 
-      {/* ── Bottom Nav ── */}
-      <View style={styles.bottomNav}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.key === "profile";
-          return (
-            <TouchableRipple
-              key={item.key}
-              onPress={() => handleNav(item.key)}
-              style={styles.navItem}
-            >
-              <View style={styles.navItemInner}>
-                <IconButton
-                  icon={item.icon}
-                  iconColor={isActive ? colors.primaryContainer : colors.muted}
-                  size={22}
-                  style={[styles.noMargin, isActive && styles.navIconActive]}
-                />
-                <Text
-                  style={[
-                    styles.navLabel,
-                    isActive ? styles.navLabelActive : styles.navLabelInactive,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableRipple>
-          );
-        })}
-      </View>
+      <CustomerBottomNav activeRoute="profile" />
     </SafeAreaView>
   );
 }
@@ -652,45 +607,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "400",
   },
-
-  /* Bottom Nav */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    height: 60,
-    paddingBottom: Platform.OS === "android" ? 0 : 8,
-    shadowColor: colors.shadowSoft,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  navItem: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  navItemInner: { alignItems: "center", justifyContent: "center" },
-  navIconActive: {
-    borderTopWidth: 2,
-    borderTopColor: colors.primaryContainer,
-  },
-  navLabel: {
-    fontSize: 11,
-    fontWeight: "400",
-    marginTop: -4,
-  },
-  navLabelActive: {
-    color: colors.primaryContainer,
-    fontWeight: "600",
-  },
-  navLabelInactive: { color: colors.muted },
   noMargin: { margin: 0 },
 });

@@ -1,9 +1,10 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { IconButton, Surface, Text, TextInput, TouchableRipple } from "react-native-paper";
 import { useAuth } from "@/auth/auth-context";
 import { colors } from "@/theme/colors";
+import { Screen } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 const GAP_LG = 24;
@@ -41,14 +42,12 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.content}>
-            <View style={styles.titleSection}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Screen>
+        <View style={styles.titleSection}>
           <Text variant="headlineLarge" style={styles.headline}>
             Create Account
           </Text>
@@ -235,10 +234,8 @@ export default function RegisterScreen() {
             </Text>
           </TouchableRipple>
         </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -246,14 +243,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: GAP_LG * 2,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: MARGIN_MOBILE,
   },
   titleSection: {
     marginTop: GAP_MD,

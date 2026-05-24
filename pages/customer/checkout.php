@@ -13,6 +13,11 @@ $user_id = $_SESSION["user_id"];
 
 try {
     $cart = new CartModule();
+    $stock_messages = $cart->reconcileStock($pdo, $user_id);
+    foreach ($stock_messages as $message) {
+        add_flash("warning", "Cart Updated", $message);
+    }
+
     $cart_items = $cart->getCart($pdo, $user_id);
     $subtotal = $cart->getCartSubtotal($cart_items);
     $addresses = getAddressesByUser($pdo, $user_id);
@@ -24,6 +29,10 @@ try {
 
 if (empty($cart_items)) {
     set_flash("warning", "Empty Cart", "Your cart is empty.");
+    redirect(SITE_URL . "/pages/customer/cart.php");
+}
+
+if (!empty($stock_messages ?? [])) {
     redirect(SITE_URL . "/pages/customer/cart.php");
 }
 

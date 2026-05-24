@@ -16,17 +16,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Category, Product } from "@/api/types";
 import { colors } from "@/theme/colors";
+import { CustomerBottomNav, ScreenWrapper } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 
-const NAV_ITEMS = [
-  { key: "shop", label: "Shop", icon: "storefront" },
-  { key: "cart", label: "Cart", icon: "shopping-cart" },
-  { key: "orders", label: "Orders", icon: "package" },
-  { key: "profile", label: "Profile", icon: "account" },
-] as const;
-
-type NavKey = (typeof NAV_ITEMS)[number]["key"];
+type NavKey = "shop" | "cart" | "orders" | "profile";
 
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
@@ -286,36 +280,7 @@ export default function ShopScreen() {
         )}
       </ScrollView>
 
-      {/* ── Bottom Nav ── */}
-      <View style={styles.bottomNav}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = navKey === item.key;
-          return (
-            <TouchableRipple
-              key={item.key}
-              onPress={() => handleNav(item.key)}
-              style={styles.navItem}
-            >
-              <View style={styles.navItemInner}>
-                <IconButton
-                  icon={item.icon}
-                  iconColor={isActive ? colors.primaryContainer : colors.muted}
-                  size={22}
-                  style={[styles.noMargin, isActive && styles.navIconActive]}
-                />
-                <Text
-                  style={[
-                    styles.navLabel,
-                    isActive ? styles.navLabelActive : styles.navLabelInactive,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableRipple>
-          );
-        })}
-      </View>
+      <CustomerBottomNav activeRoute={navKey} />
     </SafeAreaView>
   );
 }
@@ -420,14 +385,15 @@ const styles = StyleSheet.create({
   },
   categoryRow: {
     paddingHorizontal: MARGIN_MOBILE,
-    paddingVertical: 10,
-    gap: 8,
+    paddingVertical: 8,
+    gap: 6,
     flexDirection: "row",
+    alignItems: "center",
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surfaceContainerLow,
@@ -438,12 +404,12 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: colors.muted,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "400",
   },
   chipTextActive: {
     color: colors.onPrimaryContainer,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
   /* Toast */
@@ -565,37 +531,5 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  /* Bottom Nav */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    height: 60,
-    paddingBottom: Platform.OS === "android" ? 0 : 8,
-    shadowColor: colors.shadowSoft,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  navItem: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  navItemInner: { alignItems: "center", justifyContent: "center" },
-  navIconActive: {
-    borderTopWidth: 2,
-    borderTopColor: colors.primaryContainer,
-  },
-  navLabel: { fontSize: 11, fontWeight: "400", marginTop: -4 },
-  navLabelActive: { color: colors.primaryContainer, fontWeight: "600" },
-  navLabelInactive: { color: colors.muted },
   noMargin: { margin: 0 },
 });

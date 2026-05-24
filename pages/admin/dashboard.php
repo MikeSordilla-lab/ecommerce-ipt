@@ -145,25 +145,25 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Orders by Status</h3></div>
-                <div class="card-body"><canvas id="ordersStatusChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="ordersStatusChart"></canvas></div></div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Revenue and Orders</h3></div>
-                <div class="card-body"><canvas id="dailyRevenueChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="dailyRevenueChart"></canvas></div></div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Products by Category</h3></div>
-                <div class="card-body"><canvas id="productsCategoryChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="productsCategoryChart"></canvas></div></div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card shadow-primary h-100">
                 <div class="card-header bg-white"><h3 class="h5 mb-0 text-heading">Users by Role and Verification</h3></div>
-                <div class="card-body"><canvas id="usersVerificationChart" height="140"></canvas></div>
+                <div class="card-body"><div class="chart-box"><canvas id="usersVerificationChart"></canvas></div></div>
             </div>
         </div>
     </div>
@@ -225,13 +225,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var dailyRows = <?= json_encode($daily_orders, JSON_NUMERIC_CHECK) ?>;
     var categoryRows = <?= json_encode($products_by_category, JSON_NUMERIC_CHECK) ?>;
     var userRows = <?= json_encode($users_by_role_verified, JSON_NUMERIC_CHECK) ?>;
+    var stableChartOptions = { responsive: true, maintainAspectRatio: false, resizeDelay: 150 };
+    function chartOptions(options) {
+        return Object.assign({}, stableChartOptions, options || {});
+    }
 
     new Chart(document.getElementById('ordersStatusChart'), {
         type: 'doughnut',
         data: {
             labels: statusRows.map(row => row.status),
             datasets: [{ data: statusRows.map(row => row.total), backgroundColor: ['#f59e0b', '#0ea5e9', '#22c55e'] }]
-        }
+        },
+        options: chartOptions()
     });
 
     new Chart(document.getElementById('dailyRevenueChart'), {
@@ -243,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { label: 'Orders', data: dailyRows.map(row => row.order_count), borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.12)', tension: .25, yAxisID: 'y1' }
             ]
         },
-        options: { interaction: { mode: 'index', intersect: false }, scales: { y1: { position: 'right', grid: { drawOnChartArea: false } } } }
+        options: chartOptions({ interaction: { mode: 'index', intersect: false }, scales: { y1: { position: 'right', grid: { drawOnChartArea: false } } } })
     });
 
     new Chart(document.getElementById('productsCategoryChart'), {
@@ -251,7 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: categoryRows.map(row => row.name),
             datasets: [{ label: 'Products', data: categoryRows.map(row => row.total), backgroundColor: '#533afd' }]
-        }
+        },
+        options: chartOptions()
     });
 
     new Chart(document.getElementById('usersVerificationChart'), {
@@ -263,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { label: 'Unverified', data: userRows.map(row => row.unverified), backgroundColor: '#f59e0b' }
             ]
         },
-        options: { scales: { x: { stacked: true }, y: { stacked: true } } }
+        options: chartOptions({ scales: { x: { stacked: true }, y: { stacked: true } } })
     });
 });
 </script>

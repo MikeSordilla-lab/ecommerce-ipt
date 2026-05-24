@@ -3,6 +3,41 @@ require_once __DIR__ . '/../ImageHelper.php';
 
 class CartModule
 {
+    public function reconcileStock(PDO $pdo, int $userId): array
+    {
+        $stmt = $pdo->prepare('
+            SELECT ci.id, ci.quantity, p.name, p.stock, p.is_active
+            FROM cart_items ci
+            JOIN products p ON ci.product_id = p.id
+            WHERE ci.user_id = ?
+        ');
+        $stmt->execute([$userId]);
+        $items = $stmt->fetchAll();
+
+        $messages = [];
+        $deleteStmt = $pdo->prepare('DELETE FROM cart_items WHERE id = ? AND user_id = ?');
+        $updateStmt = $pdo->prepare('UPDATE cart_items SET quantity = ? WHERE id = ? AND user_id = ?');
+
+        foreach ($items as $item) {
+            $name = $item['name'] ?? 'Product';
+            $stock = (int) $item['stock'];
+            $quantity = (int) $item['quantity'];
+
+            if (!$item['is_active'] || $stock <= 0) {
+                $deleteStmt->execute([$item['id'], $userId]);
+                $messages[] = $name . ' was removed from your cart because it is no longer available.';
+                continue;
+            }
+
+            if ($quantity > $stock) {
+                $updateStmt->execute([$stock, $item['id'], $userId]);
+                $messages[] = $name . ' quantity was reduced to the available stock (' . $stock . ').';
+            }
+        }
+
+        return $messages;
+    }
+
     public function addItem(PDO $pdo, int $userId, int $productId, int $quantity = 1): array
     {
         if ($quantity < 1) {
@@ -96,7 +131,7 @@ class CartModule
     public function getCart(PDO $pdo, int $userId): array
     {
         $stmt = $pdo->prepare('
-            SELECT ci.id AS cart_item_id, ci.quantity, p.id AS product_id, p.name, p.price, p.stock, p.image_path
+            SELECT ci.id AS cart_item_id, ci.quantity, p.id AS product_id, p.name, p.price, p.stock, p.image_path, p.is_active
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.id
             WHERE ci.user_id = ?

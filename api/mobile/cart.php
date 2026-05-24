@@ -10,6 +10,7 @@ $method = mobile_request_method();
 
 try {
     if ($method === "GET") {
+        $stockMessages = $cart->reconcileStock($pdo, (int) $user["id"]);
         $items = $cart->getCart($pdo, (int) $user["id"]);
         $items = array_map(function ($item) {
             $item["cart_item_id"] = (int) $item["cart_item_id"];
@@ -26,6 +27,7 @@ try {
             "items" => $items,
             "subtotal" => $cart->getCartSubtotal($items),
             "count" => $cart->getCartCount($pdo, (int) $user["id"]),
+            "stock_messages" => $stockMessages,
         ]);
     }
 

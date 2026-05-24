@@ -17,9 +17,12 @@ function product_delete_respond(bool $success, string $message, int $status = 20
     }
 
     set_flash($success ? 'success' : 'error', $success ? 'Deleted' : 'Error', $message);
-    $redirect = $_SERVER['HTTP_REFERER'] ?? SITE_URL;
-    if (strpos($redirect, SITE_URL) !== 0) {
-        $redirect = SITE_URL;
+    $redirect = SITE_URL;
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    $site_host = parse_url(SITE_URL, PHP_URL_HOST);
+    $ref_host = parse_url($referer, PHP_URL_HOST);
+    if ($referer !== '' && $ref_host === $site_host) {
+        $redirect = $referer;
     }
     redirect($redirect);
 }

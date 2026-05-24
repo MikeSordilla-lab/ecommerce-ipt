@@ -22,10 +22,10 @@ const MARGIN_MOBILE = 20;
 
 const PRICE_FILTERS = [
   { key: "", label: "Any price" },
-  { key: "under1000", label: "Under $1K" },
-  { key: "1000to5000", label: "$1K-$5K" },
-  { key: "5000to15000", label: "$5K-$15K" },
-  { key: "over15000", label: "$15K+" },
+  { key: "under1000", label: "Under ₱1K" },
+  { key: "1000to5000", label: "₱1K-₱5K" },
+  { key: "5000to15000", label: "₱5K-₱15K" },
+  { key: "over15000", label: "₱15K+" },
 ] as const;
 
 function StockBadge({ stock }: { stock: number }) {
@@ -286,7 +286,7 @@ export default function ShopScreen() {
                       {product.name}
                     </Text>
                     <Text style={styles.productPrice}>
-                      ${Number(product.price).toFixed(2)}
+                      ₱{Number(product.price).toFixed(2)}
                     </Text>
                   </View>
 

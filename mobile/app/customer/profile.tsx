@@ -393,7 +393,7 @@ export default function ProfileScreen() {
                             {order.status}
                           </Text>
                           <Text style={styles.orderAmount}>
-                            ${Number(order.total).toFixed(2)}
+                            ₱{Number(order.total).toFixed(2)}
                           </Text>
                         </View>
                       </View>

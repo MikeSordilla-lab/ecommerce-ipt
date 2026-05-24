@@ -136,7 +136,7 @@ export default function ProductScreen() {
                 {product.name}
               </Text>
               <Text variant="headlineMedium" style={styles.productPrice}>
-                ${Number(product.price).toFixed(2)}
+                ₱{Number(product.price).toFixed(2)}
               </Text>
             </View>
 

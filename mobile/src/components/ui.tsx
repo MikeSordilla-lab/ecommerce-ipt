@@ -18,10 +18,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme/colors";
 
-const MARGIN_MOBILE = 20;
-const RADIUS_SM = 4;
-const RADIUS_MD = 6;
-const RADIUS_LG = 8;
+const MARGIN_MOBILE = 16;
+const RADIUS_SM = 6;
+const RADIUS_MD = 8;
+const RADIUS_LG = 10;
 
 export function Screen({
   children,
@@ -136,7 +136,7 @@ export function Money({ value, size = "medium" }: { value: number; size?: "small
   const sizeStyle = size === "small" ? styles.moneySmall : size === "large" ? styles.moneyLarge : styles.money;
   return (
     <Text variant={size === "small" ? "labelMedium" : size === "large" ? "headlineSmall" : "titleMedium"} style={[styles.money, sizeStyle]}>
-      ${Number(value || 0).toFixed(2)}
+      ₱{Number(value || 0).toFixed(2)}
     </Text>
   );
 }
@@ -410,6 +410,45 @@ export function StatCard({ label, value, icon }: { label: string; value: string 
         {value}
       </Text>
     </Surface>
+  );
+}
+
+export function FilterChip({
+  children,
+  selected = false,
+  onPress,
+  tone = "neutral",
+}: {
+  children: React.ReactNode;
+  selected?: boolean;
+  onPress?: () => void;
+  tone?: "neutral" | "success" | "danger" | "info" | "warning";
+}) {
+  return (
+    <Chip
+      compact
+      mode={selected ? "flat" : "outlined"}
+      onPress={onPress}
+      showSelectedCheck={false}
+      style={[
+        styles.filterChip,
+        tone === "success" && styles.successChip,
+        tone === "danger" && styles.dangerChip,
+        tone === "info" && styles.infoChip,
+        tone === "warning" && styles.warningChip,
+        selected && styles.filterChipSelected,
+      ]}
+      textStyle={[
+        styles.filterChipText,
+        tone === "success" && styles.successText,
+        tone === "danger" && styles.dangerText,
+        tone === "info" && styles.infoText,
+        tone === "warning" && styles.warningText,
+        selected && styles.filterChipTextSelected,
+      ]}
+    >
+      {children}
+    </Chip>
   );
 }
 
@@ -798,7 +837,7 @@ export function OrderSummaryItem({
             highlight && styles.summaryValueHighlight,
           ]}
         >
-          {typeof value === "number" ? `$${value.toFixed(2)}` : value}
+          {typeof value === "number" ? `₱${value.toFixed(2)}` : value}
         </Text>
       )}
     </View>
@@ -854,8 +893,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    height: 60,
-    paddingBottom: Platform.OS === "android" ? 0 : 8,
+    height: Platform.OS === "android" ? 64 : 56,
+    paddingBottom: Platform.OS === "android" ? 8 : 4,
     shadowColor: colors.shadowSoft,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 1,
@@ -881,9 +920,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   screenContent: {
-    gap: 16,
+    gap: 12,
     paddingHorizontal: MARGIN_MOBILE,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 100,
   },
   safeScreen: {
@@ -909,8 +948,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   cardContent: {
-    gap: 12,
-    padding: 16,
+    gap: 8,
+    padding: 12,
   },
   productCard: {
     backgroundColor: colors.surfaceContainerLowest,
@@ -996,12 +1035,12 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS_SM,
   },
   buttonContent: {
-    minHeight: 42,
-    paddingHorizontal: 8,
+    minHeight: 36,
+    paddingHorizontal: 6,
   },
   buttonLabel: {
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: 13,
+    fontWeight: "500",
   },
   fullWidth: {
     width: "100%",
@@ -1076,11 +1115,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   productImageSmall: {
-    height: 64,
-    width: 64,
+    height: 48,
+    width: 48,
   },
   productImage: {
-    height: 120,
+    height: 80,
   },
   productImageLarge: {
     height: 200,
@@ -1138,22 +1177,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   statCard: {
+    flex: 1,
     backgroundColor: colors.surfaceContainer,
     borderColor: colors.border,
     borderRadius: RADIUS_LG,
     borderWidth: 1,
-    padding: 16,
-    gap: 8,
+    padding: 10,
+    gap: 2,
     shadowColor: colors.shadowAmbient,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
-    shadowRadius: 20,
+    shadowRadius: 12,
     elevation: 0,
   },
   statCardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 2,
   },
   statIcon: {
     margin: 0,
@@ -1161,7 +1201,8 @@ const styles = StyleSheet.create({
   statValue: {
     color: colors.text,
     fontVariant: ["tabular-nums"],
-    fontWeight: "300",
+    fontWeight: "500",
+    fontSize: 18,
   },
   divider: {
     backgroundColor: colors.border,
@@ -1170,12 +1211,12 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 6,
   },
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 6,
   },
   pickerShell: {
     backgroundColor: colors.surfaceContainerLowest,
@@ -1199,9 +1240,9 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   navIconActive: {
-    borderTopWidth: 2,
-    borderTopColor: colors.primaryContainer,
-    marginTop: -2,
+    backgroundColor: colors.primarySoft,
+    borderRadius: 20,
+    margin: 0,
   },
   navBadge: {
     position: "absolute",
@@ -1294,6 +1335,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.label,
     fontVariant: ["tabular-nums"],
+  },
+  filterChip: {
+    height: 30,
+    borderRadius: RADIUS_SM,
+    borderColor: colors.border,
+  },
+  filterChipSelected: {
+    borderColor: colors.primaryContainer,
+  },
+  filterChipText: {
+    fontSize: 12,
+    color: colors.muted,
+  },
+  filterChipTextSelected: {
+    color: colors.primaryContainer,
+    fontWeight: "500",
   },
   summaryItem: {
     flexDirection: "row",

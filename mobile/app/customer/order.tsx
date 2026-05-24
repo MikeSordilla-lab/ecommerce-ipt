@@ -122,7 +122,7 @@ export default function CustomerOrderDetailScreen() {
               </View>
             </View>
 
-            <Text style={styles.total}>${Number(order.total).toFixed(2)}</Text>
+            <Text style={styles.total}>₱{Number(order.total).toFixed(2)}</Text>
 
             <View style={styles.steps}>
               <StatusStep label="Placed" active={currentStatus === "pending"} done={shipped || delivered} />
@@ -163,7 +163,7 @@ export default function CustomerOrderDetailScreen() {
                     <Text style={styles.itemMeta}>Qty {item.quantity}</Text>
                   </View>
                   <Text style={styles.itemPrice}>
-                    ${(Number(item.price_at_purchase) * Number(item.quantity)).toFixed(2)}
+                    ₱{(Number(item.price_at_purchase) * Number(item.quantity)).toFixed(2)}
                   </Text>
                 </View>
               </View>

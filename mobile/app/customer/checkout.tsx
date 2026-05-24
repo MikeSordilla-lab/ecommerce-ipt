@@ -105,14 +105,14 @@ export default function CheckoutScreen() {
                   {item.name} x{item.quantity}
                 </Text>
                 <Text variant="labelMedium" style={styles.itemPrice}>
-                  ${Number(item.subtotal).toFixed(2)}
+                  ₱{Number(item.subtotal).toFixed(2)}
                 </Text>
               </View>
             ))}
             <DividerLine />
             <View style={styles.summaryRow}>
               <Text variant="bodyMedium" style={styles.summaryLabel}>Subtotal</Text>
-              <Text variant="labelMedium" style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+              <Text variant="labelMedium" style={styles.summaryValue}>₱{subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Shipping</Text>
@@ -123,12 +123,12 @@ export default function CheckoutScreen() {
             </View>
             <View style={styles.summaryRow}>
               <Text variant="bodyMedium" style={styles.summaryLabel}>Estimated Tax</Text>
-              <Text variant="labelMedium" style={styles.summaryValue}>${tax.toFixed(2)}</Text>
+              <Text variant="labelMedium" style={styles.summaryValue}>₱{tax.toFixed(2)}</Text>
             </View>
             <DividerLine />
             <View style={styles.summaryRow}>
               <Text variant="titleMedium" style={styles.totalLabel}>Total</Text>
-              <Text variant="headlineSmall" style={styles.totalValue}>${total.toFixed(2)}</Text>
+              <Text variant="headlineSmall" style={styles.totalValue}>₱{total.toFixed(2)}</Text>
             </View>
           </View>
           <View style={styles.paymentBadge}>

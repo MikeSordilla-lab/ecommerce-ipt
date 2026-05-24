@@ -43,7 +43,11 @@ try {
     $stats['pending_orders'] = $stmt->fetchColumn();
 
     $stmt = $pdo->prepare('
-        SELECT DISTINCT o.*, u.username
+        SELECT DISTINCT o.*, u.username,
+            (SELECT COALESCE(SUM(oi2.quantity * oi2.price_at_purchase), 0)
+             FROM order_items oi2
+             JOIN products p2 ON p2.id = oi2.product_id
+             WHERE oi2.order_id = o.id AND p2.seller_id = ?) AS seller_subtotal
         FROM orders o
         JOIN order_items oi ON o.id = oi.order_id
         JOIN users u ON o.user_id = u.id
@@ -51,7 +55,7 @@ try {
         ORDER BY o.created_at DESC
         LIMIT 10
     ');
-    $stmt->execute([$user_id]);
+    $stmt->execute([$user_id, $user_id]);
     $recent_orders = $stmt->fetchAll();
 
     $stmt = $pdo->prepare('
@@ -93,10 +97,7 @@ try {
 
 } catch (PDOException $e) {
     $stats = ['products' => 0, 'total_orders' => 0, 'pending_orders' => 0];
-    $recent_orders = [];
-    $daily_sales = [];
-    $top_products = [];
-    $stock_levels = [];
+    $recent_orders = $daily_sales = $top_products = $stock_levels = [];
 }
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -220,10 +221,10 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <tr>
                                     <td>#<?= $order['id'] ?></td>
                                     <td><?= sanitize($order['username']) ?></td>
-                                    <td><?= format_currency($order['total']) ?></td>
+                                    <td><?= format_currency($order['seller_subtotal']) ?></td>
                                     <td>
                                         <span class="badge badge-<?= match($order['status']) { 'pending' => 'warning', 'shipped' => 'info', 'delivered' => 'success', default => 'secondary' } ?>">
-                                            <?= ucfirst($order['status']) ?>
+                                            <?= sanitize(ucfirst($order['status'])) ?>
                                         </span>
                                     </td>
                                     <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>

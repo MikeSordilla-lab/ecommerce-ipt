@@ -37,6 +37,15 @@ try {
         foreach ($item_stmt->fetchAll() as $item) {
             $order_items[$item["order_id"]][] = $item;
         }
+
+        foreach ($orders as &$order) {
+            $items = $order_items[$order["id"]] ?? [];
+            $order["seller_subtotal"] = array_sum(array_map(
+                fn($i) => (float) $i["price_at_purchase"] * (int) $i["quantity"],
+                $items
+            ));
+        }
+        unset($order);
     }
 } catch (PDOException $e) {
     $orders = [];
@@ -109,7 +118,7 @@ require_once __DIR__ . "/../../includes/header.php";
                                         <?php endif; ?>
                                     </td>
                                     <td><?= format_currency(
-                                        $order["total"],
+                                        $order["seller_subtotal"],
                                     ) ?></td>
                                     <td><?= sanitize(
                                         get_payment_method_label(

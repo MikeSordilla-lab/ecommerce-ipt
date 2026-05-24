@@ -284,7 +284,7 @@ export default function CartScreen() {
                       </View>
                       <View style={styles.itemBottom}>
                         <Text style={styles.itemPrice}>
-                          ${Number(item.subtotal).toFixed(2)}
+                          ₱{Number(item.subtotal).toFixed(2)}
                         </Text>
                         <QuantityStepper
                           value={item.quantity}
@@ -350,14 +350,14 @@ export default function CartScreen() {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Subtotal</Text>
-                <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+                <Text style={styles.summaryValue}>₱{subtotal.toFixed(2)}</Text>
               </View>
 
               {promoDiscount > 0 && (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Discount ({promoDiscount}%)</Text>
                   <Text style={[styles.summaryValue, { color: colors.successText }]}>
-                    −${discountAmt.toFixed(2)}
+                    −₱{discountAmt.toFixed(2)}
                   </Text>
                 </View>
               )}
@@ -372,14 +372,14 @@ export default function CartScreen() {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Estimated Tax (8.5%)</Text>
-                <Text style={styles.summaryValue}>${tax.toFixed(2)}</Text>
+                <Text style={styles.summaryValue}>₱{tax.toFixed(2)}</Text>
               </View>
 
               <View style={styles.totalDivider} />
 
               <View style={styles.summaryRow}>
                 <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+                <Text style={styles.totalValue}>₱{total.toFixed(2)}</Text>
               </View>
 
               {/* Checkout button */}

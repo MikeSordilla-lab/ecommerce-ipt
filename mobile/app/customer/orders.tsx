@@ -237,7 +237,7 @@ export default function CustomerOrdersScreen() {
                         </Text>
                       </View>
                       <Text style={styles.orderTotal}>
-                        ${Number(order.total).toFixed(2)}
+                        ₱{Number(order.total).toFixed(2)}
                       </Text>
                     </View>
 

@@ -173,6 +173,9 @@ function mobile_order_row(array $order): array
     $order["id"] = (int) $order["id"];
     $order["user_id"] = (int) $order["user_id"];
     $order["total"] = (float) $order["total"];
+    if (array_key_exists("seller_subtotal", $order)) {
+        $order["seller_subtotal"] = (float) $order["seller_subtotal"];
+    }
     $order["shipping_address"] = json_decode($order["shipping_address"] ?? "{}", true) ?: [];
     $order["payment_label"] = get_payment_method_label($order["payment_method"] ?? "COD");
     $order["payment_status_label"] = get_payment_status_label($order["payment_method"] ?? "COD", $order["status"] ?? "pending");

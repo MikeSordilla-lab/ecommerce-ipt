@@ -56,6 +56,7 @@ export type Order = {
   user_id: number;
   username?: string;
   total: number;
+  seller_subtotal?: number;
   status: "pending" | "shipped" | "delivered";
   payment_method: string;
   payment_label: string;

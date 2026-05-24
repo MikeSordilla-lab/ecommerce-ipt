@@ -150,7 +150,7 @@ export default function CustomerWishlistScreen() {
                       </View>
                       <Text style={styles.category}>{item.category_name ?? "Product"}</Text>
                       <View style={styles.footer}>
-                        <Text style={styles.price}>${Number(item.price).toFixed(2)}</Text>
+                        <Text style={styles.price}>₱{Number(item.price).toFixed(2)}</Text>
                         <TouchableOpacity
                           style={[styles.cartBtn, item.stock <= 0 && styles.cartBtnDisabled]}
                           onPress={() => addToCart(item)}

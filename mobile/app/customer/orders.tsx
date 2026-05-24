@@ -194,7 +194,12 @@ export default function CustomerOrdersScreen() {
                   key={order.id}
                   style={styles.orderCard}
                   borderless
-                  onPress={() => {}}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/customer/order",
+                      params: { id: String(order.id) },
+                    })
+                  }
                 >
                   <View>
                     {/* Card top accent */}

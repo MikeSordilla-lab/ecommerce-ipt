@@ -633,6 +633,90 @@ a:hover {
     color: var(--color-primary);
 }
 
+.user-avatar-small.profile-summary-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 0.875rem;
+}
+
+.shop-filter-panel {
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-large);
+    background: #f8fafc;
+}
+
+.category-chip-row {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+}
+
+.category-chip {
+    min-width: 9.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 0.8rem;
+    color: var(--color-label);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-standard);
+    box-shadow: rgba(15, 23, 42, 0.04) 0 1px 2px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.category-chip:hover,
+.category-chip.active {
+    color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    background: rgba(83, 58, 253, 0.06);
+}
+
+.category-chip-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-standard);
+    background: rgba(83, 58, 253, 0.08);
+    flex: 0 0 auto;
+}
+
+.category-chip small {
+    margin-left: auto;
+    color: var(--color-body);
+    font-size: 0.75rem;
+}
+
+.shop-filter-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px) auto;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.shop-search-field {
+    position: relative;
+}
+
+.shop-search-field .bi {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-body);
+    pointer-events: none;
+}
+
+.shop-search-field .form-control {
+    padding-left: 2.25rem;
+}
+
 @media (max-width: 991.98px) {
     .navbar-collapse {
         padding-top: 0.75rem;
@@ -698,6 +782,10 @@ a:hover {
     .product-detail-image {
         max-height: 360px;
         margin-bottom: 1.5rem;
+    }
+
+    .shop-filter-form {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -816,6 +904,15 @@ a:hover {
 
     .product-card .card-img-top {
         height: 180px;
+    }
+
+    .shop-filter-panel {
+        padding: 0.85rem;
+    }
+
+    .category-chip {
+        min-width: 8.75rem;
+        padding: 0.6rem 0.7rem;
     }
 
     .product-detail-image,

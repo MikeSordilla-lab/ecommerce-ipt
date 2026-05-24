@@ -26,17 +26,41 @@ class ProductBrowsingModule
 
         if (!empty($filters['price_range'])) {
             switch ($filters['price_range']) {
+                case 'under100':
+                    $conditions[] = 'p.price < 100';
+                    break;
+                case 'under1000':
+                    $conditions[] = 'p.price < 1000';
+                    break;
                 case 'under25':
                     $conditions[] = 'p.price < 25';
+                    break;
+                case '100to250':
+                    $conditions[] = 'p.price BETWEEN 100 AND 250';
                     break;
                 case '25to50':
                     $conditions[] = 'p.price BETWEEN 25 AND 50';
                     break;
+                case '250to500':
+                    $conditions[] = 'p.price BETWEEN 250 AND 500';
+                    break;
+                case '1000to5000':
+                    $conditions[] = 'p.price BETWEEN 1000 AND 5000';
+                    break;
+                case '5000to15000':
+                    $conditions[] = 'p.price BETWEEN 5000 AND 15000';
+                    break;
                 case '50to100':
                     $conditions[] = 'p.price BETWEEN 50 AND 100';
                     break;
+                case 'over500':
+                    $conditions[] = 'p.price > 500';
+                    break;
                 case 'over100':
                     $conditions[] = 'p.price > 100';
+                    break;
+                case 'over15000':
+                    $conditions[] = 'p.price > 15000';
                     break;
             }
         }

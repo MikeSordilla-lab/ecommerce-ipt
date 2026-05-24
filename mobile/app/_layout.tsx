@@ -31,6 +31,7 @@ export default function RootLayout() {
           <Stack.Screen name="customer/checkout" options={{ title: "Checkout" }} />
           <Stack.Screen name="customer/addresses" options={{ title: "Addresses" }} />
           <Stack.Screen name="customer/orders" options={{ title: "My Orders" }} />
+          <Stack.Screen name="customer/order" options={{ title: "Order Detail" }} />
           <Stack.Screen name="seller/dashboard" options={{ title: "Seller" }} />
           <Stack.Screen name="seller/products" options={{ title: "My Products" }} />
           <Stack.Screen name="seller/product-form" options={{ title: "Product Form" }} />

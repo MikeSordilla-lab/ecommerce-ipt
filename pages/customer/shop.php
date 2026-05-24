@@ -11,7 +11,7 @@ require_role('customer');
 $user_id = $_SESSION['user_id'];
 
 try {
-    $stmt = $pdo->prepare('SELECT username, email, role, created_at FROM users WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT username, email, role, profile_image, created_at FROM users WHERE id = ?');
     $stmt->execute([$user_id]);
     $current_user = $stmt->fetch();
 } catch (PDOException $e) {
@@ -24,8 +24,15 @@ try {
     $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
     $per_page = 12;
 
-    $categories_stmt = $pdo->query('SELECT id, name FROM categories ORDER BY name');
+    $categories_stmt = $pdo->query(
+        'SELECT c.id, c.name, COUNT(p.id) AS product_count
+         FROM categories c
+         LEFT JOIN products p ON p.category_id = c.id AND p.is_active = 1
+         GROUP BY c.id, c.name
+         ORDER BY c.name'
+    );
     $categories = $categories_stmt->fetchAll();
+    $total_category_products = array_sum(array_map(static fn($cat) => (int)$cat['product_count'], $categories));
 
     $filters = [];
     if ($category_id) {
@@ -34,7 +41,8 @@ try {
     if ($search) {
         $filters['search'] = $search;
     }
-    $filters['price_range'] = $_GET['price_range'] ?? '';
+    $price_range = $_GET['price_range'] ?? '';
+    $filters['price_range'] = $price_range;
 
     $productModule = new ProductBrowsingModule();
     $result = $productModule->getProducts($pdo, $filters, $page, $per_page);
@@ -52,10 +60,47 @@ try {
 } catch (PDOException $e) {
     $products = [];
     $categories = [];
+    $total_category_products = 0;
     $total_pages = 0;
     $cart_count = 0;
     $wishlisted_ids = [];
+    $price_range = '';
 }
+
+$category_icons = [
+    'Processors' => 'bi-cpu',
+    'Graphics Cards' => 'bi-gpu-card',
+    'Memory' => 'bi-memory',
+    'Storage' => 'bi-device-ssd',
+    'Monitors' => 'bi-display',
+    'Peripherals' => 'bi-keyboard',
+];
+$price_ranges = [
+    '' => 'Any price',
+    'under100' => 'Under ₱100',
+    '100to250' => '₱100-250',
+    '250to500' => '₱250-500',
+    'over500' => 'Over ₱500',
+];
+$active_category_name = 'All Categories';
+foreach ($categories as $cat) {
+    if ((int)$category_id === (int)$cat['id']) {
+        $active_category_name = $cat['name'];
+        break;
+    }
+}
+$shop_filter_url = static function (array $overrides = []): string {
+    $params = $_GET;
+    unset($params['page']);
+    foreach ($overrides as $key => $value) {
+        if ($value === null || $value === '') {
+            unset($params[$key]);
+            continue;
+        }
+        $params[$key] = $value;
+    }
+    return SITE_URL . '/pages/customer/shop.php' . ($params ? '?' . http_build_query($params) : '');
+};
 
 generate_csrf();
 require_once __DIR__ . '/../../includes/header.php';
@@ -67,9 +112,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card-body py-3">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    <div class="profile-avatar-sm">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
+                    <div class="user-avatar-small profile-summary-avatar" data-username="<?= sanitize($current_user['username']) ?>" data-profile-image="<?= sanitize(asset_url($current_user['profile_image'] ?? '')) ?>"></div>
                 </div>
                 <div class="col">
                     <div class="fw-medium text-heading"><?= sanitize($current_user['username']) ?></div>
@@ -102,42 +145,52 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <form method="GET" class="d-flex gap-2">
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?= $cat['id'] ?>" <?= $category_id == $cat['id'] ? 'selected' : '' ?>>
-                            <?= sanitize($cat['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit" class="btn btn-outline-primary">Filter</button>
-            </form>
-        </div>
-        <div class="col-md-5">
-            <form method="GET" class="d-flex gap-2">
-                <input type="hidden" name="category" value="<?= $category_id ?: '' ?>">
-                <input type="text" name="search" class="form-control" placeholder="Search products..."
-                       value="<?= sanitize($search) ?>">
-                <button type="submit" class="btn btn-outline-primary">Search</button>
-                <?php if ($search || $category_id): ?>
-                    <a href="<?= SITE_URL ?>/pages/customer/shop.php" class="btn btn-outline-secondary">Clear</a>
-                <?php endif; ?>
-            </form>
-        </div>
-    </div>
-    <div class="row mb-4">
-        <div class="col">
-            <div class="btn-group" role="group" aria-label="Price filter">
-                <?php $current_price_range = $_GET['price_range'] ?? ''; ?>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'under25' ? 'active' : '' ?>" onclick="window.location='?price_range=under25<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Under ₱25</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '25to50' ? 'active' : '' ?>" onclick="window.location='?price_range=25to50<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">₱25-50</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === '50to100' ? 'active' : '' ?>" onclick="window.location='?price_range=50to100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">₱50-100</button>
-                <button type="button" class="btn btn-outline-primary btn-sm <?= $current_price_range === 'over100' ? 'active' : '' ?>" onclick="window.location='?price_range=over100<?= isset($_GET['category']) ? '&category=' . (int)$_GET['category'] : '' ?><?= isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : '' ?>'">Over ₱100</button>
+    <div class="shop-filter-panel mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+            <div>
+                <div class="small text-body">Browsing</div>
+                <h2 class="h5 mb-0 text-heading"><?= sanitize($active_category_name) ?></h2>
             </div>
+            <?php if ($search || $category_id || $price_range): ?>
+                <a href="<?= SITE_URL ?>/pages/customer/shop.php" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Clear filters
+                </a>
+            <?php endif; ?>
         </div>
+
+        <div class="category-chip-row" aria-label="Product categories">
+            <a href="<?= $shop_filter_url(['category' => null]) ?>" class="category-chip <?= !$category_id ? 'active' : '' ?>">
+                <span class="category-chip-icon"><i class="bi bi-grid"></i></span>
+                <span>All</span>
+                <small><?= (int)$total_category_products ?></small>
+            </a>
+            <?php foreach ($categories as $cat): ?>
+                <?php $icon = $category_icons[$cat['name']] ?? 'bi-tag'; ?>
+                <a href="<?= $shop_filter_url(['category' => (int)$cat['id']]) ?>" class="category-chip <?= (int)$category_id === (int)$cat['id'] ? 'active' : '' ?>">
+                    <span class="category-chip-icon"><i class="bi <?= sanitize($icon) ?>"></i></span>
+                    <span><?= sanitize($cat['name']) ?></span>
+                    <small><?= (int)$cat['product_count'] ?></small>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+        <form method="GET" class="shop-filter-form mt-3">
+            <input type="hidden" name="category" value="<?= $category_id ?: '' ?>">
+            <div class="shop-search-field">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" class="form-control" placeholder="Search products..." value="<?= sanitize($search) ?>">
+            </div>
+            <select name="price_range" class="form-select" aria-label="Price range">
+                <?php foreach ($price_ranges as $value => $label): ?>
+                    <option value="<?= sanitize($value) ?>" <?= $price_range === $value ? 'selected' : '' ?>>
+                        <?= sanitize($label) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Apply
+            </button>
+        </form>
     </div>
 
     <?php if (empty($products)): ?>
@@ -202,13 +255,13 @@ require_once __DIR__ . '/../../includes/header.php';
                 <ul class="pagination justify-content-center">
                     <?php if ($page > 1): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">Previous</a>
+                            <a class="page-link" href="<?= $shop_filter_url(['page' => $page - 1]) ?>">Previous</a>
                         </li>
                     <?php endif; ?>
 
                     <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                         <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                            <a class="page-link" href="?page=<?= $i ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">
+                            <a class="page-link" href="<?= $shop_filter_url(['page' => $i]) ?>">
                                 <?= $i ?>
                             </a>
                         </li>
@@ -216,7 +269,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <?php if ($page < $total_pages): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>&category=<?= $category_id ?>&search=<?= urlencode($search) ?>&price_range=<?= urlencode($current_price_range) ?>">Next</a>
+                            <a class="page-link" href="<?= $shop_filter_url(['page' => $page + 1]) ?>">Next</a>
                         </li>
                     <?php endif; ?>
                 </ul>

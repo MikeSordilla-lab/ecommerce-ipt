@@ -3,7 +3,6 @@ import { Image } from "expo-image";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -16,11 +15,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { apiFetch, jsonBody } from "@/api/client";
 import type { Category, Product } from "@/api/types";
 import { colors } from "@/theme/colors";
-import { CustomerBottomNav, ScreenWrapper } from "@/components/ui";
+import { useAuth } from "@/auth/auth-context";
+import { CustomerBottomNav } from "@/components/ui";
 
 const MARGIN_MOBILE = 20;
 
-type NavKey = "shop" | "cart" | "orders" | "profile";
+const PRICE_FILTERS = [
+  { key: "", label: "Any price" },
+  { key: "under1000", label: "Under $1K" },
+  { key: "1000to5000", label: "$1K-$5K" },
+  { key: "5000to15000", label: "$5K-$15K" },
+  { key: "over15000", label: "$15K+" },
+] as const;
 
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
@@ -57,6 +63,7 @@ const badge = StyleSheet.create({
 });
 
 export default function ShopScreen() {
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
@@ -64,15 +71,18 @@ export default function ShopScreen() {
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
-  const [navKey, setNavKey] = useState<NavKey>("shop");
+  const [priceRange, setPriceRange] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const catQuery = activeCategory ? `&category_id=${activeCategory}` : "";
-      const searchQuery = search ? `&search=${encodeURIComponent(search)}` : "";
+      const params = new URLSearchParams();
+      if (activeCategory) params.set("category_id", String(activeCategory));
+      if (search.trim()) params.set("search", search.trim());
+      if (priceRange) params.set("price_range", priceRange);
       const data = await apiFetch<{ products: Product[]; categories: Category[] }>(
-        `/api/mobile/products.php?${searchQuery}${catQuery}`
+        `/api/mobile/products.php?${params.toString()}`
       );
       setProducts(data.products);
       if (data.categories.length > 0 && categories.length === 0) {
@@ -83,7 +93,7 @@ export default function ShopScreen() {
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, search]);
+  }, [activeCategory, search, priceRange]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -105,14 +115,6 @@ export default function ShopScreen() {
     }
   }
 
-  function handleNav(key: NavKey) {
-    setNavKey(key);
-    if (key === "shop") return;
-    if (key === "cart") router.push("/customer/cart");
-    else if (key === "orders") router.push("/customer/orders");
-    else if (key === "profile") router.push("/customer/profile");
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -120,7 +122,11 @@ export default function ShopScreen() {
       {/* ── Top App Bar ── */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.avatarBtn} activeOpacity={0.8}>
-          <IconButton icon="account" iconColor={colors.secondary} size={18} style={styles.noMargin} />
+          {user?.profile_image_url ? (
+            <Image source={{ uri: user.profile_image_url }} style={styles.avatarImage} contentFit="cover" />
+          ) : (
+            <IconButton icon="account" iconColor={colors.secondary} size={18} style={styles.noMargin} />
+          )}
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Shop</Text>
         <TouchableOpacity style={styles.iconBtnCircle} activeOpacity={0.7}>
@@ -148,35 +154,66 @@ export default function ShopScreen() {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={[styles.filterBtn, showFilters && styles.filterBtnActive]}
+          activeOpacity={0.8}
+          onPress={() => setShowFilters((value) => !value)}
+        >
           <IconButton icon="tune-variant" iconColor={colors.label} size={18} style={styles.noMargin} />
           <Text style={styles.filterBtnText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Category Chips ── */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoryRow}
-        style={styles.categoryScroll}
-      >
-        {[{ id: null, name: "All" }, ...categories].map((cat) => {
-          const isActive = activeCategory === cat.id;
-          return (
-            <TouchableOpacity
-              key={cat.id ?? "all"}
-              onPress={() => setActiveCategory(cat.id)}
-              style={[styles.chip, isActive && styles.chipActive]}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.filterPanel}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryRow}
+          style={styles.categoryScroll}
+        >
+          {[{ id: null, name: "All" }, ...categories].map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id ?? "all"}
+                onPress={() => setActiveCategory(cat.id)}
+                style={[styles.chip, isActive && styles.chipActive]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.chipText, isActive && styles.chipTextActive]} numberOfLines={1}>
+                  {cat.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {showFilters ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.priceRow}
+            style={styles.priceScroll}
+          >
+            {PRICE_FILTERS.map((option) => {
+              const isActive = priceRange === option.key;
+              return (
+                <TouchableOpacity
+                  key={option.key || "any"}
+                  onPress={() => setPriceRange(option.key)}
+                  style={[styles.priceChip, isActive && styles.priceChipActive]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.priceChipText, isActive && styles.priceChipTextActive]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        ) : null}
+      </View>
 
       {/* ── Toast ── */}
       {toast ? (
@@ -280,7 +317,7 @@ export default function ShopScreen() {
         )}
       </ScrollView>
 
-      <CustomerBottomNav activeRoute={navKey} />
+      <CustomerBottomNav activeRoute="shop" />
     </SafeAreaView>
   );
 }
@@ -322,6 +359,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   iconBtnCircle: {
     width: 38,
@@ -371,6 +412,10 @@ const styles = StyleSheet.create({
     height: 40,
     gap: 2,
   },
+  filterBtnActive: {
+    borderColor: colors.primaryBorder,
+    backgroundColor: colors.primarySoft,
+  },
   filterBtnText: {
     color: colors.label,
     fontSize: 13,
@@ -378,25 +423,34 @@ const styles = StyleSheet.create({
   },
 
   /* Categories */
-  categoryScroll: {
+  filterPanel: {
     backgroundColor: colors.background,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  categoryScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+    maxHeight: 54,
+  },
   categoryRow: {
     paddingHorizontal: MARGIN_MOBILE,
     paddingVertical: 8,
-    gap: 6,
+    gap: 8,
     flexDirection: "row",
     alignItems: "center",
   },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
+    minWidth: 72,
+    maxWidth: 150,
+    height: 38,
+    paddingHorizontal: 14,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surfaceContainerLow,
+    alignItems: "center",
+    justifyContent: "center",
   },
   chipActive: {
     backgroundColor: colors.primaryContainer,
@@ -404,10 +458,44 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: colors.muted,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "400",
   },
   chipTextActive: {
+    color: colors.onPrimaryContainer,
+    fontWeight: "600",
+  },
+  priceScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+    maxHeight: 48,
+  },
+  priceRow: {
+    paddingHorizontal: MARGIN_MOBILE,
+    paddingBottom: 10,
+    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  priceChip: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceContainerLowest,
+    justifyContent: "center",
+  },
+  priceChipActive: {
+    borderColor: colors.primaryContainer,
+    backgroundColor: colors.primaryContainer,
+  },
+  priceChipText: {
+    color: colors.label,
+    fontSize: 12,
+    fontWeight: "400",
+  },
+  priceChipTextActive: {
     color: colors.onPrimaryContainer,
     fontWeight: "600",
   },

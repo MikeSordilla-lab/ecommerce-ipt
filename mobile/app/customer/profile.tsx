@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { IconButton, Text, TouchableRipple } from "react-native-paper";
+import { IconButton, Text, TextInput, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/auth/auth-context";
-import { apiFetch } from "@/api/client";
+import { apiFetch, jsonBody } from "@/api/client";
+import type { Address } from "@/api/types";
 import { colors } from "@/theme/colors";
 import { CustomerBottomNav } from "@/components/ui";
 
@@ -39,20 +40,34 @@ export default function ProfileScreen() {
 
   const [stats, setStats] = useState({ activeOrders: 0, savedItems: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      const ordersResponse = await apiFetch<{ orders: any[] }>(
-        "/api/mobile/orders.php"
-      );
+      const [ordersResponse, wishlistResponse, addressResponse] = await Promise.all([
+        apiFetch<{ orders: any[] }>("/api/mobile/orders.php"),
+        apiFetch<{ product_ids: number[] }>("/api/mobile/wishlist.php"),
+        apiFetch<{ addresses: Address[] }>("/api/mobile/addresses.php"),
+      ]);
       const orders = ordersResponse.orders;
       const activeOrders = orders.filter(
         (o) => !["delivered", "cancelled"].includes(o.status.toLowerCase())
       ).length;
-      setStats({ activeOrders, savedItems: 0 });
+      setStats({ activeOrders, savedItems: wishlistResponse.product_ids.length });
       setRecentOrders(orders.slice(0, 3));
+      setDefaultAddress(
+        addressResponse.addresses.find((address) => address.is_default) ??
+          addressResponse.addresses[0] ??
+          null
+      );
     } catch {
       // keep defaults
     } finally {
@@ -63,6 +78,36 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadStats();
   }, [loadStats]);
+
+  async function updatePassword() {
+    setPasswordMessage("");
+    setPasswordError("");
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("Complete all password fields.");
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await apiFetch<null>("/api/mobile/profile.php", {
+        method: "PATCH",
+        body: jsonBody({
+          current_password: currentPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        }),
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMessage("Password updated.");
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : "Could not update password.");
+    } finally {
+      setSavingPassword(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -178,7 +223,7 @@ export default function ProfileScreen() {
 
               <TouchableRipple
                 style={styles.statCard}
-                onPress={() => {}}
+                onPress={() => router.push("/customer/wishlist")}
                 borderless
               >
                 <View style={styles.statCardInner}>
@@ -192,6 +237,116 @@ export default function ProfileScreen() {
                   </View>
                   <Text style={styles.statValue}>{stats.savedItems}</Text>
                   <Text style={styles.statLabel}>Saved Items</Text>
+                </View>
+              </TouchableRipple>
+            </View>
+
+            <View style={styles.profileSectionCard}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionIconBg}>
+                  <IconButton icon="map-marker" iconColor={colors.primaryContainer} size={18} style={styles.noMargin} />
+                </View>
+                <View style={styles.sectionHeaderText}>
+                  <Text style={styles.sectionTitle}>Delivery Address</Text>
+                  <Text style={styles.sectionSubtitle}>Default shipping details</Text>
+                </View>
+              </View>
+              {defaultAddress ? (
+                <View style={styles.addressPreview}>
+                  <Text style={styles.addressName}>{defaultAddress.full_name}</Text>
+                  <Text style={styles.addressLine}>{defaultAddress.phone}</Text>
+                  <Text style={styles.addressLine}>{defaultAddress.address}</Text>
+                </View>
+              ) : (
+                <Text style={styles.emptySectionText}>No address saved yet.</Text>
+              )}
+              <TouchableRipple style={styles.secondaryActionBtn} onPress={() => router.push("/customer/addresses")}>
+                <View style={styles.secondaryActionInner}>
+                  <IconButton icon="pencil" iconColor={colors.primaryContainer} size={18} style={styles.noMargin} />
+                  <Text style={styles.secondaryActionText}>
+                    {defaultAddress ? "Change Address" : "Add Address"}
+                  </Text>
+                </View>
+              </TouchableRipple>
+            </View>
+
+            <View style={styles.profileSectionCard}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionIconBg}>
+                  <IconButton icon="lock" iconColor={colors.primaryContainer} size={18} style={styles.noMargin} />
+                </View>
+                <View style={styles.sectionHeaderText}>
+                  <Text style={styles.sectionTitle}>Change Password</Text>
+                  <Text style={styles.sectionSubtitle}>Use at least 8 characters with a letter and number</Text>
+                </View>
+              </View>
+
+              {passwordMessage ? (
+                <View style={styles.successBanner}>
+                  <Text style={styles.successText}>{passwordMessage}</Text>
+                </View>
+              ) : null}
+              {passwordError ? (
+                <View style={styles.passwordErrorBanner}>
+                  <Text style={styles.passwordErrorText}>{passwordError}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>Current Password</Text>
+                <TextInput
+                  mode="outlined"
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primaryContainer}
+                  textColor={colors.label}
+                  style={styles.input}
+                  contentStyle={styles.inputContent}
+                  outlineStyle={styles.inputOutline}
+                />
+              </View>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>New Password</Text>
+                <TextInput
+                  mode="outlined"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primaryContainer}
+                  textColor={colors.label}
+                  style={styles.input}
+                  contentStyle={styles.inputContent}
+                  outlineStyle={styles.inputOutline}
+                />
+              </View>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>Confirm Password</Text>
+                <TextInput
+                  mode="outlined"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primaryContainer}
+                  textColor={colors.label}
+                  style={styles.input}
+                  contentStyle={styles.inputContent}
+                  outlineStyle={styles.inputOutline}
+                />
+              </View>
+              <TouchableRipple
+                style={[styles.passwordBtn, savingPassword && styles.passwordBtnDisabled]}
+                onPress={updatePassword}
+                disabled={savingPassword}
+              >
+                <View style={styles.btnInner}>
+                  <IconButton icon="key" iconColor={colors.onPrimaryContainer} size={20} style={styles.noMargin} />
+                  <Text style={styles.dashboardBtnText}>
+                    {savingPassword ? "Saving..." : "Update Password"}
+                  </Text>
                 </View>
               </TouchableRipple>
             </View>
@@ -487,6 +642,97 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "400",
     lineHeight: 16,
+  },
+
+  profileSectionCard: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+    gap: 14,
+    shadowColor: colors.shadowAmbient,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  sectionIconBg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceContainerHigh,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionHeaderText: { flex: 1, gap: 2 },
+  sectionTitle: { color: colors.label, fontSize: 15, fontWeight: "600" },
+  sectionSubtitle: { color: colors.muted, fontSize: 12, lineHeight: 17 },
+  addressPreview: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+    gap: 2,
+  },
+  addressName: { color: colors.onSurface, fontSize: 14, fontWeight: "500" },
+  addressLine: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+  emptySectionText: { color: colors.muted, fontSize: 13 },
+  secondaryActionBtn: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  secondaryActionInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    gap: 6,
+  },
+  secondaryActionText: {
+    color: colors.primaryContainer,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  fieldGroup: { gap: 6 },
+  fieldLabel: { color: colors.label, fontSize: 13, fontWeight: "400" },
+  input: { backgroundColor: colors.background },
+  inputContent: { minHeight: 46 },
+  inputOutline: { borderRadius: 6 },
+  successBanner: {
+    backgroundColor: colors.successSoft,
+    borderColor: "rgba(21,190,83,0.35)",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  successText: { color: colors.successText, fontSize: 13, fontWeight: "500" },
+  passwordErrorBanner: {
+    backgroundColor: colors.errorContainer,
+    borderColor: colors.error,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  passwordErrorText: { color: colors.error, fontSize: 13, fontWeight: "500" },
+  passwordBtn: {
+    backgroundColor: colors.primaryContainer,
+    borderRadius: 10,
+    overflow: "hidden",
+    marginTop: 2,
+  },
+  passwordBtnDisabled: {
+    opacity: 0.7,
   },
 
   /* Orders Card */

@@ -554,7 +554,7 @@ export function QuantityStepper({
         style={styles.stepperButton}
       >
         <IconButton
-          icon="remove"
+          icon="minus"
           iconColor={value <= min ? colors.outline : colors.secondary}
           size={18}
         />
@@ -566,7 +566,7 @@ export function QuantityStepper({
         style={styles.stepperButton}
       >
         <IconButton
-          icon="add"
+          icon="plus"
           iconColor={value >= max ? colors.outline : colors.secondary}
           size={18}
         />
@@ -578,6 +578,7 @@ export function QuantityStepper({
 const NAV_ITEMS = [
   { key: "shop", label: "Shop", icon: "storefront" },
   { key: "cart", label: "Cart", icon: "cart" },
+  { key: "wishlist", label: "Wishlist", icon: "heart" },
   { key: "orders", label: "Orders", icon: "package" },
   { key: "profile", label: "Profile", icon: "account" },
 ] as const;
@@ -603,6 +604,7 @@ export function CustomerBottomNav({
                 const routes: Record<string, string> = {
                   shop: "/customer/shop",
                   cart: "/customer/cart",
+                  wishlist: "/customer/wishlist",
                   orders: "/customer/orders",
                   profile: "/customer/profile",
                 };

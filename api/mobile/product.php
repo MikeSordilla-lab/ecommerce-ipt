@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/bootstrap.php";
 require_once __DIR__ . "/../../includes/modules/ProductBrowsingModule.php";
+require_once __DIR__ . "/../../includes/modules/WishlistModule.php";
 
 mobile_method(["GET"]);
 
@@ -10,6 +11,7 @@ if ($id <= 0) {
 }
 
 try {
+    $user = mobile_user($pdo);
     $module = new ProductBrowsingModule();
     $product = $module->getProductById($pdo, $id);
 
@@ -17,7 +19,12 @@ try {
         mobile_error("Product not found", 404);
     }
 
-    mobile_success(["product" => mobile_product_row($product)]);
+    $wishlist = new WishlistModule();
+    $wishlistedIds = $wishlist->getProductIds($pdo, (int) $user["id"]);
+    $product = mobile_product_row($product);
+    $product["wishlisted"] = in_array((int) $product["id"], $wishlistedIds, true);
+
+    mobile_success(["product" => $product]);
 } catch (PDOException $e) {
     mobile_error("Database error", 500);
 }

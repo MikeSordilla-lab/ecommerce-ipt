@@ -23,6 +23,8 @@ export type Product = {
   is_active: boolean;
   category_name?: string;
   seller_name?: string;
+  wishlisted?: boolean;
+  wishlist_id?: number;
 };
 
 export type Category = {

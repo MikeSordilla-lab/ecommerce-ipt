@@ -16,6 +16,7 @@ export default function ProductScreen() {
   const [product, setProduct] = useState<Product | null>(null);
   const [message, setMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [wishlistBusy, setWishlistBusy] = useState(false);
 
   useEffect(() => {
     apiFetch<{ product: Product }>(`/api/mobile/product.php?id=${id}`)
@@ -35,6 +36,32 @@ export default function ProductScreen() {
       setMessage(error instanceof Error ? error.message : "Could not add to cart");
     }
   }
+
+  async function toggleWishlist() {
+    if (!product || wishlistBusy) return;
+
+    setWishlistBusy(true);
+    try {
+      const result = await apiFetch<{ wishlisted: boolean; message: string }>(
+        "/api/mobile/wishlist.php",
+        {
+          method: "POST",
+          body: jsonBody({ product_id: product.id }),
+        }
+      );
+      setProduct({ ...product, wishlisted: result.wishlisted });
+      setMessage(result.message);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update wishlist");
+    } finally {
+      setWishlistBusy(false);
+    }
+  }
+
+  const isSuccessMessage =
+    message === "Added to cart" ||
+    message === "Added to wishlist" ||
+    message === "Removed from wishlist";
 
   if (!product && !message) {
     return (
@@ -62,8 +89,16 @@ export default function ProductScreen() {
           >
             <IconButton icon="arrow-left" iconColor={colors.onSurface} size={20} />
           </TouchableRipple>
-          <TouchableRipple style={styles.headerBtn}>
-            <IconButton icon="heart-outline" iconColor={colors.onSurface} size={20} />
+          <TouchableRipple
+            style={[styles.headerBtn, product?.wishlisted && styles.headerBtnActive]}
+            onPress={toggleWishlist}
+            disabled={!product || wishlistBusy}
+          >
+            <IconButton
+              icon={product?.wishlisted ? "heart" : "heart-outline"}
+              iconColor={product?.wishlisted ? colors.danger : colors.onSurface}
+              size={20}
+            />
           </TouchableRipple>
         </View>
 
@@ -133,8 +168,8 @@ export default function ProductScreen() {
             {message ? (
               <Notice
                 message={message}
-                tone={message === "Added to cart" ? "success" : "danger"}
-                icon={message === "Added to cart" ? "check-circle" : "alert-circle"}
+                tone={isSuccessMessage ? "success" : "danger"}
+                icon={isSuccessMessage ? "check-circle" : "alert-circle"}
               />
             ) : null}
           </>
@@ -151,7 +186,7 @@ export default function ProductScreen() {
             style={styles.qtyBtn}
           >
             <IconButton
-              icon="remove"
+              icon="minus"
               iconColor={quantity <= 1 ? colors.outline : colors.secondary}
               size={20}
             />
@@ -163,7 +198,7 @@ export default function ProductScreen() {
             style={styles.qtyBtn}
           >
             <IconButton
-              icon="add"
+              icon="plus"
               iconColor={quantity >= (product?.stock || 99) ? colors.outline : colors.secondary}
               size={20}
             />
@@ -220,6 +255,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+  },
+  headerBtnActive: {
+    backgroundColor: colors.dangerSoft,
+    borderColor: colors.danger,
   },
   stockBadgeOverlay: {
     position: "absolute",
